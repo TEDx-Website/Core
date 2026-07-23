@@ -1,8 +1,8 @@
 # TEDxAlkawmia Platform — Design Decision Log
 
-> **Version:** 1.1
-> **Date:** 2026-07-22
-> **Status:** Accepted — basis for [05 — User Stories](./05-UserStories.md), [06 — Acceptance Criteria](./06-AcceptanceCriteria.md), [07 — API Contract](./07-ApiContract.md), and the `architecture/` doc set
+> **Version:** 1.2
+> **Date:** 2026-07-23
+> **Status:** Accepted — basis for [05 — User Stories](./05-UserStories.md), [06 — Acceptance Criteria](./06-AcceptanceCriteria.md), [07 — API Contract](./07-ApiContract.md), [09 — System Design](./09-SystemDesign.md), and [11 — State Machines](./11-StateMachines.md)
 > **References:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) (v1.4) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md)
 
 ---
@@ -82,8 +82,8 @@ Where the decision resolves a conflict in an existing document, that is called o
 
 ### Q9 — Check-in authority & scan outcomes
 **Question:** Who may check tickets in, and what are the distinct scan results?
-**Decision:** **Admin-only** (per the PRD role matrix). The scan endpoint is **event-scoped**. Four distinct outcomes: **success**, **already-checked-in** (returns who + when), **wrong-event**, **unknown/invalid**. **All rejections are logged** (`FR-TKT-06`). A delegated-scanner role is deferred.
-**Rationale:** Matches the PRD authorization matrix; distinct outcomes give door staff actionable feedback and an audit trail. Touches `FR-TKT-05`, `FR-TKT-06`.
+**Decision:** **Admin-only** (per the PRD role matrix). The scan endpoint is **event-scoped**. Five distinct outcomes: **success**, **already-checked-in** (returns who + when), **wrong-event**, **voided** (`TICKET_VOIDED` — a known ticket whose paid order was voided/refunded, distinct from an unknown token), **unknown/invalid**. **All rejections are logged** (`FR-TKT-06`). A delegated-scanner role is deferred.
+**Rationale:** Matches the PRD authorization matrix; distinct outcomes give door staff actionable feedback and an audit trail; the voided outcome lets staff distinguish a refund from a forgery. Touches `FR-TKT-05`, `FR-TKT-06`.
 
 ---
 
@@ -338,6 +338,11 @@ Where the decision resolves a conflict in an existing document, that is called o
 **Decision:** **Explicit transition methods on the aggregates are the only way status changes** (enum never set directly from a handler). **Order:** `MarkAsPaid()` (PendingPayment + within hold → Paid, fans out tickets; **re-call on an already-Paid order = idempotent no-op success** = the HMAC guarantee at domain level), `Cancel()`, `Expire()` (sweeper). **Ticket:** `CheckIn()` (Issued only; second call → `TICKET_ALREADY_CHECKED_IN`), `Void()` (check-in of a voided ticket → `TICKET_VOIDED`). **Event:** `Publish()` (allowed with **zero packages** — Model B; Published→Draft blocked once orders exist — D:Q23), `Cancel()`, `Archive()`. Illegal transitions rejected in-domain and mapped by the handler to the right flat code.
 **Rationale:** The aggregate is the single place a transition can happen, so the enum can never reach an illegal value by an illegal path; idempotent-webhook and double-check-in guarantees live in the domain. The proportional use of rich domain (Q32) — confined to the three entities with real lifecycles.
 
+### Q56 — Cancelling an Archived event directly (extends Q23)
+**Question:** Can a `Draft` or `Archived` event be `Cancelled` directly, or must it be `Published` first?
+**Decision:** **`Archived → Cancelled` is allowed** (same cancel ripple as `Published → Cancelled`); **`Draft → Cancelled` is not**. An Archived event is a *Published* event manually hidden — per Q23 its orders/tickets are **unaffected**, so it may hold sold tickets and paid orders; forcing `Archived → Published → Cancelled` would re-expose a hidden event publicly just to cancel it. A `Draft` event can never have orders and is disposed of by **soft-delete** (Q22: "soft-delete only when zero orders exist, otherwise Cancel") — cancelling it would add nothing (no tickets/refunds/holds) and would pollute the `Cancelled` state, which reports read as "an event that sold seats and was called off." **Cancelled remains terminal; Archived is not terminal** (it re-lists to Published).
+**Rationale:** Closes a Q23 gap — an archived, sold-out event had no direct disposal path. Keeps `Cancelled` meaningful (only for events that could have sold seats) and preserves soft-delete as the zero-order Draft path. Touches `FR-EVT-04`, `FR-PAY-07`; extends **Q22, Q23**.
+
 ---
 
 ## Summary table
@@ -352,7 +357,7 @@ Where the decision resolves a conflict in an existing document, that is called o
 | Q6 | Void paid order | Admin-only; refund offline; checked-in seats non-voidable |
 | Q7 | Ticket states | Issued / CheckedIn / Voided; no-show derived, not stored |
 | Q8 | QR token | Public reference + 256-bit secret; validate against SHA-256 hash |
-| Q9 | Check-in | Admin-only, event-scoped; 4 scan outcomes; all rejects logged |
+| Q9 | Check-in | Admin-only, event-scoped; 5 scan outcomes (incl. TICKET_VOIDED); all rejects logged |
 | Q10 | Deactivation | Blocks login only; tickets stay valid; pending order cancelled; Board gap flagged |
 | Q11 | Enrollment | Records keyed on enrollment; re-enroll = fresh %; scoped to active enrollment |
 | Q12 | Attendance % | Denominator = occurred + recorded sessions; Late = attended; Absent explicit |
@@ -366,7 +371,7 @@ Where the decision resolves a conflict in an existing document, that is called o
 | Q20 | Contact form | Unauthenticated; IP rate-limit + length caps; Admin-only; no CAPTCHA/reply |
 | Q21 | Notifications | Per-recipient rows at send time (snapshot); per-row read state; scoped audiences |
 | Q22 | Event w/ sold tickets | Capacity floor = held+paid; Cancel voids+refunds offline; soft-delete only if zero orders |
-| Q23 | Event state machine | Draft⇄Published (zero orders); →Archived/Cancelled; Cancelled terminal; date-derived public split |
+| Q23 | Event state machine | Draft⇄Published (zero orders); →Archived/Cancelled; Archived→Cancelled (Q56); Cancelled terminal; date-derived public split |
 | Q24 | Token lifetimes | Access 15m / refresh 7d rotating-hashed (family-revoke) / reset 1h; refresh in body |
 | Q25 | API envelope | `{success,data,error}`; stable machine `code` for i18n; `fieldErrors` for validation |
 | Q26 | Pagination | Offset `page`/`pageSize` (def 20, cap 100) + `meta`; whitelisted sort/filter |
@@ -401,7 +406,8 @@ Where the decision resolves a conflict in an existing document, that is called o
 | Q53 | Outbox | Single `OutboxMessage` table, tx-written, sweeper-drained, retry/backoff, at-least-once |
 | Q54 | Column conventions | Base markers + audit interceptor + global soft-delete filter, applied by category |
 | Q55 | State machines | Explicit transition methods on Order/Ticket/Event; illegal transitions rejected in-domain |
+| Q56 | Cancel Archived event | `Archived → Cancelled` allowed (cancel ripple); `Draft → Cancelled` not (Draft disposed via soft-delete); extends Q22/Q23 |
 
 ---
 
-*Requirements session (Q1–Q28): 2026-07-20. Architecture session (Q29–Q55): 2026-07-22. All questions resolved and accepted by the stakeholder. Q1–Q28 are the authoritative basis for documents 05–07; Q29–Q55 are the authoritative basis for the `architecture/` doc set and the code scaffold. Where any conflicts with the PRD/SRS, this log and the SRS corrections prevail.*
+*Requirements session (Q1–Q28): 2026-07-20. Architecture session (Q29–Q55): 2026-07-22. Q56 (event-cancel gap, extends Q22/Q23): 2026-07-23. All questions resolved and accepted by the stakeholder. Q1–Q28 are the authoritative basis for documents 05–07; Q29–Q56 are the authoritative basis for the 09/10/11 doc set and the code scaffold. Where any conflicts with the PRD/SRS, this log and the SRS corrections prevail.*

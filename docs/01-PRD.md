@@ -5,9 +5,9 @@
 > **Author:** Engineering Team
 > **Status:** Draft — Pending Stakeholder Approval
 
-> **Authority note (v1.2).** This PRD is **authoritative for product scope** — *what* the platform does and *why*. The requirement-level detail lives in the **SRS (02)**; resolved design questions live in the **Decision Log (08)**; the downstream specs (**User Flows 03, Personas 04, User Stories 05, Acceptance Criteria 06, API Contract 07**) are written and consistent with this PRD. Two documents are still **pending**: **System Design (09)** and **Data Model (10)**. Where any of these conflict with the PRD on *scope*, the PRD wins; on *requirement detail* the SRS wins; on a *resolved design question* the Decision Log wins.
+> **Authority note (v1.2).** This PRD is **authoritative for product scope** — *what* the platform does and *why*. The requirement-level detail lives in the **SRS (02)**; resolved design questions live in the **Decision Log (08)**; the downstream specs (**User Flows 03, Personas 04, User Stories 05, Acceptance Criteria 06, API Contract 07**) are written and consistent with this PRD. One document is still **pending**: **System Design (09)**; the **Data Model (10)** is now written and authoritative. Where any of these conflict with the PRD on *scope*, the PRD wins; on *requirement detail* the SRS wins; on a *resolved design question* the Decision Log wins.
 >
-> **Doc map:** 00 Brief · 01 PRD *(this)* · 02 SRS · 03 User Flows · 04 Personas · 05 User Stories · 06 Acceptance Criteria · 07 API Contract · 08 Decision Log · 09 System Design *(pending)* · 10 Data Model *(pending)*.
+> **Doc map:** 00 Brief · 01 PRD *(this)* · 02 SRS · 03 User Flows · 04 Personas · 05 User Stories · 06 Acceptance Criteria · 07 API Contract · 08 Decision Log · 09 System Design *(pending)* · 10 Data Model.
 >
 > **Changelog**
 > - **v1.2 (2026-07-21):** Model-B ticketing — an event sells **individual tickets at a face price**; **packages are optional** bundles, not the only unit (glossary, §4.1, §5, EVT-01/05, ORD-01/03/05). Fixed the doc map in this note (08 is the Decision Log, not a Domain Model; the Data Model is 10).

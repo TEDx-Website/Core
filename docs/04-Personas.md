@@ -3,7 +3,7 @@
 > **Version:** 1.0
 > **Date:** 2026-07-17
 > **Status:** Authoritative for user-facing personas
-> **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md)
+> **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md)
 
 ---
 
@@ -135,7 +135,7 @@ Personas are ranked by how central they are to the product, not by privilege.
 
 **Stories.** [[05-UserStories#US-BRD-01]], [[05-UserStories#US-BRD-02]], [[05-UserStories#US-BRD-03]], [[05-UserStories#US-BRD-04]], [[05-UserStories#US-BRD-05]], [[05-UserStories#US-ROLE-04]], [[05-UserStories#US-NTF-02]]
 
-**What he must never be able to do.** Act on **any track except the one he supervises** (403 even though he's a Member elsewhere); be Board of the same track he trains in; assign the Board role to anyone (Admin-only); touch payments or event management.
+**What he must never be able to do.** Act on **any track except the one he supervises** (403 even though he's a Member elsewhere); be Board of the same track he trains in; assign the Board role to anyone (Admin-only); touch payments or event management; hard-delete a session that has attendance or evaluation records (D:Q13).
 
 **Design implications.** Authorization resolved **per request** from track assignments (never baked into the token); a hard boundary between his Board@Y powers and his Member@X data; the dual-role constraints (≤1 Member track, ≤1 Board track, must differ) enforced at assignment time and in the database.
 
@@ -150,7 +150,7 @@ Personas are ranked by how central they are to the product, not by privilege.
 **Context & devices.** Desktop for management and reporting; phone as a **scanner at the venue** for check-in.
 
 **Goals.**
-- Create events, define **ticket packages**, and issue **promo codes**; publish when ready.
+- Create events (with an **individual-ticket price**), optionally define **ticket packages**, and issue **promo codes**; publish when ready.
 - See every order, attendee, and payment for an event; handle refunds (manual/offline).
 - Assign **global roles** and the **Board** role; manage users and deactivate accounts.
 - **Check tickets in** at the door quickly and reject invalid or already-used QRs.

@@ -1,15 +1,17 @@
 # TEDxAlkawmia Platform — Software Requirements Specification (SRS)
 
-> **Version:** 1.4
-> **Date:** 2026-07-21
+> **Version:** 1.5
+> **Date:** 2026-07-23
 > **Status:** Draft — Pending Stakeholder Approval
-> **References:** [01 — PRD](./01-PRD.md) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md) *(pending)*
+> **References:** [01 — PRD](./01-PRD.md) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) · [08 — Decision Log](./08-DecisionLog.md) · [09 — System Design](./09-SystemDesign.md) · [10 — Data Model](./10-DataModel.md) · [11 — State Machines](./11-StateMachines.md) · [12 — Sequence Diagrams](./12-SequenceDiagrams.md)
 >
 > **v1.1 (2026-07-20):** Glossary **Order** definition corrected to a **single package × quantity** (one package type per order), aligning with `FR-ORD-02`/`FR-ORD-04` and grilling decision Q1. The prior "one or more ticket packages" wording is superseded.
 >
 > **v1.2 (2026-07-20):** `FR-ATT-03` attendance-percentage denominator corrected to **sessions that have occurred and have a recorded entry** (future and un-recorded sessions excluded; Absent must be recorded explicitly), scoped to the current active enrollment — aligning with decisions Q11/Q12 and the User Stories, Acceptance Criteria, and User Flows. The prior "÷ total sessions" wording is superseded.
 >
 > **v1.3 (2026-07-21):** **Model-B ticketing** (Decision Log Q1 addendum). Individual tickets are the base purchasable unit at an **event-level face price (`ticketPrice`)**; **packages are optional discount bundles**, never a prerequisite. An order references a **nullable package** (individual-ticket order when null). An event with **zero packages is publishable and sellable**. Affects the glossary and `FR-EVT-01`, `FR-PKG-01`, `FR-ORD-01`, `FR-ORD-02`, `FR-ORD-04`; adds `FR-ORD-09` (hold-expiry sweeper). Supersedes any "one package per order is the only unit" reading of v1.1 (Q1 still holds: one unit-type × quantity per order).
+>
+> **v1.5 (2026-07-23):** **Aligned with the architecture grilling pass (Decision Log Q29–Q56) and the now-written 09/10/11/12 doc set.** Changes: (1) **`NFR-MNT-02` rewritten** — the "no foreign keys across contexts" rule is superseded by the **FK revision** (real cross-context FKs with `RESTRICT`; decoupling is a *code* rule: no cross-context navigation properties). (2) All "(pending)" markers for System Design (09) and Data Model (10) removed — both now exist and are authoritative. (3) "28 resolved design questions" → **Q1–Q56** throughout. (4) Added `FR-EVT-09` (event cancel from Published **or** Archived — D:Q22/Q56), `FR-USER-08` (Cloudinary image validation is already NFR-covered — cross-referenced), and `NFR-REL-07` (transactional outbox, at-least-once side-effects — D:Q45/Q53). (5) §7 traceability and §8 open-items updated to reflect that 09/10 are written, and 11/12 added as the lifecycle/flow authorities. No requirement was invented — every added/changed line cites its `D:Q`.
 
 ---
 
@@ -66,9 +68,11 @@ What ships in which release is **out of scope for this document** — phasing an
 - [01 — PRD](./01-PRD.md) — product requirements, roles, and feature catalog. **Authoritative for scope.**
 - [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md) — behavioural flows and the user classes this SRS serves.
 - [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) — the story/test/endpoint layer that refines these `FR-*`.
-- [08 — Decision Log](./08-DecisionLog.md) — the 28 resolved design questions (cited as **D:Qn**) plus the Model-B addendum. **Authoritative for resolved design questions.**
-- [09 — System Design](./09-SystemDesign.md) *(pending)* — layering, CQRS, module boundaries, and the authorization model (this SRS defers architecture detail to it).
-- [10 — Data Model](./10-DataModel.md) *(pending)* — ERD, tables, constraints, EF Core mapping. **Authoritative for the database.**
+- [08 — Decision Log](./08-DecisionLog.md) — the resolved design questions **Q1–Q56** (cited as **D:Qn**): requirements grilling (Q1–Q28, incl. the Model-B addendum) plus the architecture grilling (Q29–Q56). **Authoritative for resolved design questions.**
+- [09 — System Design](./09-SystemDesign.md) — layering, CQRS, module boundaries, and the authorization model (this SRS defers architecture detail to it).
+- [10 — Data Model](./10-DataModel.md) — ERD, tables, constraints, EF Core mapping. **Authoritative for the database.**
+- [11 — State Machines](./11-StateMachines.md) — the entity lifecycle (state) diagrams the `FR-*` behaviors move entities through.
+- [12 — Sequence Diagrams](./12-SequenceDiagrams.md) — the cross-subsystem runtime flows (reserve, pay, check-in, refresh, cancel ripples) these requirements are realized by.
 
 ### 1.5 Requirement notation
 
@@ -109,7 +113,7 @@ The platform is a new, self-contained system replacing manual processes (spreads
               └──────────────────┘
 ```
 
-The internal software architecture (layering, CQRS, module boundaries) is specified in **[09 — System Design](./09-SystemDesign.md)** *(pending)*; the persistent structure is specified in the **[Data Model](./10-DataModel.md)** *(pending)*.
+The internal software architecture (layering, CQRS, module boundaries) is specified in **[09 — System Design](./09-SystemDesign.md)**; the persistent structure is specified in the **[Data Model](./10-DataModel.md)**.
 
 ### 2.2 User classes
 
@@ -121,7 +125,7 @@ The internal software architecture (layering, CQRS, module boundaries) is specif
 | **Board** | Supervises one track; may also be a Member of a different track. | Track-scoped write access, resolved per request. |
 | **Admin** | Organizing-committee leadership; full control. | Global privileged role; multiple admins allowed. |
 
-Role rules are authoritative in [PRD §5](./01-PRD.md). The **global role** (Attendee/Admin) and the **per-track assignments** (Member/Board) are two independent dimensions; the authorization model that combines them per request is detailed in [09 — System Design](./09-SystemDesign.md) *(pending)*.
+Role rules are authoritative in [PRD §5](./01-PRD.md). The **global role** (Attendee/Admin) and the **per-track assignments** (Member/Board) are two independent dimensions; the authorization model that combines them per request is detailed in [09 — System Design §6](./09-SystemDesign.md) (D:Q35).
 
 ### 2.3 Operating environment
 

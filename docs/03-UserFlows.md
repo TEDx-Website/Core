@@ -1,13 +1,15 @@
 # TEDxAlkawmia — User Flows
 
-> **Version:** 3.2
-> **Date:** 2026-07-21
+> **Version:** 3.3
+> **Date:** 2026-07-23
 > **Status:** Authoritative for user-facing flows
-> **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md) *(pending)*
+> **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md)
 >
 > **v3.1 (2026-07-20):** Aligned with grilling decisions (Q1–Q28) and the consistency audit. Changes: attendance denominator = occurred-and-recorded sessions only (D:Q12); check-in has five named outcomes incl. `TICKET_VOIDED` (D:Q9); paid-order void releases only not-yet-checked-in seats (D:Q6); one active pending order per user per event (D:Q5); enrollment targets an existing account only (D:Q15); QR delivered as a server-rendered image, raw payload never in JSON (D:Q8, audit Issue 3); voided-paid orders identified by a refund entry (audit Issue 7).
 >
 > **v3.2 (2026-07-21):** **Model-B ticketing** (Decision Log Q1 addendum). An order is for **individual tickets (at the event face price) or an *optional* package** — packages are no longer the only purchasable unit. Publishing an event **no longer requires a package** (§6.1); an event with zero packages still sells individual tickets. Booking flow (§3.1–3.2) reworded for the individual-or-package choice.
+>
+> **v3.3 (2026-07-23):** Event lifecycle (§6.3) extended per **D:Q56** — `Archived → Cancelled` is now a legal transition (same cancel ripple), so a hidden event holding sold tickets need not be re-published just to cancel it; `Draft → Cancelled` stays blocked (a Draft is disposed of by soft-delete).
 
 ---
 
@@ -15,7 +17,7 @@
 
 Each flow is described **twice**: once in plain steps (the *normal flow* plus *alternate flows* for the things that can go wrong), and once as a **Mermaid diagram** you can render visually. Green nodes are success states, red are errors, amber are informational dead-ends, blue are entry points.
 
-Every flow cites the requirement it enforces (e.g. *FR-ORD-03*), defined in the [SRS §3](./02-SRS.md), and decisions as *(D:Qn)* from the [Decision Log](./08-DecisionLog.md). Terms like **Order**, **Ticket**, **hold**, and **Attendee** carry the exact meaning from the PRD and glossary. Order/ticket enum values (`PendingPayment`, `Paid`, `Cancelled`, `Expired`; `Issued`, `CheckedIn`, `Voided`) are those fixed in the decisions and the [API Contract](./07-ApiContract.md); the **Data Model (10)** — cited below as the eventual authoritative schema — is not yet written.
+Every flow cites the requirement it enforces (e.g. *FR-ORD-03*), defined in the [SRS §3](./02-SRS.md), and decisions as *(D:Qn)* from the [Decision Log](./08-DecisionLog.md). Terms like **Order**, **Ticket**, **hold**, and **Attendee** carry the exact meaning from the PRD and glossary. Order/ticket enum values (`PendingPayment`, `Paid`, `Cancelled`, `Expired`; `Issued`, `CheckedIn`, `Voided`) are those fixed in the decisions and the [API Contract](./07-ApiContract.md); the **[Data Model (10)](./10-DataModel.md)** is the authoritative schema.
 
 ---
 
@@ -180,26 +182,34 @@ flowchart TD
 ### 3.1 Choose tickets & see the price (quote)
 
 **Normal flow**
-1. Attendee picks **individual tickets** (the default) **or an optional package**, and a quantity (≥ 1).
+1. Attendee picks **individual tickets** (the default) **or an optional package**, and a quantity (≥ 1, ≤ per-order cap if set — `event.MaxIndividualQtyPerOrder` for individual tickets, `package.MaxQuantityPerOrder` for a package). *(D:Q2, D:Q1 addendum)*
 2. Optionally enters a **promo code**.
 3. System returns a **quote**: base price = `event.ticketPrice × quantity` for individual tickets, or `package.price × quantity` for a package; discount from the code (if active, within its validity window, under global and per-user limits, and in scope for this event); **final price = max(0, base − discount)**. *(FR-ORD-01, FR-PROMO-03)*
 4. No seats are held yet — a quote is read-only. *(FR-ORD-01)*
 
 **Alternate flows**
-- **A1 — Invalid/expired/maxed/out-of-scope promo:** show "This code can't be applied" and quote the undiscounted price. *(FR-PROMO-03)*
+- **A1 — Promo code rejected (distinct reasons):** *(FR-PROMO-03, D:Q50)*
+  - `PROMO_INACTIVE` — code is disabled by the Admin.
+  - `PROMO_NOT_YET_VALID` / `PROMO_EXPIRED` — outside the validity window.
+  - `PROMO_CAP_REACHED` — global redemption limit hit.
+  - `PROMO_USER_LIMIT` — this user has already used it the maximum number of times.
+  - `PROMO_WRONG_EVENT` — code is scoped to a different event.
+  In all cases: quote the undiscounted price.
+- **A2 — Quantity exceeds per-order cap:** "You can buy at most N of this ticket/package per order." Quote is blocked until the quantity is lowered. *(D:Q2, D:Q1 addendum)*
 
 ### 3.2 Reserve → hold seats
 
 **Normal flow**
 1. Attendee confirms the quote and clicks **Reserve**.
 2. System runs a **concurrency-safe capacity check**: seats needed = `quantity` for individual tickets, or `package.seats × quantity` for a package, ≤ remaining seats. Two simultaneous reservations must not oversell the last seats. *(FR-ORD-02, FR-ORD-03)*
-3. System creates an **Order** in **PendingPayment**, holds the seats, **snapshots** the unit price, base price, discount, and final price (plus the package name for a package order, or the event title for an individual-ticket order), and starts the **15-minute checkout window**. **No tickets exist yet.** *(FR-ORD-04, FR-ORD-05, FR-TKT-02)*
+3. System creates an **Order** in **PendingPayment**, holds the seats, **snapshots** the unit price, base price, discount, and final price (plus the package name for a package order, or the event title for an individual-ticket order), and starts the **15-minute checkout window**. **No tickets exist yet.** The promo discount amount is **snapshotted** on the order at reserve (D:Q4), but the **PromoRedemption slot is not claimed until payment initiation** (or confirm-free for free orders) — see §3.3. *(FR-ORD-04, FR-ORD-05, FR-TKT-02, D:Q19)*
 
 **Alternate flows**
 - **A1 — Not enough seats (incl. a race with another buyer):** "Not enough seats remaining." No order is created; nothing is held. *(FR-ORD-03)*
 - **A2 — Event not Published:** reject. *(FR-EVT-04)*
 - **A3 — Already has a pending order for this event:** a user may hold **at most one active (PendingPayment, unexpired) order per event**. A second reserve returns the existing pending order (with its `orderId`) so the user resumes or cancels it, rather than creating a duplicate hold. Paid orders don't block a new purchase. *(D:Q5)*
 - **A4 — Price changed since the quote:** if the live package price or promo state differs from the advisory quote, the reserve responds with `PRICE_CHANGED` and the new quote for explicit re-confirmation — it never silently charges a different amount. *(D:Q4)*
+- **A5 — Quantity exceeds per-order cap (re-checked at reserve):** even if the quote accepted the quantity, the cap is re-validated. If the Admin lowered the cap between quote and reserve, the reserve is rejected with the current limit. *(D:Q2)*
 
 ### 3.3 Pay (Paymob) — or skip it if free
 
@@ -211,7 +221,7 @@ flowchart TD
 5. Attendee optionally names individual tickets; a blank name is still a valid credential. *(FR-TKT-03)*
 
 **Free order path**
-- If final price = 0 (free package or 100%-off promo), the system **bypasses Paymob** and confirms the order immediately, issuing tickets. *(FR-PAY-06)*
+- If final price = 0 (free package or 100%-off promo), the system **bypasses Paymob** and confirms the order immediately: the **PromoRedemption slot is atomically claimed and confirmed** in a single step, and tickets are issued. *(FR-PAY-06, D:Q19)*
 
 **Alternate flows**
 - **A1 — Payment fails/abandoned:** order stays PendingPayment; seats stay held until the window expires.
@@ -358,7 +368,7 @@ flowchart TD
 
 **Alternate flows**
 - **A1 — Publish with a non-positive ticket price and no packages:** blocked — an event must offer at least one buyable unit, so `ticketPrice` must be ≥ 0 and, when 0 with no packages, the event still validly sells free individual tickets. (There is **no** "must add a package" block.)
-- **A2 — Edit capacity below already-held seats:** blocked with the current held count.
+- **A2 — Edit capacity:** capacity is **raisable anytime**; **lowerable only to ≥ (held + paid) seats** — otherwise blocked with the current held count. *(D:Q22)*
 
 ```mermaid
 flowchart TD
@@ -378,6 +388,59 @@ flowchart TD
 1. Admin opens an event's **Orders** view.
 2. Sees all orders and attendees with status, buyer, seats, amount paid, and promo used. *(FR-EVT-08)*
 3. Opens **Check-in** to see checked-in vs. issued counts in real time.
+
+### 6.3 Event lifecycle transitions (D:Q22, D:Q23, D:Q56)
+
+> The event status follows a strict state machine. Transitions that would leave sold tickets or active holds in an inconsistent state are blocked.
+
+**Legal transitions**
+
+| From | To | Condition |
+|------|----|-----------|
+| Draft | Published | Always allowed (no package precondition — Model B) |
+| Published | Draft | **Only if zero orders** (no Paid, no PendingPayment) — otherwise blocked: `EVENT_HAS_ORDERS` |
+| Published | Archived | Always allowed — hides the event from public listings; orders/tickets unaffected |
+| Published | Cancelled | Always allowed — triggers the **Cancel ripple** (below) |
+| Archived | Published | Always allowed — re-lists the event |
+| Archived | Cancelled | Always allowed — triggers the **Cancel ripple**; avoids re-exposing a hidden event just to cancel it *(D:Q56)* |
+| Draft | Cancelled | **Blocked** — a Draft has no orders and is disposed of by **soft-delete**, not Cancel *(D:Q22, D:Q56)* |
+| Cancelled | *(any)* | **Blocked — Cancelled is terminal.** *(D:Q23)* |
+
+**Cancel ripple effects (Published → Cancelled *or* Archived → Cancelled)** *(D:Q22, D:Q56)*
+1. All **Issued** tickets → **Voided** (QRs no longer admit).
+2. All **PendingPayment** orders → **Cancelled**, held seats released.
+3. For **Paid** orders: a **RefundEntry** is recorded per order (refund is offline/manual — FR-PAY-07). The order status becomes **Cancelled**.
+4. The event is **hidden from public listings** but **retained** (never hard-deleted when orders exist).
+
+**Soft-delete vs. Cancel** *(D:Q22)*
+- An event with **zero orders** (always the case for a Draft) may be soft-deleted outright.
+- An event with **any orders** (even Expired) must use **Cancel** instead — soft-delete is blocked.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Published : Publish (no package precondition)
+    Published --> Draft : Revert (zero orders only)
+    Published --> Archived : Archive (hide from listings)
+    Published --> Cancelled : Cancel (voids tickets, records refunds)
+    Archived --> Published : Re-list
+    Archived --> Cancelled : Cancel (D:Q56 — cancel ripple)
+    Cancelled --> [*] : Terminal — no further transitions
+```
+
+### 6.4 Admin: retire a track (D:Q14)
+
+**Normal flow**
+1. Admin selects a track and chooses **Delete / Retire**.
+2. System displays a **confirmation prompt** stating the impact: *"This will end N active Member enrollment(s) and 1 Board assignment. All attendance and evaluation history will be retained."* *(D:Q14)*
+3. Admin confirms.
+4. System **soft-deletes** the track and **auto-ends** all active `TrackAssignment` rows (`EndedAtUtc` set):
+   - All **Member enrollments** are ended → those users' Member slot is freed for reassignment.
+   - The **Board assignment** is ended → that user's Board slot is freed.
+   - All attendance and evaluation records are **retained** (keyed on the ended enrollment, still queryable). *(FR-ROLE-05)*
+
+**Alternate flows**
+- **A1 — Admin cancels the confirmation:** no change.
 
 ---
 
@@ -403,7 +466,13 @@ flowchart TD
 **Alternate flows**
 - **A1 — Second Member track:** blocked — "This user is already a Member of another track." *(FR-ROLE-04)*
 - **A2 — Board on their own Member track:** blocked — "A user cannot be Board of the track they train in." *(FR-ROLE-04)*
-- **A3 — Deactivate/reactivate user:** toggles access; deactivation revokes refresh tokens. *(FR-AUTH-05)*
+- **A3 — Deactivate a user (D:Q10):** Admin deactivates an account. The system applies five cascading effects:
+  1. **Login/refresh blocked** — the user cannot authenticate or renew tokens. *(FR-AUTH-05)*
+  2. **Issued tickets stay valid** — admission is by QR scan, not by login; a deactivated buyer's paid tickets still work at the door.
+  3. **Any active PendingPayment order → Cancelled** and its held seats are **released immediately**.
+  4. **Track assignments ended** — all active Member enrollments and Board assignments get `EndedAtUtc` set, **freeing the dual-role slots** for reassignment. Attendance and evaluation history is **retained**. Assignments are **not auto-restored on reactivation** — the Admin must re-assign explicitly. *(FR-ROLE-05)*
+  5. **Board gap flagged** — if the deactivated user was Board of a track, the track is flagged as **needing a new supervisor** for the Admin.
+- **A4 — Reactivate a user:** re-enables login; track roles must be **re-assigned manually** (they were ended, not paused). *(D:Q10)*
 
 ```mermaid
 flowchart TD
@@ -433,7 +502,7 @@ flowchart TD
 1. A user who has a **Member** assignment opens their **Training** dashboard, scoped to their one track.
 2. Sees the upcoming and past sessions of their track, their attendance percentage — `(Present + Late) ÷ counted sessions`, where **Late counts as attended** and **counted sessions = only those that have occurred AND have a recorded attendance entry for this enrollment** (future sessions and past sessions with no record for the member are excluded; an Absent must be explicitly recorded to count) — and their own evaluation history (scores + written feedback). The percentage is scoped to the member's **current active enrollment**. *(FR-TRK-03, FR-ATT-03, FR-EVL-03, D:Q11, D:Q12)*
 3. Cannot see other members' evaluations. *(FR-EVL-03)*
-4. Can still book event tickets exactly like any Attendee (§3) — training and ticketing are independent bounded contexts. *(cross-context rule, NFR-MNT-02; to be detailed in the pending Data Model 10)*
+4. Can still book event tickets exactly like any Attendee (§3) — training and ticketing are independent bounded contexts. *(cross-context rule, NFR-MNT-02)*
 
 ```mermaid
 flowchart TD
@@ -456,12 +525,15 @@ flowchart TD
 1. A user with a **Board** assignment opens the dashboard for **their one track only**. Access to any other track is refused server-side. *(FR-ROLE-03, FR-TRK-04)*
 2. Creates/edits a **session** in that track (topic, date, time, location). *(FR-TRK-02)*
 3. Records **attendance** per member as **Present / Late / Absent** — manual, no QR for training. At most one record per member per session; re-recording updates it. *(FR-ATT-01, FR-ATT-02)*
-4. Writes an **evaluation** per member per session (score 0–100 + optional feedback). At most one per member per session, editable in place. *(FR-EVL-01, FR-EVL-02)*
+4. Writes an **evaluation** per member **for a session that has already occurred** (future sessions cannot be evaluated) and only for members with an **active enrollment** — score 0–100 + optional feedback. Attendance is **not** a prerequisite. At most one per member per session, editable in place. *(FR-EVL-01, FR-EVL-02, D:Q16)*
 5. Sends an **in-app notification** to the members of their own track only. *(FR-NTF-02)*
 
 **Alternate flows**
 - **A1 — Access another track:** 403 — even if the same person trains as a Member there, Board actions are limited to the assigned track. *(this is the dual-role boundary from §7 — FR-ROLE-03)*
 - **A2 — Duplicate attendance/evaluation:** the existing record is updated instead of a second being created. *(FR-ATT-02, FR-EVL-02)*
+- **A3 — Delete a session with existing records:** blocked — `SESSION_HAS_RECORDS`. A session that has any attendance or evaluation records **cannot be hard-deleted**; it may be **soft-deleted/cancelled** instead. A session with zero records can be removed outright. *(D:Q13)*
+- **A4 — Evaluate a future session:** blocked — `SESSION_NOT_OCCURRED`. The session’s `EndsAtUtc` must be in the past before evaluations are accepted. *(D:Q16)*
+- **A5 — Evaluate a departed member:** blocked — `MEMBER_NOT_ENROLLED`. The member must have an **active enrollment** (`EndedAtUtc IS NULL`) at evaluation time. Existing evaluations for a departed member are retained. *(D:Q16)*
 
 ```mermaid
 flowchart TD
@@ -557,7 +629,7 @@ Open to anyone, including an unauthenticated **Visitor** — no account required
 **Normal flow**
 1. Visitor opens **Contact** and enters **name, email, subject, message**. *(FR-PUB-02)*
 2. System validates required fields and email format.
-3. Submission is stored for Admin review (as a `ContactMessage`, standalone — no FK to a user account). *(FR-PUB-02; table to be detailed in the pending Data Model 10)*
+3. Submission is stored for Admin review (as a `ContactMessage`, standalone — no FK to a user account). *(FR-PUB-02)*
 4. Visitor sees a confirmation ("Thanks — we'll get back to you").
 
 **Alternate flows**
@@ -614,3 +686,9 @@ flowchart TD
 | Self-service profile edit & password change | FR-USER-01…04 | §10 |
 | Notifications in-app only; per-recipient read state | FR-NTF-03, FR-NTF-04 | §11 |
 | Visitor contact form; stored standalone for Admin | FR-PUB-02 | §12 |
+| Per-order quantity caps (event/package) | D:Q1, D:Q2 | §3.1, §3.2 |
+| Event state machine; Archived→Cancelled allowed, Draft→Cancelled blocked, Cancelled terminal | D:Q22, D:Q23, D:Q56 | §6.3 |
+| Track retirement ends active roles; retains history | D:Q14 | §6.4 |
+| Deactivation cancels orders, ends roles, flags Board gap | D:Q10 | §7 |
+| Cannot hard-delete session with records | D:Q13 | §9 |
+| Evaluation requires past session & active enrollment | D:Q16 | §9 |
