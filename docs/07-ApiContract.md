@@ -1,9 +1,11 @@
 # TEDxAlkawmia — API Contract
 
-> **Version:** 1.1
-> **Date:** 2026-07-21
+> **Version:** 1.2
+> **Date:** 2026-07-24
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md)
-> **Decisions:** grilling session 2026-07-20 (Q1–Q28), cited as **(D:Qn)**.
+> **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+>
+> **v1.2 (2026-07-24):** §6 `POST /events/{id}/status` documents **Archived→Cancelled (D:Q56)**; `POST /events/{id}/cancel` widens the precondition from "Published" to "**Published or Archived**" (identical ripple). Provenance refreshed to Q1–Q56.
 >
 > **v1.1 (2026-07-21):** Model-B ticketing (DecisionLog Q1 addendum) — events carry `ticketPrice` + optional `maxIndividualQtyPerOrder`; quote/reserve `packageId` is **nullable** (omit for an individual-ticket order); publishing has **no package precondition**. Error-model cleanup (D-2): promo failures are `422` + flat codes (no `PROMO_INVALID` umbrella; `PROMO_NOT_STARTED` → `PROMO_NOT_YET_VALID`), session preconditions are `422`, over-max quantity is `422 QUANTITY_EXCEEDS_MAX`; change-password wrong-current is `400 CURRENT_PASSWORD_INCORRECT` (D-3) so `INVALID_CREDENTIALS` stays uniquely `401`.
 
@@ -72,17 +74,28 @@ Every response — success or failure — uses the same envelope:
 
 ### 0.7 Idempotency & rate limiting (D:Q28)
 - **`Idempotency-Key`** header is accepted on **payment initiation**; a repeat with the same key returns the same checkout session rather than creating a new one.
-- Auth, ordering, and the contact endpoints are rate-limited (NFR-SEC-10). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
+- Rate-limited endpoint groups (NFR-SEC-10, D:Q28): **auth** (`/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/refresh`), **ordering** (`/orders/quote`, `/orders/reserve`, `/orders/{id}/pay`), and **contact** (`/contact`, by IP). Limits are config-driven per group ("SHOULD" targets, D:Q28b). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
 
 ### 0.8 Optimistic concurrency (D:Q22, NFR-REL-06)
-- Admin-managed records (Event, Package, PromoCode, Order) carry a `rowVersion` (base64 string). Mutations must echo it back; a stale token → **409** `CONCURRENCY_CONFLICT`.
+- Admin-managed records (Event, Package, PromoCode, Order, TrackAssignment) carry a `rowVersion` (base64 string). Mutations must echo it back; a stale token → **409** `CONCURRENCY_CONFLICT`.
+- **Order `rowVersion` is required only for the Admin void operation** (§12) — Attendee order operations (reserve, cancel, pay, confirm-free) mutate the order via guarded transition methods (`MarkAsPaid`/`Cancel`/`Expire`, D:Q55) and do **not** submit `rowVersion` (DataModel §2.3).
 
 ### 0.9 Common error codes (non-exhaustive, extended per section)
-`VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONCURRENCY_CONFLICT`, `RATE_LIMITED`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `CURRENT_PASSWORD_INCORRECT`, `ACCOUNT_DEACTIVATED`, `WEAK_PASSWORD`, `TOKEN_INVALID`, `TOKEN_REUSED`, `RESET_TOKEN_INVALID`, `TICKET_ALREADY_CHECKED_IN`, `WRONG_EVENT`, `TICKET_VOIDED`, `TICKET_INVALID`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `QUANTITY_EXCEEDS_MAX`, `PROMO_INACTIVE`, `PROMO_NOT_YET_VALID`, `PROMO_EXPIRED`, `PROMO_CAP_REACHED`, `PROMO_USER_LIMIT`, `PROMO_WRONG_EVENT`.
+`VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `TRACK_FORBIDDEN`, `NOT_FOUND`, `CONCURRENCY_CONFLICT`, `RATE_LIMITED`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `CURRENT_PASSWORD_INCORRECT`, `ACCOUNT_DEACTIVATED`, `WEAK_PASSWORD`, `TOKEN_INVALID`, `TOKEN_REUSED`, `RESET_TOKEN_INVALID`, `TICKET_ALREADY_CHECKED_IN`, `WRONG_EVENT`, `TICKET_VOIDED`, `TICKET_INVALID`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `QUANTITY_EXCEEDS_MAX`, `ACTIVE_ORDER_EXISTS`, `HOLD_EXPIRED`, `ORDER_NOT_CANCELLABLE`, `ORDER_NOT_PAYABLE`, `ORDER_IS_FREE`, `ORDER_NOT_FREE`, `PROMO_CODE_TAKEN`, `PROMO_INACTIVE`, `PROMO_NOT_YET_VALID`, `PROMO_EXPIRED`, `PROMO_CAP_REACHED`, `PROMO_USER_LIMIT`, `PROMO_WRONG_EVENT`, `NO_RECIPIENTS_RESOLVED`.
 
 > **Error-model convention (D-2, audit).** A **well-formed request that violates a business rule** returns **`422`** with a **flat, distinct `error.code`** (e.g. `QUANTITY_EXCEEDS_MAX`, the `PROMO_*` reasons, `SESSION_NOT_OCCURRED`, `MEMBER_NOT_ENROLLED`). **`409`** is reserved for genuine **state/concurrency conflicts** (`CONCURRENCY_CONFLICT`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `ACTIVE_ORDER_EXISTS`, `HOLD_EXPIRED`, event/order state transitions). There is no `PROMO_INVALID` umbrella code — each promo failure has its own reason.
 
 > **Status/code pairing (audit-Issue-10).** A given `error.code` maps to exactly one HTTP status. Notably: token failures on the **refresh** credential use `401 TOKEN_INVALID` / `401 TOKEN_REUSED`; an invalid/expired **password-reset** token (a submitted field, not a session credential) uses `400 RESET_TOKEN_INVALID` — a distinct code so clients never see the same code under two statuses.
+>
+> **State-transition codes (audit-Issue-30).** An illegal lifecycle transition (Event, Order, Session status) is a **state conflict → `409`** with a single shared code family: **`ILLEGAL_STATUS_TRANSITION`** for the generic case, plus the specific state codes (`EVENT_HAS_ORDERS`, `SESSION_HAS_RECORDS`, `CAPACITY_BELOW_SOLD`, …). This aligns with the D-2 convention (409 = state/concurrency); **`INVALID_STATUS_TRANSITION` (422) is retired** — sessions use `409 ILLEGAL_STATUS_TRANSITION` like events/orders. A `422` transition code is never used.
+
+### 0.10 Internationalized text fields (DataModel §0, audit-Issue-33)
+- Entities with bilingual copy (Event `title`/`description`, Package `name`, Track `name`/`description`, Session `title`) store **explicit `En`/`Ar` column pairs** (DataModel). The API is **explicit, not content-negotiated**: request and response bodies carry the **suffixed field pairs** — `titleEn` + `titleAr`, `descriptionEn` + `descriptionAr`, `nameEn` + `nameAr`. There is **no `Accept-Language` server-side selection**; the SPA picks the language to render.
+- On **write**, both members of a required pair are mandatory (missing → `422 VALIDATION_ERROR` on the missing field). Fields the DataModel marks nullable (e.g. an optional Armenian description) may be omitted.
+- **`date` is never a single field on events** — see §0.11.
+
+### 0.11 Event date fields (DataModel §2.1, audit-Issue-17/18)
+- An Event exposes **two** UTC instants, mirroring the DataModel columns `StartsAtUtc`/`EndsAtUtc`: **`startsAtUtc`** and **`endsAtUtc`** (both ISO 8601 UTC with `Z`). The earlier single `date` field is **replaced** everywhere by this pair so the SPA can render duration and the "upcoming/past" split (date-derived on `startsAtUtc`, D:Q23). "No-show" derivation and attendance-recording preconditions use `endsAtUtc` (D:Q7, D:Q12).
 
 ---
 
@@ -145,7 +158,7 @@ Create an Attendee account. **Public.**
 { "token": "<reset-token>", "newPassword": "N3wStr0ng", "confirmPassword": "N3wStr0ng" }
 // 200 → data: null
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (weak/mismatch); 400 `RESET_TOKEN_INVALID` (used/expired). On success, existing refresh tokens SHOULD be revoked.
+- **Errors:** 422 `VALIDATION_ERROR` (weak/mismatch); 400 `RESET_TOKEN_INVALID` (used/expired). On success, existing refresh tokens for the account **MUST** be revoked (D:Q24, NFR-SEC-02).
 
 ---
 
@@ -199,7 +212,13 @@ Create an Attendee account. **Public.**
 ```
 
 ### GET `/api/v1/admin/users/{id}`
-**Admin.** Full detail incl. assignments and status.
+**Admin.** Full detail incl. assignments and status (US-MNG-02).
+```jsonc
+// 200 → data
+{ "id", "firstName", "lastName", "email", "phone", "bio", "profilePictureUrl",
+  "globalRole": "Attendee", "isActive": true, "createdAtUtc": "…",
+  "assignments": { "memberOfTrackId": null, "boardOfTrackId": null } }
+```
 
 ### POST `/api/v1/admin/users/{id}/deactivate`
 **Admin.** Soft-deactivate with cross-context ripple (D:Q10).
@@ -217,6 +236,13 @@ Create an Attendee account. **Public.**
 
 ### GET `/api/v1/admin/users/{id}/deactivation-impact`
 **Admin.** Dry-run for the confirmation surface (US-MNG-04): returns the same effect-summary counts **without** applying them.
+```jsonc
+// 200 → data (same shape as deactivate response, no side effects)
+{ "userId": "…", "isActive": true,
+  "cancelledPendingOrders": 1, "ticketsRemainValid": 3,
+  "endedAssignments": { "member": "trackX", "board": "trackY" },
+  "trackNeedingSupervisor": "trackY" }
+```
 
 ---
 
@@ -256,49 +282,79 @@ Create an Attendee account. **Public.**
 
 ### GET `/api/v1/events`
 **Public.** Paginated list of Published events.
-- **Query:** `page`, `pageSize`, `sort` (whitelist: `date`, `title`), `when` (`upcoming|past`, default `upcoming`).
+- **Query:** `page`, `pageSize`, `sort` (whitelist: `startsAtUtc`, `titleEn`), `when` (`upcoming|past`, default `upcoming`).
 ```jsonc
-// 200 → data: [ { "id", "title", "summary", "date", "location",
-//   "imageUrl", "capacity", "remainingSeats", "status": "Published",
+// 200 → data: [ { "id", "titleEn", "titleAr", "summary",
+//   "startsAtUtc": "2026-08-01T18:30:00Z", "endsAtUtc": "2026-08-01T21:00:00Z",
+//   "location", "imageUrl", "capacity", "remainingSeats", "status": "Published",
 //   "ticketPrice": { "amount": 200.00, "currency": "EGP" },
 //   "priceFrom": { "amount": 100.00, "currency": "EGP" } } ], meta: {...}
 ```
 - `remainingSeats` is **computed live** = `capacity − (paid + unexpired-held seats)` (D:Q3, FR-EVT-07); never cached for booking decisions (NFR-PERF-05).
 - `ticketPrice` is the event's **individual-ticket face price** (Model B); `priceFrom` = `min(ticketPrice, active package unit prices)` — the cheapest way to attend.
+- `upcoming|past` is derived from `startsAtUtc` relative to now (D:Q23).
 
 ### GET `/api/v1/events/{id}`
 **Public** for Published; **404** otherwise (hidden from non-admins).
 ```jsonc
 // 200 → data
-{ "id", "title", "description", "date", "location", "imageUrl",
-  "capacity", "remainingSeats", "status": "Published",
+{ "id", "titleEn", "titleAr", "descriptionEn", "descriptionAr",
+  "startsAtUtc": "2026-08-01T18:30:00Z", "endsAtUtc": "2026-08-01T21:00:00Z",
+  "location", "imageUrl", "capacity", "remainingSeats", "status": "Published",
   "ticketPrice": { "amount": 200.00, "currency": "EGP" },
   "maxIndividualQtyPerOrder": 6,
-  "packages": [ { "id", "name", "seatsPerPackage", "maxQuantityPerOrder",
+  "packages": [ { "id", "nameEn", "nameAr", "seatsPerPackage", "maxQuantityPerOrder",
                   "price": { "amount": 250.00, "currency": "EGP" }, "isActive": true } ] }
 ```
 - The event **always** exposes an individual-ticket `ticketPrice`; **`packages` MAY be empty** — individual tickets are sold regardless (Model B). Only **active** packages of a Published event are returned to the public (FR-PKG-04).
 
 ---
 
-## 6. Events — Admin (SRS §3.4 · US-ADM-EVT-01..05)
+## 6. Events — Admin (SRS §3.4 · US-ADM-EVT-01..07)
+
+### GET `/api/v1/admin/events`
+**Admin.** Paginated list of events across **all statuses** (Draft, Published, Archived, Cancelled) — the Admin management view (US-ADM-EVT-03/04/05, PRD ADM-03).
+- **Query:** `page`, `pageSize`, `sort` (whitelist: `startsAtUtc`, `titleEn`, `createdAt`), `status` (`Draft|Published|Archived|Cancelled`), `search` (title).
+```jsonc
+// 200 → data: [ { "id", "titleEn", "titleAr", "startsAtUtc", "endsAtUtc",
+//   "location", "capacity", "status", "ticketPrice": { "amount", "currency" },
+//   "remainingSeats", "rowVersion" } ], meta: {...}
+```
+
+### GET `/api/v1/admin/events/{id}`
+**Admin.** Full event detail for any status (Draft, Published, Archived, Cancelled). Returns 404 only if the event does not exist (US-ADM-EVT-02, PRD ADM-03).
+```jsonc
+// 200 → data
+{ "id", "titleEn", "titleAr", "descriptionEn", "descriptionAr",
+  "startsAtUtc", "endsAtUtc", "location", "imageUrl",
+  "capacity", "remainingSeats", "status",
+  "ticketPrice": { "amount": 200.00, "currency": "EGP" },
+  "maxIndividualQtyPerOrder": 6, "rowVersion": "AAAA…",
+  "packages": [ { "id", "nameEn", "nameAr", "seatsPerPackage", "maxQuantityPerOrder",
+                  "price": { "amount": 250.00, "currency": "EGP" },
+                  "isActive": true, "isDeleted": false } ] }
+```
 
 ### POST `/api/v1/admin/events`
 **Admin.** Create (starts as **Draft**).
 ```jsonc
-{ "title", "description", "date": "2026-08-01T18:30:00Z", "location",
+{ "titleEn": "TEDx 2026", "titleAr": "تيدكس 2026",
+  "descriptionEn": "…", "descriptionAr": "…",
+  "startsAtUtc": "2026-08-01T18:30:00Z", "endsAtUtc": "2026-08-01T21:00:00Z",
+  "location": "Cairo",
   "capacity": 200,
   "ticketPrice": { "amount": 200.00, "currency": "EGP" },   // individual-ticket face price (Model B)
   "maxIndividualQtyPerOrder": 6,                             // nullable = no cap (mirrors package cap, D:Q2)
   "imageUrl": null }
 // 201 → data: event (status "Draft", rowVersion)
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (capacity ≤ 0 → `INVALID_CAPACITY`; `ticketPrice.amount` < 0 → `INVALID_TICKET_PRICE`).
+- **Errors:** 422 `VALIDATION_ERROR` (capacity ≤ 0 → `INVALID_CAPACITY`; `ticketPrice.amount` < 0 → `INVALID_TICKET_PRICE`; missing required i18n field → `fieldErrors`).
 
 ### PUT `/api/v1/admin/events/{id}`
 **Admin.** Edit. Requires `rowVersion` (D:Q22, NFR-REL-06).
 ```jsonc
-{ "title", "description", "date", "location", "capacity",
+{ "titleEn", "titleAr", "descriptionEn", "descriptionAr",
+  "startsAtUtc", "endsAtUtc", "location", "capacity",
   "ticketPrice", "maxIndividualQtyPerOrder", "imageUrl", "rowVersion": "AAAA…" }
 // 200 → data: updated event
 ```
@@ -311,21 +367,23 @@ Create an Attendee account. **Public.**
 ```jsonc
 { "status": "Published" }   // legal targets validated by the state machine
 ```
-- **State machine:** Draft⇄Published *(only while zero orders)*; Published→Archived; Published→Cancelled; Archived→Published. **Cancelled is terminal.**
+- **State machine (D:Q23, D:Q56):** Draft⇄Published *(only while zero orders)*; Published→Archived; **Published→Cancelled**; **Archived→Cancelled (D:Q56)**; Archived→Published. **Draft→Cancelled is blocked** (dispose a zero-order Draft via soft-delete, D:Q22). **Cancelled is terminal.**
 - **No package precondition (Model B):** an event with **zero packages is publishable** — individual tickets are sold at `ticketPrice`. (There is no `NO_PACKAGES` block.)
 - **Errors:** 409 `ILLEGAL_STATUS_TRANSITION`; 409 `HAS_ORDERS_CANNOT_UNPUBLISH` (Published→Draft with existing orders).
 
 ### POST `/api/v1/admin/events/{id}/cancel`
-**Admin.** Cancel a Published event with side effects (D:Q22).
+**Admin.** Cancel a **Published or Archived** event with side effects (D:Q22, D:Q56).
 ```jsonc
 // 200 → data (effect summary)
 { "eventId", "status": "Cancelled",
-  "voidedTickets": 42, "releasedHolds": 3, "refundEntriesRecorded": 40 }
+  "voidedTickets": 42, "checkedInTicketsRetained": 5,
+  "releasedHolds": 3, "refundEntriesRecorded": 40 }
 ```
-- Voids all Issued tickets, releases all PendingPayment holds, records **offline** refund entries for Paid orders (FR-PAY-07). Hidden from listings, retained.
+- Voids all **Issued** tickets (non-checked-in only — checked-in tickets are non-voidable, D:Q6), releases all PendingPayment holds, records **offline** refund entries for Paid orders (FR-PAY-07). Hidden from listings, retained.
+- `checkedInTicketsRetained` = count of tickets that were CheckedIn and therefore not voided; their seats remain consumed.
 
 ### DELETE `/api/v1/admin/events/{id}`
-**Admin.** Soft-delete — **only when the event has zero orders** (D:Q22).
+**Admin.** Soft-delete — available for **any status** (Draft, Published, Archived) **only when the event has zero orders** (D:Q22). A Published or Archived event with orders must be cancelled first.
 - **Errors:** 409 `EVENT_HAS_ORDERS` (use cancel instead).
 
 ### GET `/api/v1/admin/events/{id}/orders`
@@ -333,12 +391,13 @@ Create an Attendee account. **Public.**
 
 ---
 
-## 7. Ticket Packages — Admin (SRS §3.5 · US-ADM-PKG-01..02)
+## 7. Ticket Packages — Admin (SRS §3.5 · US-ADM-PKG-01..03)
 
 ### POST `/api/v1/admin/events/{eventId}/packages`
 **Admin.**
 ```jsonc
-{ "name": "Group-5", "seatsPerPackage": 5, "maxQuantityPerOrder": 4,
+{ "nameEn": "Group-5", "nameAr": "مجموعة-5",
+  "seatsPerPackage": 5, "maxQuantityPerOrder": 4,
   "price": { "amount": 1000.00, "currency": "EGP" } }
 // 201 → data: package
 ```
@@ -346,7 +405,7 @@ Create an Attendee account. **Public.**
 - **Errors:** 422 `VALIDATION_ERROR` (`INVALID_SEATS`, `INVALID_PRICE`).
 
 ### PUT `/api/v1/admin/events/{eventId}/packages/{id}`
-**Admin.** Edit name/seats/price/cap/active. Requires `rowVersion`.
+**Admin.** Edit nameEn/nameAr/seats/price/cap/active. Requires `rowVersion`.
 - Price edits do **not** alter historical orders — those are snapshotted (D:Q4, NFR-REL-04).
 
 ### POST `/api/v1/admin/events/{eventId}/packages/{id}/activate` · POST `…/deactivate`
@@ -354,6 +413,9 @@ Create an Attendee account. **Public.**
 
 ### DELETE `/api/v1/admin/events/{eventId}/packages/{id}`
 **Admin.** Soft-delete. **Errors:** 409 `PACKAGE_REFERENCED_BY_ORDERS` (cannot hard-delete; FR-PKG-03).
+
+### GET `/api/v1/admin/events/{eventId}/packages`
+**Admin.** List all packages for an event (US-ADM-PKG-03), including inactive/soft-deleted (filter `includeInactive`). Each row shows remaining seats (computed from held + issued, not stored) and redemption counts (DataModel §2.2).
 
 ---
 
@@ -370,7 +432,8 @@ Create an Attendee account. **Public.**
 // 201 → data: promo code
 ```
 - `code` unique among **live** (non-deleted) codes (FR-PROMO-05) → 409 `PROMO_CODE_TAKEN`.
-- For `Percentage`, `discountValue` ∈ [1,100]; for `FixedAmount`, ≥ 0 EGP.
+- For `Percentage`, `discountValue` ∈ [1,100] — the lower bound of `1` rejects a no-op 0% promo; the upper bound of `100` permits a 100%-off code, which yields a `finalPrice` of 0 and takes the confirm-free path (D:Q18). For `FixedAmount`, ≥ 0 EGP.
+- If both bounds are present, `validFrom` **MUST** be earlier than `validUntil` (DataModel §2.7) → `422 VALIDATION_ERROR`; each bound is independently nullable.
 
 ### PUT `/api/v1/admin/promo-codes/{id}`
 **Admin.** Edit caps/window/scope/active. Requires `rowVersion`.
@@ -380,6 +443,14 @@ Create an Attendee account. **Public.**
 
 ### GET `/api/v1/admin/promo-codes`
 **Admin.** Paginated list; filter `active`, `eventId`. Includes `redemptionCount` and remaining-cap.
+
+### GET `/api/v1/admin/events/{eventId}/promo-codes`
+**Admin.** Read-only report of promo codes scoped to a specific event (US-ADM-EVT-07, D:Q50). Equivalent to `GET /admin/promo-codes?eventId={eventId}` but event-scoped for the event management UI. Each row includes `code`, `discountType`, `discountValue`, `redemptionCount`, `globalRedemptionCap`, `isActive`, `validFrom`, `validUntil`.
+```jsonc
+// 200 → data: [ { "id", "code", "discountType", "discountValue",
+//   "redemptionCount", "globalRedemptionCap", "perUserLimit",
+//   "isActive", "validFrom", "validUntil" } ], meta: {...}
+```
 
 > **Validation & redemption accounting** (applied during ordering, D:Q19) is specified in the Ordering section (§9): a promo is validated at quote (advisory), its slot **atomically claimed at payment initiation** (or at confirmation for free/100%-off), **confirmed on Paid**, and **released on payment failure / hold expiry**.
 
@@ -415,7 +486,8 @@ Create an Attendee account. **Public.**
 // request — omit packageId (or send null) for an individual-ticket order (Model B)
 { "eventId": "…", "packageId": null, "quantity": 2, "promoCode": "TEDX20" }
 // 201 → data
-{ "orderId", "status": "PendingPayment", "unitType": "Individual",
+{ "orderId", "orderReference": "ORD-A1B2C3D4",
+  "status": "PendingPayment", "unitType": "Individual",
   "totalSeats": 2, "holdExpiresAt": "2026-07-20T18:45:00Z",
   "basePrice": {…}, "discount": {…}, "finalPrice": {…},
   "priceSnapshotAt": "2026-07-20T18:30:00Z" }
@@ -424,13 +496,35 @@ Create an Attendee account. **Public.**
 - **Concurrency-safe** capacity check at `SERIALIZABLE` (D:Q3, FR-ORD-03, NFR-REL-01) using the clock-aware held-seat predicate.
 - **Snapshots** unit price, base, discount, final — plus package name (package order) or event title (individual order) (D:Q4, FR-ORD-04).
 - **One active pending order per user per event** (D:Q5): a second reserve returns **409** `ACTIVE_ORDER_EXISTS` with `{ existingOrderId }` (client resumes or cancels it). Paid orders don't block.
-- **Errors:** 409 `SEATS_UNAVAILABLE` (`{ remainingSeats }`); 409 `PRICE_CHANGED` (`{ newQuote }`, D:Q4) — client must re-confirm; 422 promo failure (flat `PROMO_*` code as above); 422 `QUANTITY_EXCEEDS_MAX`.
+- **Errors:** 422 `EVENT_NOT_PUBLISHED` (event is not in Published status); 409 `SEATS_UNAVAILABLE` (`{ remainingSeats }`); 409 `PRICE_CHANGED` (`{ newQuote }`, D:Q4) — client must re-confirm; 422 promo failure (flat `PROMO_*` code as above); 422 `QUANTITY_EXCEEDS_MAX`.
 
 ### GET `/api/v1/orders`
-**Attendee.** Own order history, all statuses (FR-ORD-07). Paginated; filter `status`, `eventId`.
+**Attendee.** Own order history, all statuses (FR-ORD-07). Paginated; filter `status`, `eventId`; sort whitelist: `createdAt:asc|desc`.
+```jsonc
+// 200 → data: [ { "orderId", "orderReference": "ORD-A1B2C3D4",
+//   "eventId", "eventTitleEn", "status": "Paid",
+//   "unitType": "Individual",   // Individual | Package
+//   "totalSeats": 2, "finalPrice": { "amount": 320.00, "currency": "EGP" },
+//   "holdExpiresAt": null,      // non-null only for PendingPayment
+//   "createdAt": "…" } ], meta: {...}
+```
 
 ### GET `/api/v1/orders/{id}`
 **Attendee (owner) / Admin.** Order detail incl. snapshot prices, status, `holdExpiresAt`, and tickets (if Paid). **403** if not owner/admin.
+```jsonc
+// 200 → data
+{ "orderId", "orderReference": "ORD-A1B2C3D4",
+  "eventId", "eventTitleEn", "eventTitleAr",
+  "status": "Paid", "unitType": "Individual",
+  "quantity": 2, "totalSeats": 2,
+  "basePrice": { "amount": 400.00, "currency": "EGP" },
+  "discount":  { "amount":  80.00, "currency": "EGP" },
+  "finalPrice": { "amount": 320.00, "currency": "EGP" },
+  "priceSnapshotAt": "…", "holdExpiresAt": null,
+  "promo": { "code": "TEDX20", "applied": true },
+  "tickets": [ { "ticketId", "publicReference": "TKT-7F3A9C",
+                 "guestName": null, "status": "Issued" } ] }
+```
 
 ### POST `/api/v1/orders/{id}/cancel`
 **Attendee (owner).** Cancel an **unpaid** order → releases held seats immediately (FR-ORD-06).
@@ -492,6 +586,10 @@ Create an Attendee account. **Public.**
 **Attendee (owner).** Set/clear optional guest name (FR-TKT-03). A nameless ticket stays valid.
 - **Errors:** 409 `TICKET_CHECKED_IN` (cannot rename after check-in, Persona: Kareem).
 
+### GET `/api/v1/admin/events/{eventId}/tickets`
+**Admin.** List/search tickets for an event (US-ADM-TKT-01). Query params: `status` (`Issued|CheckedIn|Voided`), `search` (guest name or public reference). Paginated with `meta` (D:Q26).
+- No-show is **derived** (`Issued AND event.endsAt < now`), never a stored status (D:Q7). Each row exposes `checkedInBy` / `checkedInAt` for auditing. Backed by `IX_Ticket_Event_Status`.
+
 ### POST `/api/v1/admin/events/{eventId}/check-in`
 **Admin only** (D:Q9, FR-TKT-05). Scan a QR at the door — **event-scoped**.
 ```jsonc
@@ -514,6 +612,10 @@ Create an Attendee account. **Public.**
 
 ## 12. Admin: Paid-order Void & Refund (SRS §3.8 · US-ORD (admin) · D:Q6)
 
+### GET `/api/v1/admin/orders`
+**Admin.** List all orders across events (US-ADM-PAY-01). Query params: `eventId`, `status` (`PendingPayment|Paid|Cancelled|Expired`), `fromDate`, `toDate`, `search` (attendee name/email). Paginated with `meta` (D:Q26).
+- A `Cancelled` order with a `refundEntryId` was previously Paid (voided); one without was never paid — status alone is insufficient to distinguish (DataModel §2.3 Issue 7).
+
 ### POST `/api/v1/admin/orders/{id}/void`
 **Admin.** Void a **Paid** order; refund handled **offline** (FR-PAY-07).
 ```jsonc
@@ -535,8 +637,23 @@ Create an Attendee account. **Public.**
 
 ## 13. Tracks & Sessions (SRS §3.10 · US-TRK / US-SES)
 
-### POST `/api/v1/admin/tracks` · PUT `/api/v1/admin/tracks/{id}` · DELETE `/api/v1/admin/tracks/{id}`
-**Admin.** Create / edit / soft-delete a track (name, description, schedule). Track names **unique among live tracks** (FR-TRK-01).
+### POST `/api/v1/admin/tracks`
+**Admin.** Create a track.
+```jsonc
+{ "nameEn": "Public Speaking", "nameAr": "الخطابة العامة",
+  "descriptionEn": "…", "descriptionAr": "…",
+  "schedule": "Every Saturday 10:00–12:00" }   // nvarchar(500), nullable (DataModel §3.1)
+// 201 → data: { "trackId", "nameEn", "nameAr", "descriptionEn", "descriptionAr",
+//               "schedule", "isActive": true, "rowVersion" }
+```
+- `nameEn` unique among live (non-deleted) tracks → 409 `TRACK_NAME_TAKEN`.
+
+### PUT `/api/v1/admin/tracks/{id}`
+**Admin.** Edit nameEn/nameAr/descriptionEn/descriptionAr/schedule/isActive. Requires `rowVersion`.
+- **Errors:** 409 `TRACK_NAME_TAKEN`; 409 `CONCURRENCY_CONFLICT`.
+
+### DELETE `/api/v1/admin/tracks/{id}`
+**Admin.** Soft-delete a track (D:Q14).
 - **Soft-delete ripple (D:Q14):** auto-ends the track's active Member enrollments **and** Board assignment (sets `EndedAt`, retains all history), freeing those users for reassignment. Requires confirmation echo:
 ```jsonc
 // DELETE request
@@ -548,19 +665,57 @@ Create an Attendee account. **Public.**
 ### GET `/api/v1/tracks/{id}`
 **Board@T / Admin.** Track detail: members, sessions, progress summaries (FR-TRK-04). Board limited to their own track → **403** `TRACK_FORBIDDEN` otherwise. A **Member** sees a scoped view via their dashboard (§16), not this endpoint.
 
-### GET `/api/v1/admin/tracks` — **Admin.** List tracks (paginated), filter `includeDeleted`.
+### GET `/api/v1/admin/tracks`
+**Admin.** List tracks (paginated); filter `includeDeleted`, `isActive`; sort whitelist: `nameEn`, `createdAt`; search by `nameEn`/`nameAr`. Each row includes member count and whether a Board is assigned (US-ADM-TRK-04, D:Q26).
 
-### POST `/api/v1/tracks/{trackId}/sessions` · PUT `…/sessions/{id}` · DELETE `…/sessions/{id}`
-**Board@T (own track) / Admin.** Create / edit / delete sessions (topic, date, time, location) (FR-TRK-02).
+### POST `/api/v1/tracks/{trackId}/sessions`
+**Board@T (own track) / Admin.** Create a session.
+```jsonc
+{ "titleEn": "Storytelling Basics", "titleAr": "أساسيات السرد",
+  "description": "…",   // single column (DataModel §3.3)
+  "startsAtUtc": "2026-08-10T10:00:00Z", "endsAtUtc": "2026-08-10T12:00:00Z",
+  "location": "Room A" }
+// 201 → data: { "sessionId", "titleEn", "titleAr", "description",
+//               "startsAtUtc", "endsAtUtc", "location", "status": "Scheduled" }
+```
 - Board writes restricted to their supervised track → **403** `TRACK_FORBIDDEN` (D:Q13).
+
+### PUT `/api/v1/tracks/{trackId}/sessions/{id}`
+**Board@T (own track) / Admin.** Edit titleEn/titleAr/description/startsAtUtc/endsAtUtc/location.
+
+### DELETE `/api/v1/tracks/{trackId}/sessions/{id}`
+**Board@T (own track) / Admin.** Delete a session.
 - **Delete (D:Q13):** a session **with any attendance/evaluation records** cannot be hard-deleted → **409** `SESSION_HAS_RECORDS` (soft-delete/cancel only); a records-free session deletes outright.
 
+### PATCH `/api/v1/sessions/{id}/status`
+**Board@T (own track) / Admin.** Transition session status (US-BRD-SES-04, DataModel §3.3).
+```jsonc
+// request: { "status": "Held" }   // "Held" | "Cancelled"
+```
+- `Scheduled → Held` (only after `EndsAtUtc`); `Scheduled | Held → Cancelled`. No other transitions.
+- A `Cancelled` session with attendance/evaluation records → **409** `SESSION_HAS_RECORDS` (soft-delete only).
+- **Errors:** 403 `TRACK_FORBIDDEN`; 409 `ILLEGAL_STATUS_TRANSITION` (invalid transition or precondition not met — e.g. `Scheduled → Held` before `EndsAtUtc`).
+
 ### GET `/api/v1/tracks/{trackId}/sessions`
-**Member@T / Board@T / Admin.** Upcoming & past sessions of the track (FR-TRK-03). Member limited to their own track.
+**Member@T / Board@T / Admin.** Upcoming & past sessions of the track (FR-TRK-03). Member limited to their own track. Paginated; filter `status` (`Scheduled|Held|Cancelled`), `when` (`upcoming|past`).
+```jsonc
+// 200 → data: [ { "sessionId", "titleEn", "titleAr", "description",
+//   "startsAtUtc", "endsAtUtc", "location", "status": "Scheduled" } ], meta: {...}
+```
 
 ---
 
 ## 14. Enrollment & Member Management (SRS §3.3 · US-TRK-03/04 · D:Q15)
+
+### GET `/api/v1/tracks/{trackId}/enrollable-users`
+**Board@T (own track) / Admin.** Search existing Attendee-role accounts eligible for enrollment into this track (US-ROLE-08, D:Q15). Returns only active accounts with global role `Attendee` that are **not** already an active Member of any track.
+- **Query:** `search` (name or email, min 2 chars), `page`, `pageSize`.
+```jsonc
+// 200 → data: [ { "id", "firstName", "lastName", "email",
+//                 "boardOfTrackId": null } ], meta: {...}
+```
+- `boardOfTrackId` is included so the caller can see if the candidate is already Board of another track (the sanctioned dual-role case, D:Q15). Accounts that are already Member of any track are **excluded** from results.
+- **Errors:** 403 `TRACK_FORBIDDEN` (Board, not own track).
 
 ### POST `/api/v1/tracks/{trackId}/members`
 **Board@T (own track) / Admin.** Enroll an **existing Attendee account** by email/id (D:Q15 — no account creation here).
@@ -589,8 +744,23 @@ Create an Attendee account. **Public.**
 - **Upsert:** at most one record per (session, enrollment); re-recording updates in place (FR-ATT-02). **Late counts as attended** (D:Q12, FR-ATT-03).
 - **Errors:** 403 `TRACK_FORBIDDEN`; 422 `SESSION_NOT_OCCURRED` (future session); 404 `ENROLLMENT_NOT_IN_TRACK`.
 
-### GET `/api/v1/tracks/{trackId}/attendance` — **Board@T / Admin.** All members' attendance for the track (FR-ATT-04).
-### GET `/api/v1/admin/attendance` — **Admin.** Cross-track attendance (FR-ATT-04, RPT).
+### GET `/api/v1/tracks/{trackId}/attendance`
+**Board@T / Admin.** All members' attendance for the track (FR-ATT-04). Paginated with `meta` (D:Q26).
+```jsonc
+// 200 → data: [ { "enrollmentId", "userId", "firstName", "lastName",
+//   "attendancePercentage": 0.75,
+//   "records": [ { "sessionId", "sessionTitleEn", "status": "Present", "recordedAt": "…" } ] } ]
+```
+
+### GET `/api/v1/admin/attendance`
+**Admin.** Cross-track attendance (FR-ATT-04, RPT). Paginated; filter `trackId`, `sessionId`, `status`.
+```jsonc
+// 200 → data: [ { "enrollmentId", "userId", "firstName", "lastName", "trackId", "trackNameEn",
+//   "sessionId", "sessionTitleEn", "status": "Late", "recordedAt": "…" } ], meta: {...}
+```
+
+### GET `/api/v1/tracks/{trackId}/members`
+**Board@T (own track) / Admin.** Paginated roster of the track's **active** members (`EndedAtUtc IS NULL`) with each member's current attendance % and latest evaluation score (US-BRD-07, BDB-02). Board limited to own track → **403** `TRACK_FORBIDDEN`. Paginated with `meta` (D:Q26).
 
 ### PUT `/api/v1/sessions/{sessionId}/evaluations`
 **Board@T (own track) / Admin.** Create/edit a member's evaluation (FR-EVL-01/02).
@@ -602,17 +772,58 @@ Create an Attendee account. **Public.**
 - **Preconditions (D:Q16):** session date in the **past** → 422 `SESSION_NOT_OCCURRED`; member has an **active enrollment** → 422 `MEMBER_NOT_ENROLLED`. Attendance is **not** required first.
 - 403 `TRACK_FORBIDDEN`.
 
-### GET `/api/v1/tracks/{trackId}/evaluations` — **Board@T / Admin.** All members' evaluations for the track (FR-EVL-04).
+### GET `/api/v1/tracks/{trackId}/evaluations`
+**Board@T / Admin.** All members' evaluations for the track (FR-EVL-04). Paginated with `meta` (D:Q26).
+```jsonc
+// 200 → data: [ { "enrollmentId", "userId", "firstName", "lastName",
+//   "evaluations": [ { "sessionId", "sessionTitleEn", "score": 87,
+//                      "feedback": "Strong delivery.", "recordedAt": "…" } ] } ]
+```
 
 ---
 
-## 16. Member Dashboard (SRS §3.11–3.12 · US-MEM-01..04)
+## 16. Member & Board Dashboards (SRS §3.11–3.12 · US-MEM-01..04 · US-BRD-06/07)
+
+### GET `/api/v1/me/board-dashboard`
+**Board@T.** Supervisory summary for the Board's own supervised track (US-BRD-06, US-BRD-07). 403 `FORBIDDEN` if the caller holds no active Board assignment.
+```jsonc
+// 200 → data
+{ "trackId", "trackNameEn", "trackNameAr",
+  "activeMemberCount": 18,
+  "sessionCount": { "scheduled": 3, "held": 7, "cancelled": 1 },
+  "attendanceAverage": 0.82,          // (Present+Late) ÷ recorded-occurred sessions, D:Q12
+  "evaluationAverage": 74.5,          // average score across all evaluations in the track
+  "openContactSubmissions": 0 }       // always 0 — included for future use
+```
 
 ### GET `/api/v1/me/enrollment`
 **Member.** The caller's active enrollment summary: track, attendance % (= (Present+Late) ÷ **recorded-occurred** sessions, D:Q12), latest evaluations, upcoming sessions (FR-MDB / MDB-01).
+```jsonc
+// 200 → data
+{ "enrollmentId", "trackId", "trackNameEn", "trackNameAr",
+  "startedAt": "2026-07-01T00:00:00Z",
+  "attendancePercentage": 0.75,
+  "latestEvaluations": [ { "sessionId", "sessionTitleEn", "score": 82, "feedback": "…", "recordedAt": "…" } ],
+  "upcomingSessions": [ { "sessionId", "titleEn", "titleAr", "startsAtUtc", "endsAtUtc", "location" } ] }
+```
+- Returns **404** `NOT_FOUND` if the caller has no active enrollment.
 
-### GET `/api/v1/me/attendance` — **Member.** Own attendance log + percentage (FR-ATT-03). Scoped to current active enrollment (D:Q11).
-### GET `/api/v1/me/evaluations` — **Member.** Own evaluation history only (FR-EVL-03). Never other members' → enforced server-side (D:Q11).
+### GET `/api/v1/me/attendance`
+**Member.** Own attendance log + percentage (FR-ATT-03). Scoped to current active enrollment (D:Q11).
+```jsonc
+// 200 → data
+{ "enrollmentId", "attendancePercentage": 0.75,
+  "records": [ { "sessionId", "sessionTitleEn", "sessionTitleAr",
+                 "sessionStartsAtUtc", "status": "Present",   // Present | Late | Absent
+                 "recordedBy": "<boardUserId>", "recordedAt": "…" } ] }
+```
+
+### GET `/api/v1/me/evaluations`
+**Member.** Own evaluation history only (FR-EVL-03). Never other members' → enforced server-side (D:Q11).
+```jsonc
+// 200 → data: [ { "evaluationId", "sessionId", "sessionTitleEn", "sessionTitleAr",
+//   "sessionStartsAtUtc", "score": 87, "feedback": "Strong delivery.", "recordedAt": "…" } ]
+```
 
 ---
 
@@ -629,15 +840,27 @@ Create an Attendee account. **Public.**
 //   { "type": "Track", "trackId": "…" }
 // 201 → data: { "notificationId", "recipientsCreated": 128 }
 ```
+- **Errors:** 422 `NO_RECIPIENTS_RESOLVED` — the resolved audience is empty (e.g. a Track with no active members, or a GlobalRole with no accounts of that role). No notification row is created.
 
 ### POST `/api/v1/tracks/{trackId}/notifications`
 **Board@T (own track).** Send to the track's **current active members** only (FR-NTF-02, D:Q21). 403 `TRACK_FORBIDDEN` otherwise.
+```jsonc
+// request: { "title": "…", "body": "…" }
+// 201 → data: { "notificationId", "recipientsCreated": 14 }
+```
+- **Errors:** 403 `TRACK_FORBIDDEN`; 422 `NO_RECIPIENTS_RESOLVED` — track has no active members at send time.
 
 ### GET `/api/v1/me/notifications`
 **Authenticated.** Own inbox (paginated), filter `unreadOnly`. Each row has its own read state (FR-NTF-03).
+```jsonc
+// 200 → data: [ { "id", "title", "body", "isRead", "createdAtUtc" } ], meta: {...}
+```
 
-### POST `/api/v1/me/notifications/{id}/read` · POST `/api/v1/me/notifications/read-all`
-**Authenticated.** Mark one / all as read (FR-NTF-04).
+### POST `/api/v1/me/notifications/{id}/read`
+**Authenticated.** Mark one notification as read (FR-NTF-04). **204 No Content.** 404 `NOTIFICATION_NOT_FOUND` (own only).
+
+### POST `/api/v1/me/notifications/read-all`
+**Authenticated.** Mark all unread notifications as read (FR-NTF-04). **204 No Content.**
 
 ---
 
@@ -651,8 +874,20 @@ Create an Attendee account. **Public.**
 - Validation: email format; `subject ≤ 200`, `message ≤ 2000` chars (D:Q20). **Rate-limited by IP** → 429 `RATE_LIMITED` + `Retry-After` (NFR-SEC-10). No CAPTCHA in current scope.
 - Stored with status **New** → Admin reviews (D:Q20).
 
-### GET `/api/v1/admin/contact-submissions` — **Admin.** List (paginated), filter `status` (New|Read|Archived).
-### PUT `/api/v1/admin/contact-submissions/{id}` — **Admin.** Update status (Read/Archived). No in-app reply (D:Q20).
+### GET `/api/v1/admin/contact-submissions`
+**Admin.** List (paginated), filter `status` (New|Read|Archived). Sort whitelist: `createdAt:asc|desc`.
+```jsonc
+// 200 → data: [ { "id", "name", "email", "subject",
+//   "messageExcerpt": "First 120 chars…", "status": "New",
+//   "createdAtUtc": "…" } ], meta: {...}
+```
+
+### PUT `/api/v1/admin/contact-submissions/{id}`
+**Admin.** Update status (Read/Archived). No in-app reply (D:Q20).
+```jsonc
+// request: { "status": "Read" }   // Read | Archived
+// 200 → data: { "id", "status": "Read" }
+```
 
 > Home/About/Team/Partners content is **static** in current scope (FR-PUB-03) — no admin-editing endpoints, no dedicated tables.
 
@@ -678,12 +913,43 @@ Create an Attendee account. **Public.**
 
 ### GET `/api/v1/admin/reports/events/{eventId}`
 **Admin.** Registration counts, seats sold/held/remaining, attendance (check-in) rate (RPT-01).
+```jsonc
+// 200 → data
+{ "eventId", "titleEn", "titleAr", "startsAtUtc", "endsAtUtc",
+  "capacity": 200, "seatsSold": 142, "seatsHeld": 8, "seatsRemaining": 50,
+  "checkInRate": 0.71,   // checkedIn ÷ seatsSold
+  "checkedIn": 101, "noShow": 41, "voided": 3 }
+```
 
 ### GET `/api/v1/admin/reports/tracks/{trackId}`
 **Admin.** Member progress, attendance averages, evaluation averages (RPT-02).
+```jsonc
+// 200 → data
+{ "trackId", "nameEn", "nameAr",
+  "activeMemberCount": 18, "sessionsHeld": 7,
+  "attendanceAverage": 0.82,
+  "evaluationAverage": 74.5,
+  "members": [ { "userId", "firstName", "lastName",
+                 "attendancePercentage": 0.86, "evaluationAverage": 78.0 } ] }
+```
 
 ### GET `/api/v1/admin/reports/financial`
-**Admin.** Revenue per event, payment summaries (RPT-03); filter `eventId`, date range.
+**Admin.** Revenue per event, payment summaries (RPT-03); filter `eventId`, `fromDate`, `toDate`.
+```jsonc
+// 200 → data
+{ "totalRevenue": { "amount": 284000.00, "currency": "EGP" },
+  "totalRefunded": { "amount": 3200.00, "currency": "EGP" },
+  "netRevenue": { "amount": 280800.00, "currency": "EGP" },
+  "byEvent": [ { "eventId", "titleEn",
+                 "revenue": { "amount": 142000.00, "currency": "EGP" },
+                 "refunded": { "amount": 1600.00, "currency": "EGP" },
+                 "paidOrders": 71, "voidedOrders": 4,
+                 "byUnitType": [ { "unitType": "Individual", "orders": 50,
+                                   "revenue": { "amount": 100000.00, "currency": "EGP" } },
+                                 { "unitType": "Package", "orders": 21,
+                                   "revenue": { "amount": 42000.00, "currency": "EGP" } } ] } ] }
+```
+- Revenue is based on `PaidAtUtc`-stamped orders only; refunds are based on refund entries (DataModel §2.6). `Cancelled` orders without a refund entry (never paid) are excluded.
 
 - **Export (D:Q28c, RPT-04):** all three accept `?format=csv|pdf`. Default JSON envelope; `csv`/`pdf` return the file with the appropriate `Content-Type` and `Content-Disposition` (not the JSON envelope).
 

@@ -1,15 +1,18 @@
 # TEDxAlkawmia — User Flows
 
-> **Version:** 3.3
-> **Date:** 2026-07-23
+> **Version:** 3.4
+> **Date:** 2026-07-24
 > **Status:** Authoritative for user-facing flows
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md) · [07 — API Contract](./07-ApiContract.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md)
+> **Companion:** [[09-SystemDesign|09 — System Design]] (the layered architecture these flows run through) · [[11-StateMachines|11 — State Machines]] (the canonical entity-state graphs) · [[12-SequenceDiagrams|12 — Sequence Diagrams]] (the canonical cross-subsystem runtime sequences)
 >
 > **v3.1 (2026-07-20):** Aligned with grilling decisions (Q1–Q28) and the consistency audit. Changes: attendance denominator = occurred-and-recorded sessions only (D:Q12); check-in has five named outcomes incl. `TICKET_VOIDED` (D:Q9); paid-order void releases only not-yet-checked-in seats (D:Q6); one active pending order per user per event (D:Q5); enrollment targets an existing account only (D:Q15); QR delivered as a server-rendered image, raw payload never in JSON (D:Q8, audit Issue 3); voided-paid orders identified by a refund entry (audit Issue 7).
 >
 > **v3.2 (2026-07-21):** **Model-B ticketing** (Decision Log Q1 addendum). An order is for **individual tickets (at the event face price) or an *optional* package** — packages are no longer the only purchasable unit. Publishing an event **no longer requires a package** (§6.1); an event with zero packages still sells individual tickets. Booking flow (§3.1–3.2) reworded for the individual-or-package choice.
 >
 > **v3.3 (2026-07-23):** Event lifecycle (§6.3) extended per **D:Q56** — `Archived → Cancelled` is now a legal transition (same cancel ripple), so a hidden event holding sold tickets need not be re-published just to cancel it; `Draft → Cancelled` stays blocked (a Draft is disposed of by soft-delete).
+>
+> **v3.4 (2026-07-24):** Cross-doc consistency pass. Currency confirmed against the full **Decision Log Q1–Q56** (every cited `D:Qn` resolves in [08](./08-DecisionLog.md)). Added companion links to [09](./09-SystemDesign.md)/[11](./11-StateMachines.md)/[12](./12-SequenceDiagrams.md). **Purpose discipline:** the embedded runtime *sequence* diagram (§3.3) now defers to **[[12-SequenceDiagrams]]** and the embedded event *state* graph (§6.3) defers to **[[11-StateMachines]]** — this doc keeps the behavioral steps, alternate flows, and flow (flowchart) diagrams; the canonical state graphs and sequences live in 11/12.
 
 ---
 
@@ -258,25 +261,7 @@ flowchart TD
 
 **Sequence view — the happy path**
 
-```mermaid
-sequenceDiagram
-    actor U as Attendee
-    participant API as Platform API
-    participant DB as Database
-    participant PM as Paymob
-
-    U->>API: Quote (individual ticket or package, qty, promo)
-    API-->>U: base, discount, final (FR-ORD-01)
-    U->>API: Reserve
-    API->>DB: BEGIN — capacity check + insert Order (PendingPayment)
-    DB-->>API: Order held, price snapshot, 15-min window
-    API-->>U: Order created, redirect to pay
-    U->>PM: Complete payment (card/wallet, EGP)
-    PM-->>API: Webhook (HMAC-signed)
-    API->>API: Verify HMAC + amount (FR-PAY-02/04)
-    API->>DB: Order → Paid, store Payment, issue Tickets + QR
-    API-->>U: Tickets ready (per-seat QR)
-```
+> The step-by-step **runtime sequence** (reserve → hold → pay-initiation → HMAC-verified webhook → ticket fan-out, with the transaction boundaries) is owned by **[[12-SequenceDiagrams#2. Reserve → hold — the concurrency-critical write (D:Q2, Q3, Q4, Q5, Q33, Q49, Q50)|12 §2]]**, **[[12-SequenceDiagrams#3. Payment initiation (paid orders) (D:Q18, Q19, Q28a)|12 §3]]**, and **[[12-SequenceDiagrams#4. Payment confirmation — the only ticket-issuing path (D:Q45, Q49, Q53, Q55)|12 §4]]** (free-order shortcut: **[[12-SequenceDiagrams#5. Free-order path — gateway bypass (D:Q18, Q19)|12 §5]]**). This document keeps the user-facing *behavior*; the interaction diagram is not duplicated here.
 
 ---
 
@@ -416,17 +401,7 @@ flowchart TD
 - An event with **zero orders** (always the case for a Draft) may be soft-deleted outright.
 - An event with **any orders** (even Expired) must use **Cancel** instead — soft-delete is blocked.
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft
-    Draft --> Published : Publish (no package precondition)
-    Published --> Draft : Revert (zero orders only)
-    Published --> Archived : Archive (hide from listings)
-    Published --> Cancelled : Cancel (voids tickets, records refunds)
-    Archived --> Published : Re-list
-    Archived --> Cancelled : Cancel (D:Q56 — cancel ripple)
-    Cancelled --> [*] : Terminal — no further transitions
-```
+> The canonical event **state graph** (the diagram) is owned by **[[11-StateMachines#3. Event (D:Q22, Q23, Q55, Q56)|11 §3]]**. The transition table and ripple effects above are the *behavioral* view that flows enforce; they match 11 exactly.
 
 ### 6.4 Admin: retire a track (D:Q14)
 

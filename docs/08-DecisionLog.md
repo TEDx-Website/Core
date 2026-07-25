@@ -1,9 +1,9 @@
 # TEDxAlkawmia Platform — Design Decision Log
 
-> **Version:** 1.2
-> **Date:** 2026-07-23
-> **Status:** Accepted — basis for [05 — User Stories](./05-UserStories.md), [06 — Acceptance Criteria](./06-AcceptanceCriteria.md), [07 — API Contract](./07-ApiContract.md), [09 — System Design](./09-SystemDesign.md), and [11 — State Machines](./11-StateMachines.md)
-> **References:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) (v1.4) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md)
+> **Version:** 1.3
+> **Date:** 2026-07-24
+> **Status:** Accepted — basis for [05 — User Stories](./05-UserStories.md), [06 — Acceptance Criteria](./06-AcceptanceCriteria.md), [07 — API Contract](./07-ApiContract.md), [09 — System Design](./09-SystemDesign.md), [10 — Data Model](./10-DataModel.md), [11 — State Machines](./11-StateMachines.md), and [12 — Sequence Diagrams](./12-SequenceDiagrams.md)
+> **References:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) (v1.5) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md)
 
 ---
 
@@ -311,7 +311,7 @@ Where the decision resolves a conflict in an existing document, that is called o
 **Rationale:** No pointless single-row line table; snapshots make price-tampering impossible; hashed QR; append-only financial history; every concurrency/scan query indexed.
 
 ### Q50 — Ticketing: PromoCode & redemption ledger
-**Decision:** **`PromoCode`** columns map **1:1 to the flat 422 codes**: `IsActive`→`PROMO_INACTIVE`, `ValidFromUtc`→`PROMO_NOT_YET_VALID`, `ValidUntilUtc`→`PROMO_EXPIRED`, `MaxTotalRedemptions`→`PROMO_CAP_REACHED`, `MaxPerUser`→`PROMO_USER_LIMIT`, nullable `EventId`→`PROMO_WRONG_EVENT`; unique on normalized `Code`; `DiscountType`/`DiscountValue`, audit, soft-delete, `RowVersion`. An **append-only `PromoRedemption` ledger** (`PromoCodeId` FK, `AccountId`, `OrderId` FK, `RedeemedAtUtc`) enforces both caps by **counting inside the SERIALIZABLE reserve tx**; indexes on `(PromoCodeId)` and `(PromoCodeId, AccountId)`. **Redemption recorded at reserve, released by the sweeper on hold-expiry** (D:Q19).
+**Decision:** **`PromoCode`** columns map **1:1 to the flat 422 codes**: `IsActive`→`PROMO_INACTIVE`, `ValidFromUtc`→`PROMO_NOT_YET_VALID`, `ValidUntilUtc`→`PROMO_EXPIRED`, `MaxTotalRedemptions`→`PROMO_CAP_REACHED`, `MaxPerUser`→`PROMO_USER_LIMIT`, nullable `EventId`→`PROMO_WRONG_EVENT`; unique on normalized `Code`; `DiscountType`/`DiscountValue`, audit, soft-delete, `RowVersion`. An **append-only `PromoRedemption` ledger** (`PromoCodeId` FK, `AccountId`, `OrderId` FK, `RedeemedAtUtc`) enforces both caps by **counting inside the SERIALIZABLE reserve tx**; indexes on `(PromoCodeId)` and `(PromoCodeId, AccountId)`. **The slot is atomically claimed at payment-initiation (paid orders) or at confirmation (free / 100%-off), confirmed on Paid, and released on payment failure or hold-expiry — never burned by an unpaid hold** (D:Q19).
 **Rationale:** Every flat promo code has an exact column/query behind it; ledger-counting in the serializable tx keeps the global cap and per-user limit race-safe (a stored counter can't).
 
 ### Q51 — Training/Identity: TrackAssignment & the dual-role invariants
@@ -410,4 +410,4 @@ Where the decision resolves a conflict in an existing document, that is called o
 
 ---
 
-*Requirements session (Q1–Q28): 2026-07-20. Architecture session (Q29–Q55): 2026-07-22. Q56 (event-cancel gap, extends Q22/Q23): 2026-07-23. All questions resolved and accepted by the stakeholder. Q1–Q28 are the authoritative basis for documents 05–07; Q29–Q56 are the authoritative basis for the 09/10/11 doc set and the code scaffold. Where any conflicts with the PRD/SRS, this log and the SRS corrections prevail.*
+*Requirements session (Q1–Q28): 2026-07-20. Architecture session (Q29–Q55): 2026-07-22. Q56 (event-cancel gap, extends Q22/Q23): 2026-07-23. All questions resolved and accepted by the stakeholder. Q1–Q28 are the authoritative basis for documents 05–07; Q29–Q56 are the authoritative basis for the 09/10/11/12 doc set and the code scaffold. Where any conflicts with the PRD/SRS, this log and the SRS corrections prevail.*

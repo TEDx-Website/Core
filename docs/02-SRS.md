@@ -11,7 +11,7 @@
 >
 > **v1.3 (2026-07-21):** **Model-B ticketing** (Decision Log Q1 addendum). Individual tickets are the base purchasable unit at an **event-level face price (`ticketPrice`)**; **packages are optional discount bundles**, never a prerequisite. An order references a **nullable package** (individual-ticket order when null). An event with **zero packages is publishable and sellable**. Affects the glossary and `FR-EVT-01`, `FR-PKG-01`, `FR-ORD-01`, `FR-ORD-02`, `FR-ORD-04`; adds `FR-ORD-09` (hold-expiry sweeper). Supersedes any "one package per order is the only unit" reading of v1.1 (Q1 still holds: one unit-type × quantity per order).
 >
-> **v1.5 (2026-07-23):** **Aligned with the architecture grilling pass (Decision Log Q29–Q56) and the now-written 09/10/11/12 doc set.** Changes: (1) **`NFR-MNT-02` rewritten** — the "no foreign keys across contexts" rule is superseded by the **FK revision** (real cross-context FKs with `RESTRICT`; decoupling is a *code* rule: no cross-context navigation properties). (2) All "(pending)" markers for System Design (09) and Data Model (10) removed — both now exist and are authoritative. (3) "28 resolved design questions" → **Q1–Q56** throughout. (4) Added `FR-EVT-09` (event cancel from Published **or** Archived — D:Q22/Q56), `FR-USER-08` (Cloudinary image validation is already NFR-covered — cross-referenced), and `NFR-REL-07` (transactional outbox, at-least-once side-effects — D:Q45/Q53). (5) §7 traceability and §8 open-items updated to reflect that 09/10 are written, and 11/12 added as the lifecycle/flow authorities. No requirement was invented — every added/changed line cites its `D:Q`.
+> **v1.5 (2026-07-23):** **Aligned with the architecture grilling pass (Decision Log Q29–Q56) and the now-written 09/10/11/12 doc set.** Changes: (1) **`NFR-MNT-02` rewritten** — the "no foreign keys across contexts" rule is superseded by the **FK revision** (real cross-context FKs with `RESTRICT`; decoupling is a *code* rule: no cross-context navigation properties). (2) All "(pending)" markers for System Design (09) and Data Model (10) removed — both now exist and are authoritative. (3) "28 resolved design questions" → **Q1–Q56** throughout. (4) Added `FR-EVT-09` (event cancel ripple from Published **or** Archived — D:Q22/Q56) and `NFR-REL-07` (transactional outbox, at-least-once side-effects — D:Q45/Q53); expanded `FR-EVT-04` with the full legal transition set (D:Q23/Q56) and `FR-AUTH-06` with the per-request track-scope basis (D:Q35). (5) §7 traceability and §8 open-items updated to reflect that 09/10 are written, and 11/12 added as the lifecycle/flow authorities. No requirement was invented — every added/changed line cites its `D:Q`.
 
 ---
 
@@ -163,9 +163,9 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | **FR-AUTH-03** | Passwords MUST meet a minimum policy (≥ 8 chars, at least one upper, one lower, one digit) enforced server-side; violations return validation errors. |
 | **FR-AUTH-04** | A registered user MUST be able to log in with email + password, receiving a short-lived **JWT access token** and a **refresh token**. |
 | **FR-AUTH-05** | Login MUST fail with a generic "invalid credentials" message when the email is unknown or the password is wrong (no user enumeration), and MUST be rejected for deactivated accounts. |
-| **FR-AUTH-06** | The access token MUST carry the account id, email, and **global role** claims. Per-track (Member/Board) authority MUST NOT be baked into the token; it is resolved per request (see [09 — System Design](./09-SystemDesign.md) *(pending)*). |
+| **FR-AUTH-06** | The access token MUST carry the account id, email, and **global role** claims. Per-track (Member/Board) authority MUST NOT be baked into the token; it is resolved per request against live `TrackAssignment` rows (D:Q35; see [09 — System Design §6](./09-SystemDesign.md)). |
 | **FR-AUTH-07** | A user MUST be able to log out, which revokes the presented refresh token so it can no longer be exchanged. |
-| **FR-AUTH-08** | A user MUST be able to exchange a valid, unexpired, unrevoked refresh token for a new access token. Refresh tokens are **single-use and rotated**: exchange revokes the old token and issues a new one. Reuse of a revoked token MUST be rejected. |
+| **FR-AUTH-08** | A user MUST be able to exchange a valid, unexpired, unrevoked refresh token for a new access token. Refresh tokens are **single-use and rotated**: exchange revokes the old token and issues a new one, linked via `ReplacedByTokenHash`. Reuse of a revoked token MUST **revoke the entire rotation family** (walk the `ReplacedByTokenHash` chain) and return `TOKEN_REUSED` — forcing re-login (D:Q24, Q47). |
 | **FR-AUTH-09** | Refresh tokens MUST be stored **hashed**; the raw token exists only with the client. |
 | **FR-AUTH-10** | A user MUST be able to request a password reset by email; the response MUST be identical whether or not the email exists (no enumeration). |
 | **FR-AUTH-11** | A valid, unexpired, single-use reset token MUST allow the user to set a new password; used or expired tokens MUST be rejected. |
@@ -179,7 +179,7 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | **FR-USER-03** | A user SHOULD be able to upload a profile picture; the file is stored in Cloudinary and only its URL is persisted. Uploads MUST be validated for type (image) and size. |
 | **FR-USER-04** | A user MUST be able to change their password by supplying the current password and a new one that meets the password policy. |
 | **FR-USER-05** | An Admin MUST be able to list all users with pagination, search (name/email), and filters (global role, active status). |
-| **FR-USER-06** | An Admin MUST be able to activate/deactivate a user account. A deactivated user cannot log in or refresh tokens, and existing refresh tokens are revoked. |
+| **FR-USER-06** | An Admin MUST be able to activate/deactivate a user account. A deactivated user cannot log in or refresh tokens, and existing refresh tokens are revoked. Deactivation also **cancels any active PendingPayment orders** (releasing held seats) and **ends all active track assignments** (`EndedAt` set, history retained, slots freed for reassignment). Deactivating a Board flags the track as needing a new supervisor. Reactivation does **not** auto-restore assignments (D:Q10). |
 | **FR-USER-07** | Deactivation MUST be a soft action (the account and its historical records are retained), never a hard delete. |
 
 ### 3.3 Track Assignments & Roles (PRD §5, §6.2)
@@ -188,7 +188,7 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 |-----|-------------|
 | **FR-ROLE-01** | Only an Admin MUST be able to change a user's **global role** (Attendee ↔ Admin). |
 | **FR-ROLE-02** | Only an Admin MUST be able to assign or remove the **Board** role on a track. |
-| **FR-ROLE-03** | An Admin, **or the Board of that track**, MUST be able to enroll or remove **Members** in that track. A Board can only do so for the single track they supervise. |
+| **FR-ROLE-03** | An Admin, **or the Board of that track**, MUST be able to enroll or remove **Members** in that track. A Board can only do so for the single track they supervise. Enrollment adds an **existing Attendee account** (found by email/search) — no account creation at enroll time. At enroll time the system MUST reject if the target is already an active Member of any track, or if it would make them Member and Board of the same track (D:Q15). |
 | **FR-ROLE-04** | The system MUST enforce that a user holds **at most one active Member enrollment** and **at most one active Board assignment**, and that the two are **different tracks**. Violations MUST be rejected at assignment time and prevented at the database level. |
 | **FR-ROLE-05** | Ending a track assignment MUST retain the historical attendance and evaluation records tied to it. |
 
@@ -197,13 +197,14 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | Ref | Requirement |
 |-----|-------------|
 | **FR-EVT-01** | An Admin MUST be able to create an event with title, description, date/time (UTC), location, capacity, an **individual-ticket price (`ticketPrice`, ≥ 0 EGP)**, and optional image. Capacity MUST be greater than zero. The event MAY carry an optional **`MaxIndividualQtyPerOrder`** (nullable = no cap) limiting individual tickets per order. |
-| **FR-EVT-02** | An Admin MUST be able to edit an event's details. Concurrent edits MUST be guarded by an optimistic-concurrency token. |
-| **FR-EVT-03** | An Admin SHOULD be able to soft-delete an event; soft-deleted events are hidden from all listings but retained with their orders/tickets intact. |
-| **FR-EVT-04** | An event MUST have a status of Draft, Published, Archived, or Cancelled. Only **Published** events are visible to Visitors and open for booking. |
+| **FR-EVT-02** | An Admin MUST be able to edit an event's details. Capacity MUST be raisable at any time but lowerable only to ≥ (held + paid) seats — a lower value that would invalidate sold seats MUST be rejected (D:Q22). Concurrent edits MUST be guarded by an optimistic-concurrency token. |
+| **FR-EVT-03** | An Admin SHOULD be able to soft-delete an event; soft-deleted events are hidden from all listings but retained with their orders/tickets intact. An event with existing orders MUST NOT be hard-deleted (D:Q22). |
+| **FR-EVT-04** | An event MUST have a status of Draft, Published, Archived, or Cancelled. Only **Published** events are visible to Visitors and open for booking. Legal transitions: `Draft ⇄ Published` (revert only if zero orders); `Published → Archived`; `Published → Cancelled`; `Archived → Published` (re-list); `Archived → Cancelled` (D:Q56). `Cancelled` is terminal. `Draft → Cancelled` is not legal — a Draft event is disposed of by soft-delete (D:Q22, Q23, Q56; see [[11-StateMachines#3. Event (D:Q22, Q23, Q55, Q56)|11 §3]]). |
 | **FR-EVT-05** | Any user (including a Visitor) MUST be able to browse a paginated list of Published events, filterable by upcoming/past. |
 | **FR-EVT-06** | Any user MUST be able to view an event's detail, including its **individual-ticket price**, any optional packages, and **remaining seats**. |
 | **FR-EVT-07** | Remaining seats MUST be computed as `Capacity − seats held by active orders`, never stored as a mutable counter. |
 | **FR-EVT-08** | An Admin MUST be able to view all orders and attendees for a given event. |
+| **FR-EVT-09** | Cancelling an event (from Published **or** Archived) MUST trigger the cancel ripple: void all Issued tickets, cancel all PendingPayment orders (releasing held seats), and record a `RefundEntry` per Paid order (offline/manual refund). The event is hidden but retained. `Draft → Cancelled` is blocked (D:Q22, Q56; see [[12-SequenceDiagrams#9.2 Event cancel ripple (D:Q22, Q56)|12 §9.2]]). |
 
 ### 3.5 Ticket Packages (PRD §6.4)
 
@@ -220,8 +221,8 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 |-----|-------------|
 | **FR-PROMO-01** | An Admin MUST be able to create a promo code with a discount that is either a **percentage** or a **fixed amount** (EGP). |
 | **FR-PROMO-02** | A promo code MAY carry a global redemption cap, a per-user redemption limit, a validity window (from/until), and an optional event scope (null = valid on all events). |
-| **FR-PROMO-03** | The system MUST reject a promo code that is inactive, outside its validity window, over its global cap, over the user's per-user limit, or scoped to a different event. |
-| **FR-PROMO-04** | The system MUST record each successful redemption (code, user, order, timestamp) to enforce per-user limits and provide an audit trail. |
+| **FR-PROMO-03** | The system MUST reject a promo code that is inactive, outside its validity window, over its global cap, over the user's per-user limit, or scoped to a different event. Caps are counted over `Claimed + Confirmed` redemptions inside the SERIALIZABLE reserve transaction so concurrent buyers can never both slip under the limit (D:Q19, Q50). |
+| **FR-PROMO-04** | The system MUST record each redemption as a lifecycle-status ledger row (`Claimed → Confirmed | Released`): the slot is **claimed** at payment initiation (paid orders) or at confirmation (free/100%-off orders); **confirmed** on Paid; **released** on payment failure or hold expiry. Unpaid holds MUST NOT permanently burn a limited promo slot (D:Q19). |
 | **FR-PROMO-05** | Promo-code codes MUST be unique among live (non-deleted) codes. |
 
 ### 3.7 Ordering & Seat Holds (PRD §6.4)
@@ -229,25 +230,25 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | Ref | Requirement |
 |-----|-------------|
 | **FR-ORD-01** | An authenticated user MUST be able to request a **price quote** for an order — **either an individual-ticket order (no package) or a package order** — with a quantity and optional promo, without creating an order or holding seats. Base price = `event.ticketPrice × quantity` for individual tickets, or `package.price × quantity` for a package. The quote MUST show base price, discount, and final price. |
-| **FR-ORD-02** | An authenticated user MUST be able to **reserve** an order for a quantity ≥ 1 of **either an individual ticket (default; no package selected) or a single package**. Reserving an individual-ticket order holds `quantity` seats; reserving a package order holds `seats-per-package × quantity` seats. An order is **one unit-type × quantity** — individual tickets and a package MUST NOT be mixed in one order (Q1). |
+| **FR-ORD-02** | An authenticated user MUST be able to **reserve** an order for a quantity ≥ 1 of **either an individual ticket (default; no package selected) or a single package**. Reserving an individual-ticket order holds `quantity` seats; reserving a package order holds `seats-per-package × quantity` seats. An order is **one unit-type × quantity** — individual tickets and a package MUST NOT be mixed in one order (Q1). A user MUST hold **at most one active (PendingPayment, unexpired) order per event**; a second reserve attempt MUST return the existing pending order rather than creating a duplicate hold (D:Q5). |
 | **FR-ORD-03** | An order MUST be rejected if the event's remaining seats are fewer than the requested seat count. This capacity check MUST be **concurrency-safe**: two simultaneous reservations MUST NOT oversell the last seats. |
 | **FR-ORD-04** | On reservation, the order MUST **snapshot** the unit price, base price, discount amount, and final price — plus the package name for a package order, or the event title for an individual-ticket order — so later package, event-price, or promo edits never alter historical orders. The package reference is nullable (null on an individual-ticket order). |
 | **FR-ORD-05** | A reserved (unpaid) order MUST hold its seats for a **15-minute checkout window**. If payment is not confirmed within that window, the order MUST transition to Expired and its seats MUST be released automatically. |
 | **FR-ORD-06** | A user MUST be able to cancel their own unpaid order, releasing its held seats immediately. |
 | **FR-ORD-07** | A user MUST be able to view their order history (all statuses) and the tickets belonging to any paid order. |
-| **FR-ORD-08** | Orders MUST never be deleted; their lifecycle is expressed only through status (PendingPayment → Paid / Cancelled / Expired). |
+| **FR-ORD-08** | Orders MUST never be deleted; their lifecycle is expressed only through status. Full lifecycle: `PendingPayment → Paid / Cancelled / Expired`; additionally `Paid → Cancelled` when an Admin voids a paid order (a `RefundEntry` is recorded; D:Q6). A paid-then-voided order and a user-cancelled unpaid order both land in `Cancelled` and are distinguished by the presence of a `RefundEntry`, never by status alone (see [[11-StateMachines#1. Order (D:Q3, Q6, Q55)|11 §1]]). |
 | **FR-ORD-09** | A background sweeper MUST transition lapsed `PendingPayment` orders (whose 15-minute window has elapsed without a confirmed payment) to **Expired** and release any claimed promo redemption slot. Seat availability MUST NOT depend on the sweeper having run — a hold with `HoldExpiresAt < now` stops counting against capacity immediately (`FR-EVT-07`, D:Q3); the sweeper is cleanup only. |
 
 ### 3.8 Payment (PRD §6.4, Paymob)
 
 | Ref | Requirement |
 |-----|-------------|
-| **FR-PAY-01** | For an order with a final price > 0, the system MUST initiate an online payment via **Paymob** (cards + wallets, EGP) and return a checkout URL/session to the client. |
+| **FR-PAY-01** | For an order with a final price > 0, the system MUST initiate an online payment via **Paymob** (cards + wallets, EGP) and return a checkout URL/session to the client. An optional **`Idempotency-Key`** header MUST make a repeated initiation resolve to the **same** checkout session — no duplicate Paymob intention (D:Q28a). |
 | **FR-PAY-02** | An order MUST be marked **Paid only** upon a **signature-verified (HMAC) Paymob webhook** confirming success. The system MUST NOT trust a client-reported payment result. |
 | **FR-PAY-03** | The webhook handler MUST be **idempotent**: a repeated or replayed callback for an already-paid order MUST NOT issue duplicate tickets. |
 | **FR-PAY-04** | The system MUST validate that the amount reported by Paymob matches the order's final price before confirming. |
 | **FR-PAY-05** | Each payment attempt MUST be recorded (status, Paymob transaction id, amount, raw verified payload) to support reconciliation and support requests. |
-| **FR-PAY-06** | An order with a final price of **0** (free package or 100%-off promo) MUST bypass the gateway and be confirmed immediately. |
+| **FR-PAY-06** | An order with a final price of **0** (free package or 100%-off promo) MUST bypass the gateway and be confirmed immediately. Discount is rounded **half-up to 2 decimal places (EGP)**; `final = max(base − discount, 0)` — an over-large discount yields a free (0.00) order, never a negative charge (D:Q18). |
 | **FR-PAY-07** | Refunds are **manual/offline** for the current scope: an Admin cancelling a Paid order MUST void its tickets and record a refund entry; no automated gateway refund is required yet. |
 
 ### 3.9 Tickets & Check-in (PRD §6.4)
@@ -257,16 +258,16 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | **FR-TKT-01** | When an order becomes Paid, the system MUST issue exactly **one ticket per held seat**, each with a unique QR token and a short human-readable public reference. |
 | **FR-TKT-02** | A reserved (unpaid) order MUST have **zero tickets**. |
 | **FR-TKT-03** | Each ticket MAY carry an optional guest name; a nameless ticket MUST still be a fully valid credential. Guests are not required to have accounts. |
-| **FR-TKT-04** | The QR token MUST be stored **hashed**; the raw token exists only inside the QR image and is never persisted. |
-| **FR-TKT-05** | An Admin MUST be able to check in a ticket by scanning its QR at the venue. A ticket MUST be checkable in **at most once**; a second scan MUST be rejected as already-checked-in. |
+| **FR-TKT-04** | The QR token MUST encode a **public reference** (indexed, non-secret) **and a 256-bit random secret**. The DB stores only the reference and a **SHA-256 hash** of the secret; the raw secret is never persisted and exists only inside the QR image (D:Q8). |
+| **FR-TKT-05** | An Admin MUST be able to check in a ticket by scanning its QR at the venue. The scan endpoint is **event-scoped** (D:Q9). Five distinct outcomes MUST be returned: **success** (`Issued → CheckedIn`, scanner + timestamp recorded); **already-checked-in** (returns original scanner + time); **wrong-event** (valid ticket, wrong door); **voided** (`TICKET_VOIDED` — a known ticket whose paid order was voided/refunded, distinct from a forgery); **unknown/invalid** (no matching reference or secret fails the hash comparison). A ticket MUST be checkable in **at most once** (D:Q7, Q9). |
 | **FR-TKT-06** | Check-in MUST record who scanned and when. Rejected/duplicate scan attempts MUST be logged (not silently ignored). |
 
 ### 3.10 Track & Session Management (PRD §6.7–6.8)
 
 | Ref | Requirement |
 |-----|-------------|
-| **FR-TRK-01** | An Admin MUST be able to create, edit, and soft-delete tracks (name, description, schedule). Track names MUST be unique among live tracks. |
-| **FR-TRK-02** | A Board or Admin MUST be able to create, edit, and delete **sessions** within a track (topic, date, time, location). A Board may only manage sessions of the track they supervise. |
+| **FR-TRK-01** | An Admin MUST be able to create, edit, and soft-delete tracks (name, description, schedule). Track names MUST be unique among live tracks. Soft-deleting a track MUST **auto-end all active Member enrollments and the Board assignment** (`EndedAt` set, all history retained, dual-role slots freed), behind an **Admin confirmation stating the impact** (D:Q14). |
+| **FR-TRK-02** | A Board or Admin MUST be able to create and edit **sessions** within a track (topic, date, time, location). A Board may only manage sessions of the track they supervise. A session with existing attendance or evaluation records MUST NOT be hard-deleted — soft-delete/cancel only; a records-free session may be removed outright (D:Q13). |
 | **FR-TRK-03** | A Member MUST be able to view the upcoming and past sessions of their own track. |
 | **FR-TRK-04** | A Board and Admin MUST be able to view a track's full details: members, sessions, and progress summaries. |
 
@@ -283,7 +284,7 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 
 | Ref | Requirement |
 |-----|-------------|
-| **FR-EVL-01** | A Board MUST be able to evaluate a member after a session with a **score 0–100** and optional text feedback. |
+| **FR-EVL-01** | A Board MUST be able to evaluate a member after a session with a **score 0–100** (integer; values outside this range MUST be rejected) and optional text feedback. Evaluation requires the **session date to be in the past** and the member to have an **active enrollment at evaluation time**; attendance is not a prerequisite (D:Q16, Q17). |
 | **FR-EVL-02** | There MUST be at most **one evaluation per member per session**, editable in place (no duplicates). |
 | **FR-EVL-03** | A Member MUST be able to view their own evaluation history (scores + feedback); they MUST NOT see other members' evaluations. |
 | **FR-EVL-04** | A Board MUST be able to view evaluations for all members of their track. |
@@ -292,7 +293,7 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 
 | Ref | Requirement |
 |-----|-------------|
-| **FR-NTF-01** | An Admin MUST be able to send platform-wide or role-scoped in-app notifications. |
+| **FR-NTF-01** | An Admin MUST be able to send platform-wide or role-scoped in-app notifications. Recipients MUST be **resolved and fanned out to per-recipient rows at send time** (a snapshot — later enrollees do NOT retroactively receive past notifications). Audiences: platform-wide (all active), by global role (Attendees / Admins), or by track (D:Q21). |
 | **FR-NTF-02** | A Board MUST be able to send in-app notifications to the members of their own track only. |
 | **FR-NTF-03** | Each recipient MUST have their own read state; a user MUST be able to view their inbox and mark notifications as read. |
 | **FR-NTF-04** | Notifications are **in-app only** in current scope (no email/SMS/push beyond the password-reset email). |
@@ -302,7 +303,7 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 | Ref | Requirement |
 |-----|-------------|
 | **FR-PUB-01** | Visitors MUST be able to view public pages: Home, About, Team, Events, Event Detail, Contact, and the auth pages (Login, Register, Forgot Password). |
-| **FR-PUB-02** | A visitor MUST be able to submit a **contact form** (name, email, subject, message); submissions are stored for Admin review. |
+| **FR-PUB-02** | A visitor MUST be able to submit a **contact form** (name, email, subject ≤ 200 chars, message ≤ 2000 chars); submissions are stored with status New/Read/Archived for **Admin-only** review. There is **no in-app reply** and no Board/Member notification. The endpoint MUST be protected by **IP rate-limiting** and field-length caps; email format MUST be validated. No CAPTCHA in current scope (D:Q20). |
 | **FR-PUB-03** | Team and Partners/Sponsors content is **static** in current scope (no admin editing, no dedicated tables). |
 | **FR-PUB-04** | Public pages MUST be responsive and mobile-friendly. |
 
@@ -332,6 +333,7 @@ Non-functional requirements are grouped by quality attribute. Each is testable; 
 | **NFR-REL-04** | Order prices MUST be **snapshotted** at reserve time; later edits to a package price or promo code MUST NOT alter historical orders. |
 | **NFR-REL-05** | All timestamps MUST be stored in **UTC**; localization to the user's timezone happens at the presentation layer. |
 | **NFR-REL-06** | Concurrent edits to the same admin-managed record (Event, Order, Package, Promo Code) MUST be detected via optimistic concurrency (`rowversion`) and surfaced rather than silently overwritten. |
+| **NFR-REL-07** | External side-effects (confirmation/notification email) MUST be dispatched via a **transactional outbox**: the outbox row is written **inside** the business transaction that changes state, and delivered **after** commit by the background sweeper with retry/backoff — **at-least-once**, consumers idempotent. No external side-effect fires inside the money transaction (D:Q45, Q53; see [[12-SequenceDiagrams#6. Outbox drain + hold expiry (D:Q3, Q34, Q45, Q53)|12 §6]]). |
 
 ### 4.3 Security
 
@@ -362,7 +364,7 @@ Non-functional requirements are grouped by quality attribute. Each is testable; 
 | Ref | Requirement |
 |-----|-------------|
 | **NFR-MNT-01** | The backend MUST follow a layered architecture that keeps domain logic independent of framework and infrastructure concerns. |
-| **NFR-MNT-02** | The three bounded contexts (Identity, Eventing/Ticketing, Training) MUST NOT share foreign keys across contexts; they relate only through the account id. |
+| **NFR-MNT-02** | The three bounded contexts (Identity, Eventing/Ticketing, Training) MUST use **real database foreign keys with `RESTRICT` delete** across context boundaries (D:Q FK revision). Decoupling is a **code rule**: no cross-context navigation properties or direct aggregate references in application code — contexts relate only through the account id at the code level. The prior "no foreign keys across contexts" wording is superseded by the FK revision. |
 | **NFR-MNT-03** | The system MUST emit structured logs (Serilog or equivalent) for requests, errors, payment events, and check-in attempts (including rejected/duplicate scans). |
 | **NFR-MNT-04** | Configuration MUST be environment-specific (development/production) without code changes. |
 
@@ -404,8 +406,8 @@ Every functional requirement above traces upward to a PRD capability (section re
 - **User Stories (05)** — one story per user-facing behaviour, each citing the `FR-*` it refines.
 - **Acceptance Criteria (06)** — Gherkin scenarios per story, each citing the `FR-*` and decision references.
 - **API Contract (07)** — per-endpoint request/response shapes, error codes, and `Implements: US-*/AC-*` links.
-
-A full requirement-to-story-to-test matrix will be maintained in a dedicated traceability document once the Data Model (10) and System Design (09) are written.
+- **System Design (09)** — the implementation architecture these requirements are realized in; entity lifecycle diagrams are in [[11-StateMachines]], runtime flow diagrams in [[12-SequenceDiagrams]].
+- **Data Model (10)** — the authoritative schema; this SRS defers all schema detail to it.
 
 ---
 
@@ -413,7 +415,6 @@ A full requirement-to-story-to-test matrix will be maintained in a dedicated tra
 
 These are acknowledged and deferred, not gaps:
 
-- **System Design (09)** — layering, CQRS, module boundaries, authorization model, and deployment topology. Pending; this SRS defers architecture detail to it.
-- **Data Model (10)** — ERD, tables, constraints, indexes, EF Core mapping. Pending; this SRS defers schema detail to it.
 - **Automated gateway refunds** — manual/offline in current scope (see PRD §10).
 - **Real-time (SignalR), email/SMS notifications beyond password reset, and analytics** — later enhancements (PRD Area C).
+- **Testing** — strategy agreed (risk-weighted pyramid, Testcontainers for concurrency/money paths); authoring deferred until stakeholder go-ahead (D:Q43).

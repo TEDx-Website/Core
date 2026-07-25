@@ -1,9 +1,11 @@
 # TEDxAlkawmia — Acceptance Criteria
 
-> **Version:** 1.1
-> **Date:** 2026-07-21
+> **Version:** 1.2
+> **Date:** 2026-07-24
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md)
-> **Decisions:** grilling session 2026-07-20 (Q1–Q28), cited as **(D:Qn)**.
+> **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+>
+> **v1.2 (2026-07-24):** AC-EVT-05 transition table gains **Archived→Cancelled (D:Q56)** and an explicit "Draft→Cancelled rejected (use soft-delete)" row; a new scenario covers Archived-with-sold-tickets cancellation; AC-EVT-06 widens to "Published or Archived" (identical ripple). Provenance refreshed to Q1–Q56.
 >
 > **v1.1 (2026-07-21):** Model-B ticketing (individual tickets at event face price; packages optional — DecisionLog Q1 addendum): new scenarios for individual-ticket quote/reserve, negative ticket-price rejection, and zero-package publish/sell. Error-taxonomy alignment with the API contract: change-password wrong-current → `400 CURRENT_PASSWORD_INCORRECT`; refresh-token codes → `TOKEN_REUSED`/`TOKEN_INVALID`; bad upload → `422 VALIDATION_ERROR (INVALID_FILE_TYPE|FILE_TOO_LARGE)`; check-in outcomes carry explicit HTTP statuses. Reinstated cross-cutting ACs for log hygiene and i18n/RTL readiness.
 
@@ -83,6 +85,12 @@ Scenario: Login rejected for a deactivated account
   When she logs in with correct credentials
   Then the response is 403 with error.code "ACCOUNT_DEACTIVATED"
   And a distinct message advises contacting an organizer
+
+Scenario: Repeated failed logins trigger account lockout (ASP.NET Core Identity)
+  Given an active account
+  When the account exceeds the configured failed-attempt threshold
+  Then further login attempts are rejected until the lockout window expires
+  And the lockout is recorded in AccessFailedCount / LockoutEnd (DataModel §1.1)
 ```
 
 ## AC-AUTH-03 — Refresh the session
@@ -249,6 +257,7 @@ Scenario: Correct current password allows a change
   Given a logged-in user
   When they supply the correct current password and a policy-compliant new one
   Then the password is updated and the response is 200
+  And all existing refresh tokens for the account are revoked (D:Q24, NFR-SEC-02)
 
 Scenario: Wrong current password blocks the change
   Given a logged-in user
@@ -294,7 +303,7 @@ Scenario: Deactivation blocks access but retains history (D:Q10)
   Given an active user with historical orders, tickets, and a Member enrollment
   When an Admin deactivates the account
   Then the account can no longer log in or refresh
-  And existing refresh tokens are revoked
+  And existing refresh tokens are revoked (D:Q24)
   And the account and all historical records are retained (soft action)
 
 Scenario: Deactivation keeps issued tickets valid (D:Q10)
@@ -307,6 +316,7 @@ Scenario: Deactivation cancels an active pending order and releases seats (D:Q10
   When the account is deactivated
   Then that order is cancelled
   And its held seats are released to availability
+  And any claimed promo slot on that order is released (D:Q19)
 
 Scenario: Deactivating a Board ends the assignment and flags the track (D:Q10, D:Q6-audit-Issue6)
   Given the user is Board of Track Y
@@ -486,10 +496,11 @@ Scenario: Past filter is date-derived among Published events (D:Q23)
 > **Covers:** US-EVT-02
 
 ```gherkin
-Scenario: Event detail shows packages and remaining seats
+Scenario: Event detail shows the individual-ticket price, packages, and remaining seats
   Given a Published event with defined packages
   When any user views its detail
-  Then the response includes title, description, date/time (UTC), location,
+  Then the response includes title, description, startsAtUtc + endsAtUtc, location,
+       the always-present individual-ticket price (ticketPrice, Model B),
        active packages with prices, and remaining seats
   And remaining seats = Capacity − seats held by active orders (D:Q3, FR-EVT-07)
 
@@ -609,8 +620,16 @@ Scenario Outline: Legal transitions
     | Published | Archived  | is allowed |
     | Published | Cancelled | is allowed |
     | Archived  | Published | is allowed |
+    | Archived  | Cancelled | is allowed (D:Q56) |
+    | Draft     | Cancelled | is rejected (use soft-delete, D:Q22/Q56) |
     | Cancelled | Published | is rejected (terminal) |
     | Cancelled | Draft     | is rejected (terminal) |
+
+Scenario: Archived event is cancelled directly (D:Q56)
+  Given an Archived event with Paid orders (Issued tickets) and PendingPayment holds
+  When an Admin cancels it
+  Then it becomes Cancelled with the same void/refund/release ripple as Published → Cancelled
+  And it is NOT re-published first (a hidden event is never re-exposed just to cancel it)
 
 Scenario: Unpublish to Draft only while zero orders (D:Q23)
   Given a Published event with no orders
@@ -628,13 +647,14 @@ Scenario: Unpublish blocked once orders exist (D:Q23)
 > **Covers:** US-ADM-EVT-04
 
 ```gherkin
-Scenario: Cancelling an event with sold tickets voids and refunds offline (D:Q22)
-  Given a Published event with Paid orders (Issued tickets) and PendingPayment holds
+Scenario: Cancelling an event with sold tickets voids and refunds offline (D:Q22, D:Q56)
+  Given a Published or Archived event with Paid orders (Issued tickets) and PendingPayment holds
   When an Admin cancels the event
   Then all Issued tickets for the event become Voided
   And all PendingPayment holds are released
   And a refund entry is recorded for each Paid order (money handled offline, FR-PAY-07)
   And the event is hidden from public listings but retained
+  And the ripple is identical whether the event was Published or Archived (D:Q56)
 
 Scenario: Checked-in tickets are not un-checked by cancellation
   Given an event with some already CheckedIn tickets
@@ -760,13 +780,13 @@ Scenario: Promo carries optional caps, window, and event scope
   Then all constraints are stored
 ```
 
-## AC-PROMO-03 — Promo validation at quote/reserve (FR-PROMO-03)
+## AC-PROMO-03 — Promo validation at quote/reserve (FR-PROMO-03, D:Q19)
 > **Covers:** US-ADM-PRM-02, US-ORD-01
 
 ```gherkin
-Scenario Outline: Promo rejection reasons
+Scenario Outline: Promo rejection reasons (advisory at quote, same codes at reserve)
   Given a promo in state "<state>"
-  When a user applies it
+  When a user applies it at quote or reserve
   Then the response is 422 with error.code "<code>"
   Examples:
     | state                          | code             |
@@ -781,6 +801,16 @@ Scenario: Valid promo is accepted in a quote
   Given a valid, in-window promo scoped to the event (or global)
   When a user requests a quote with it
   Then the quote shows base, discount, and final price
+  And no redemption slot is consumed (quote is advisory, D:Q19)
+
+Scenario: Cap check at quote is advisory; atomic enforcement is at payment initiation (D:Q19)
+  Given a promo with 1 slot remaining
+  When two users each request a quote with it
+  Then both quotes succeed (no slot consumed)
+  When both users reserve (no slot consumed at reserve either)
+  When user A initiates payment first
+  Then A's slot is atomically claimed
+  And user B initiating payment is rejected with PROMO_CAP_REACHED
 ```
 
 ## AC-PROMO-04 — Redemption accounting (D:Q19)
@@ -858,6 +888,12 @@ Scenario: Quote respects the event individual max quantity (Model B, mirrors D:Q
 > **Covers:** US-ORD-02, US-ORD-04
 
 ```gherkin
+Scenario: Reserve rejected when event is not Published
+  Given an event in Draft, Archived, or Cancelled state
+  When an authenticated user attempts to reserve an order for it
+  Then the response is 422 error.code "EVENT_NOT_PUBLISHED"
+  And no order is created and no seats are held
+
 Scenario: Reserve an individual-ticket order holds seats and snapshots price (Model B, FR-ORD-04)
   Given a Published event with 100 remaining seats and ticketPrice 200.00 EGP
   When an authenticated user reserves 3 individual tickets (no package)
@@ -914,10 +950,11 @@ Scenario: Expired-but-unswept hold does not block new reservations (D:Q3)
 > **Covers:** US-ORD-02
 
 ```gherkin
-Scenario: Re-reserving returns the existing pending order (D:Q5)
+Scenario: Re-reserving is rejected when an unexpired pending order exists (D:Q5)
   Given a user has a PendingPayment (unexpired) order for event E
   When they attempt to reserve another order for event E
-  Then the system returns/points to the existing pending order (no second hold)
+  Then the response is 409 error.code "ACTIVE_ORDER_EXISTS" with the existingOrderId
+  And no second hold is created (client resumes or cancels the existing order)
 
 Scenario: A paid order does not block a new purchase (D:Q5)
   Given a user has a Paid order for event E
@@ -955,7 +992,8 @@ Scenario: User cancels their own unpaid order
 Scenario: User cannot cancel a paid order (D:Q6)
   Given a user's Paid order
   When they attempt to cancel it themselves
-  Then the response is 403 (paid-order voiding is Admin-only; refunds handled offline)
+  Then the response is 409 error.code "ORDER_NOT_CANCELLABLE"
+  And the state is unchanged (paid-order voiding is Admin-only; refunds handled offline)
 ```
 
 ## AC-ORD-07 — Order history (FR-ORD-07)
@@ -1003,6 +1041,18 @@ Scenario: Promo slot claimed at initiation (D:Q19)
   Given the order carries a capped promo
   When payment is initiated
   Then a redemption slot is atomically claimed (or PROMO_CAP_REACHED if none remain)
+
+Scenario: Hold expired at payment initiation (D:Q3)
+  Given a PendingPayment order whose HoldExpiresAt is in the past
+  When the user attempts to initiate payment
+  Then the response is 409 error.code "HOLD_EXPIRED"
+  And the order is transitioned to Expired and its seats are released
+
+Scenario: Free order cannot use the paid path (D:Q18)
+  Given a PendingPayment order with finalPrice 0.00
+  When the user calls the pay endpoint
+  Then the response is 409 error.code "ORDER_IS_FREE"
+  And the user is directed to the confirm-free path
 ```
 
 ## AC-PAY-02 — Webhook confirms payment (FR-PAY-02/03/04, NFR-SEC-04, NFR-REL-02)
@@ -1021,10 +1071,19 @@ Scenario: Unsigned or mismatched-signature webhook is rejected (NFR-SEC-04)
   When a webhook arrives with a missing or invalid HMAC signature
   Then it is rejected and the order is not marked Paid
 
-Scenario: Amount mismatch is rejected (FR-PAY-04)
+Scenario: Amount mismatch is rejected and recorded as Failed (FR-PAY-04)
   Given an order with final price 637.50
   When a signed webhook reports a different amount
-  Then the order is not confirmed and the discrepancy is logged
+  Then the order is not confirmed (stays PendingPayment)
+  And a Payment record is written with Status = Failed and the mismatched amount (US-PAY-02)
+  And the discrepancy is logged
+
+Scenario: Signature-verified failure releases the claimed promo slot (D:Q19)
+  Given a PendingPayment order that claimed a promo slot at initiation
+  When Paymob sends a validly-signed webhook reporting payment failure
+  Then the order stays PendingPayment (until it pays again or the hold expires)
+  And the claimed promo redemption slot is released
+  And a Payment record is written with Status = Failed
 
 Scenario: Webhook is idempotent (FR-PAY-03, NFR-REL-02)
   Given an order already marked Paid with tickets issued
@@ -1097,6 +1156,12 @@ Scenario: Guest name can be set per ticket
   Given a paid order's tickets
   When the buyer sets a guest name on a ticket
   Then that name is stored; guests need no account
+
+Scenario: Guest name cannot be changed after check-in
+  Given a ticket that is already CheckedIn
+  When the buyer attempts to set or change the guest name
+  Then the response is 409 error.code "TICKET_CHECKED_IN"
+  And the name is unchanged
 ```
 
 ## AC-TKT-03 — QR token security (FR-TKT-04, NFR-SEC-05, D:Q8)
@@ -1108,6 +1173,15 @@ Scenario: Only the hash is persisted (D:Q8)
   Then the QR encodes the public reference + a 256-bit random secret
   And the server stores only a deterministic SHA-256 hash of the secret
   And the raw secret is never persisted
+
+Scenario: QR image is served as a binary asset, owner-only, never cached
+  Given a Paid order's ticket
+  When the owner requests the QR image
+  Then the response is 200 image/png (binary, not the JSON envelope)
+  And the response carries Cache-Control: no-store
+  And the raw QR payload (reference + secret) is never returned as a JSON field anywhere in the API
+  When a non-owner (not Admin) requests the same QR image
+  Then the response is 403 error.code "FORBIDDEN"
 ```
 
 ## AC-CHK-01 — Check-in outcomes (FR-TKT-05/06, D:Q8, D:Q9)
@@ -1172,7 +1246,7 @@ Scenario: Soft-deleting a track auto-ends its assignments (D:Q14)
 ```
 
 ## AC-SES-01 — Session management, scoped to the supervised track (FR-TRK-02, D:Q13)
-> **Covers:** US-BRD-SES-01, US-BRD-SES-02, US-BRD-SES-03
+> **Covers:** US-BRD-SES-01, US-BRD-SES-02, US-BRD-SES-03, US-BRD-SES-04, US-ADM-SES-01
 
 ```gherkin
 Scenario: Board creates a session in their own track
@@ -1180,17 +1254,33 @@ Scenario: Board creates a session in their own track
   When they create a session in Track Y
   Then the session is created
 
+Scenario: Admin can manage sessions for any track (US-ADM-SES-01, D:Q13)
+  Given an Admin
+  When they create, edit, or delete a session in any track
+  Then the action succeeds regardless of which track it is
+
 Scenario: Board cannot manage another track's sessions (D:Q13)
   Given a Board@Y who is also a Member of Track X
   When they attempt to create/edit a session in Track X
-  Then the response is 403 (cross-track write rejected)
+  Then the response is 403 error.code "TRACK_FORBIDDEN"
+
+Scenario: Session status transitions (US-BRD-SES-04, DataModel §3.3)
+  Given a Scheduled session whose EndsAtUtc is in the past
+  When a Board or Admin transitions it to Held
+  Then the session status becomes Held
+  Given a Scheduled or Held session
+  When a Board or Admin transitions it to Cancelled
+  Then the session status becomes Cancelled
+  Given a Scheduled session whose EndsAtUtc is in the future
+  When a Board attempts to transition it to Held
+  Then the response is 409 error.code "ILLEGAL_STATUS_TRANSITION"
 
 Scenario: Session with records can be edited but not hard-deleted (D:Q13)
   Given a session that has attendance or evaluation records
   When a Board edits its topic/time
   Then the edit succeeds
   When the Board attempts to hard-delete it
-  Then the delete is rejected; only soft-delete/cancel is allowed (history retained)
+  Then the delete is rejected with 409 error.code "SESSION_HAS_RECORDS"
 
 Scenario: Records-free session can be removed
   Given a session with zero attendance and zero evaluations
@@ -1225,6 +1315,12 @@ Scenario: At most one attendance record per member per session (FR-ATT-02)
   Given an existing attendance record for a member and session
   When the Board records again
   Then the existing record is updated (no duplicate)
+
+Scenario: Attendance cannot be recorded for a future session (SESSION_NOT_OCCURRED)
+  Given a session whose EndsAtUtc is in the future
+  When a Board attempts to record attendance for a member
+  Then the response is 422 error.code "SESSION_NOT_OCCURRED"
+  And no attendance record is created
 
 Scenario: Attendance is keyed on enrollment, not raw user (D:Q11)
   Given a member who left Track X and later re-enrolled (new enrollment)
@@ -1275,6 +1371,12 @@ Scenario: Cannot evaluate a future session (D:Q16)
   Given a session whose date is in the future
   When a Board attempts to evaluate a member for it
   Then the response is 422 (session has not occurred)
+
+Scenario: Evaluation for a member with an ended enrollment is rejected (D:Q16)
+  Given a member whose enrollment in Track Y has been ended (EndedAt set)
+  When a Board attempts to submit an evaluation for that member
+  Then the response is 422 error.code "MEMBER_NOT_ENROLLED"
+  And no evaluation record is created
 
 Scenario: Score bounds are enforced (D:Q17)
   When a Board submits a score of 101, -1, or 87.5
@@ -1358,11 +1460,17 @@ Scenario: Board sends only to their own track's active members (FR-NTF-02, D:Q21
   When a Board attempts to notify another track
   Then the response is 403
 
+Scenario: Zero-recipient send is rejected (US-NTF-01, DataModel §4.1)
+  Given an audience that resolves to zero recipients (e.g. a Track with no active members)
+  When an Admin or Board sends a notification to that audience
+  Then the response is 422 error.code "NO_RECIPIENTS_RESOLVED"
+  And no Notification row is created
+
 Scenario: Admin audience taxonomy (D:Q21)
   Then an Admin may target platform-wide (all active users), by global role (all Attendees / all Admins), or by track
 ```
 
-## AC-NTF-02 — Reading notifications (FR-NTF-03)
+## AC-NTF-02 — Reading notifications (FR-NTF-03/04)
 > **Covers:** US-NTF-03
 
 ```gherkin
@@ -1371,9 +1479,16 @@ Scenario: Each recipient has independent read state
   When they mark one as read
   Then only their own read state changes; other recipients are unaffected
 
+Scenario: Mark all as read clears the inbox in one call
+  Given a user with multiple unread notifications
+  When they call the mark-all-as-read endpoint
+  Then all their unread notifications are marked read
+  And the response is 204 No Content
+
 Scenario: A user sees only their own inbox
   When a user lists notifications
   Then only rows addressed to them are returned, paginated
+  And filtering by unreadOnly returns only unread rows
 ```
 
 ---
@@ -1416,19 +1531,223 @@ Scenario: Track report
   When an Admin requests a track report
   Then it returns member progress, attendance, and evaluation averages
 
-Scenario: Financial report
+Scenario: Financial report separates revenue from refunds (US-ADM-RPT-03, Issue 7)
   When an Admin requests a financial report
-  Then it returns revenue per event and payment summaries (Paid orders only)
+  Then revenue counts only orders that reached Paid (by PaidAtUtc)
+  And a Paid order that was later voided (has a matching RefundEntry) is categorized as Refunded, not Revenue
+  And a Cancelled order that was never Paid (no RefundEntry) is excluded from both revenue and refunds
+  And revenue is broken down by event and by unitType (Individual vs Package)
+
+Scenario: Financial report honors a date range (US-ADM-RPT-03)
+  Given Paid orders spanning several months
+  When an Admin requests the financial report with fromDate/toDate
+  Then only orders with PaidAtUtc inside the range are counted
+
+Scenario: Report over empty data returns zeroed totals, not an error
+  Given an event/track/date-range with no qualifying orders or records
+  When an Admin requests the corresponding report
+  Then the response is 200 with zeroed counts and totals (empty arrays, 0.00 EGP), not a 404
 
 Scenario: CSV/PDF export as a format parameter (D:Q28c)
   Given any report endpoint
   When the Admin adds ?format=csv or ?format=pdf
-  Then the report is returned in that format instead of JSON
+  Then the report is returned in that format with the appropriate Content-Type and Content-Disposition
+  And the JSON envelope is not used for the file response
 ```
 
 ---
 
-## Cross-cutting acceptance criteria (apply to all endpoints)
+## AC-ROLE-08 — Search for enrollable users (D:Q15)
+> **Covers:** US-ROLE-08
+
+```gherkin
+Scenario: Board searches for an Attendee to enroll
+  Given a Board@Y
+  When they search by name or email (min 2 chars)
+  Then only active accounts with global role Attendee that have no active Member enrollment are returned
+  And each result includes boardOfTrackId so the caller can see if the candidate is already Board elsewhere
+  And results are paginated (D:Q26)
+
+Scenario: Already-enrolled users are excluded from results
+  Given a user who is already an active Member of any track
+  When a Board searches for enrollable users
+  Then that user does not appear in the results
+
+Scenario: Board cannot search enrollable users for another track
+  Given Yousef is Board of Track Y only
+  When he calls the enrollable-users endpoint for Track X
+  Then the response is 403 error.code "TRACK_FORBIDDEN"
+```
+
+## AC-ADM-EVT-07 — View event-scoped promo codes (D:Q50)
+> **Covers:** US-ADM-EVT-07
+
+```gherkin
+Scenario: Admin views promo codes scoped to an event
+  Given an Admin and an event with associated promo codes
+  When they request the event-scoped promo code report
+  Then the response lists each code with discountType, discountValue, redemptionCount,
+       globalRedemptionCap, perUserLimit, isActive, validFrom, validUntil
+  And results are paginated
+
+Scenario: Event with no promo codes returns an empty list
+  Given an event with no associated promo codes
+  When an Admin requests its promo code report
+  Then the response is 200 with an empty data array
+```
+
+## AC-ADM-PKG-03 — List packages for an event
+> **Covers:** US-ADM-PKG-03
+
+```gherkin
+Scenario: Admin lists all packages including inactive and soft-deleted
+  Given an event with active, inactive, and soft-deleted packages
+  When an Admin lists packages with includeInactive=true
+  Then all packages are returned with computed remaining seats and redemption counts
+
+Scenario: Default listing excludes soft-deleted packages
+  When an Admin lists packages without includeInactive
+  Then soft-deleted packages are excluded; inactive (but not deleted) packages are included
+```
+
+## AC-ADM-PRM-04 — Promo code CRUD lifecycle (D:Q50)
+> **Covers:** US-ADM-PRM-04
+
+```gherkin
+Scenario: Admin edits a promo code
+  Given an Admin and an existing promo code
+  When they update caps, validity window, scope, or active status with the correct rowVersion
+  Then the changes are saved
+
+Scenario: Concurrent promo edit is guarded by optimistic concurrency
+  Given two Admins editing the same promo code
+  When the second save uses a stale rowVersion
+  Then the response is 409 error.code "CONCURRENCY_CONFLICT"
+
+Scenario: ValidFrom must be earlier than ValidUntil when both are set
+  When an Admin sets validFrom after validUntil
+  Then the response is 422 error.code "VALIDATION_ERROR" with fieldErrors on the date fields
+
+Scenario: Soft-delete retains redemption history
+  Given a promo code with recorded redemptions
+  When an Admin soft-deletes it
+  Then the code is removed from active listings
+  And all redemption history is retained (FR-PROMO-04)
+
+Scenario: Soft-deleted code's code string is freed for reuse (FR-PROMO-05)
+  Given a soft-deleted promo with code "TEDX20"
+  When an Admin creates a new live promo with code "TEDX20"
+  Then the new promo is created (uniqueness is among live codes only)
+```
+
+## AC-SYS-01 — Background sweeper (D:Q3, D:Q19, D:Q34, D:Q45, D:Q53)
+> **Covers:** US-SYS-01
+
+```gherkin
+Scenario: Sweeper expires overdue holds and releases seats (D:Q3)
+  Given a PendingPayment order whose HoldExpiresAt is in the past
+  When the sweeper runs
+  Then the order transitions to Expired
+  And its held seats are released to availability
+  And any claimed promo slot is released (D:Q19)
+
+Scenario: Sweeper drains the outbox with retry/backoff (D:Q34, D:Q45)
+  Given outbox messages pending delivery (e.g. order-confirmation email)
+  When the sweeper processes the outbox
+  Then each message is delivered at least once
+  And failed deliveries are retried with backoff up to the configured max attempts
+  And permanently failed messages are marked dead-letter, not silently dropped
+
+Scenario: Only one sweeper instance runs at a time (D:Q53)
+  Given multiple application instances running concurrently
+  When the sweeper tick fires
+  Then only one instance acquires the distributed lock (sp_getapplock or equivalent)
+  And the others skip that tick without error
+```
+
+## AC-BRD-07 — Board member roster with attendance and evaluation summary
+> **Covers:** US-BRD-07
+
+```gherkin
+Scenario: Board views paginated roster of active members
+  Given a Board@Y
+  When they request the member roster for Track Y
+  Then only active members (EndedAtUtc IS NULL) are returned, paginated
+  And each row includes the member's current attendance % and latest evaluation score
+  And the Board cannot view the roster for another track (403 TRACK_FORBIDDEN)
+```
+
+## AC-MEM-05 — Member detailed attendance log
+> **Covers:** US-MEM-05
+
+```gherkin
+Scenario: Member views session-by-session attendance breakdown
+  Given a Member@X with an active enrollment
+  When they view their attendance log
+  Then each session in their current enrollment is listed with status (Present/Late/Absent)
+  And the Board's recordedBy stamp is visible per record
+  And records from previous (ended) enrollments are excluded from this view
+
+Scenario: Attendance % is computed from the current active enrollment only (D:Q11, D:Q12)
+  Given a member who was previously enrolled in Track X (ended) and is now enrolled in Track Y
+  When they view their attendance log
+  Then only Track Y records appear and the % reflects Track Y sessions only
+```
+
+## AC-ADM-TRK-03 — Edit track details
+> **Covers:** US-ADM-TRK-03
+
+```gherkin
+Scenario: Admin edits track fields
+  Given an Admin and an existing track
+  When they update nameEn, nameAr, descriptionEn, descriptionAr, schedule, or isActive with the correct rowVersion
+  Then the changes are saved
+
+Scenario: NameEn must be unique among live tracks
+  Given a live track named "Public Speaking"
+  When an Admin renames another track to "Public Speaking"
+  Then the response is 409 error.code "TRACK_NAME_TAKEN"
+
+Scenario: Concurrent track edit is guarded by optimistic concurrency
+  Given two Admins editing the same track
+  When the second save uses a stale rowVersion
+  Then the response is 409 error.code "CONCURRENCY_CONFLICT"
+```
+
+## AC-ADM-TRK-04 — List tracks with filters
+> **Covers:** US-ADM-TRK-04
+
+```gherkin
+Scenario: Admin lists tracks with filters and search
+  Given an Admin
+  When they list tracks with isActive=true, search="speaking", page=1, pageSize=20
+  Then only matching live tracks are returned, paginated
+  And each row includes member count and whether a Board is currently assigned
+
+Scenario: includeDeleted shows soft-deleted tracks
+  When an Admin lists tracks with includeDeleted=true
+  Then soft-deleted tracks are included in the results
+```
+
+## AC-ADM-TRK-05 — View full enrollment history for a track
+> **Covers:** US-ADM-TRK-05
+
+```gherkin
+Scenario: Admin views active and ended enrollments for a track
+  Given a track with both active and ended Member enrollments
+  When an Admin views the track's enrollment history
+  Then both active (EndedAtUtc IS NULL) and ended (EndedAtUtc IS NOT NULL) rows are returned
+  And each row shows startedAt, endedAt (nullable), and the member's identity
+
+Scenario: Ended enrollments retain their attendance and evaluation records
+  Given an ended enrollment with recorded attendance and evaluations
+  When an Admin views the enrollment history
+  Then the ended enrollment row is present with its historical records accessible
+```
+
+---
+
+
 
 ```gherkin
 Scenario: Standard response envelope (D:Q25)
