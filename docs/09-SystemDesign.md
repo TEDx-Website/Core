@@ -1,11 +1,11 @@
 # TEDxAlkawmia Platform — System Design
 
-> **Version:** 1.2
-> **Date:** 2026-07-23
+> **Version:** 1.3
+> **Date:** 2026-07-24
 > **Status:** Draft — authoritative for the *implementation architecture* (how the system is built)
 > **Reads from:** [01 — PRD](./01-PRD.md) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md) · [08 — Decision Log](./08-DecisionLog.md) · [10 — Data Model](./10-DataModel.md)
 > **Companion:** [[11-StateMachines|11 — State Machines]] — the single authority for all entity lifecycle diagrams · [[12-SequenceDiagrams|12 — Sequence Diagrams]] — the single authority for all cross-subsystem runtime flow diagrams. This document links to both rather than re-drawing them.
-> **Decisions:** requirements grilling (D:Q1–Q28) + architecture grilling (D:Q29–Q55) + the FK revision, cited as **(D:Qn)**.
+> **Decisions:** requirements grilling (D:Q1–Q28) + architecture grilling (D:Q29–Q56) + the FK revision, cited as **(D:Qn)**.
 
 ---
 
@@ -773,8 +773,9 @@ These are the rules the whole design leans on. If one is violated, an invariant 
 
 ---
 
-*System Design v1.2 — 2026-07-23. Authoritative for the implementation architecture; defers scope to the PRD, requirement detail to the SRS, resolved design questions to the Decision Log, the persistent schema to the Data Model, entity lifecycles to [[11-StateMachines]], and cross-subsystem runtime flows to [[12-SequenceDiagrams]]. Adds no new decision — every element traces to §16.*
+*System Design v1.3 — 2026-07-24. Authoritative for the implementation architecture; defers scope to the PRD, requirement detail to the SRS, resolved design questions to the Decision Log, the persistent schema to the Data Model, entity lifecycles to [[11-StateMachines]], and cross-subsystem runtime flows to [[12-SequenceDiagrams]]. Adds no new decision — every element traces to §16.*
 
 **Changelog**
+- **v1.3 (2026-07-24):** Cross-doc consistency pass — corrected the header **Decisions** line from `D:Q29–Q55` to `D:Q29–Q56` (the Q56 Archived→Cancelled ripple was already reflected in the body at §4.3/§7.10; only the header was stale). No architectural change.
 - **v1.2 (2026-07-23):** Extracted the three inline sequence diagrams (request pipeline §5.1, refresh rotation §6.3, reserve/webhook §7.6) into the new canonical [[12-SequenceDiagrams]]; replaced them with wikilinks. Updated §1.2/§1.4 authority boundary to name 12 as the owner of runtime flows. Wired §7.10 cancellation and the §16 traceability note to 12. Reflected the Archived→Cancelled cancel ripple (D:Q56) in §7.10.
 - **v1.1 (2026-07-23):** State machines extracted to [[11-StateMachines]]; §4.3/§6.3/§7.9 deferred there. Q56 (Archived→Cancelled) reflected in §4.3.

@@ -1,15 +1,16 @@
 # TEDxAlkawmia Platform — Product Requirements Document (PRD)
 
-> **Version:** 1.2
-> **Date:** 2026-07-21
+> **Version:** 1.3
+> **Date:** 2026-07-24
 > **Author:** Engineering Team
 > **Status:** Draft — Pending Stakeholder Approval
 
-> **Authority note (v1.2).** This PRD is **authoritative for product scope** — *what* the platform does and *why*. The requirement-level detail lives in the **SRS (02)**; resolved design questions live in the **Decision Log (08)**; the downstream specs (**User Flows 03, Personas 04, User Stories 05, Acceptance Criteria 06, API Contract 07**) are written and consistent with this PRD. One document is still **pending**: **System Design (09)**; the **Data Model (10)** is now written and authoritative. Where any of these conflict with the PRD on *scope*, the PRD wins; on *requirement detail* the SRS wins; on a *resolved design question* the Decision Log wins.
+> **Authority note (v1.3).** This PRD is **authoritative for product scope** — *what* the platform does and *why*. The requirement-level detail lives in the **SRS (02)**; resolved design questions live in the **Decision Log (08)**; the downstream specs (**User Flows 03, Personas 04, User Stories 05, Acceptance Criteria 06, API Contract 07, System Design 09, Data Model 10, State Machines 11, Sequence Diagrams 12**) are all written and consistent with this PRD. Where any of these conflict with the PRD on *scope*, the PRD wins; on *requirement detail* the SRS wins; on a *resolved design question* the Decision Log wins; on *schema* the Data Model wins.
 >
-> **Doc map:** 00 Brief · 01 PRD *(this)* · 02 SRS · 03 User Flows · 04 Personas · 05 User Stories · 06 Acceptance Criteria · 07 API Contract · 08 Decision Log · 09 System Design *(pending)* · 10 Data Model.
+> **Doc map:** 00 Brief · 01 PRD *(this)* · 02 SRS · 03 User Flows · 04 Personas · 05 User Stories · 06 Acceptance Criteria · 07 API Contract · 08 Decision Log · 09 System Design · 10 Data Model · 11 State Machines · 12 Sequence Diagrams.
 >
 > **Changelog**
+> - **v1.3 (2026-07-24):** Cross-doc consistency pass. Cleared the stale *(pending)* marker on **System Design (09)** — it is now written and authoritative. Added **State Machines (11)** and **Sequence Diagrams (12)** to the authority note and doc map. Scope, roles, and feature catalog re-verified against Decision Log Q1–Q56 (no scope change).
 > - **v1.2 (2026-07-21):** Model-B ticketing — an event sells **individual tickets at a face price**; **packages are optional** bundles, not the only unit (glossary, §4.1, §5, EVT-01/05, ORD-01/03/05). Fixed the doc map in this note (08 is the Decision Log, not a Domain Model; the Data Model is 10).
 > - **v1.1:** Roles reworked to **Attendee / Admin** (global) + **Member / Board** (per-track); a person may be **Member of one track and Board of another**. Ticketing became **paid events via Paymob** with **one QR per seat** and the reserve → hold → pay → QR flow. "Guest" renamed **Attendee**; **Visitor** = an unauthenticated browser. English UI, **i18n-ready** (Arabic/RTL later).
 
@@ -279,7 +280,7 @@ Two dimensions: a **global role** (Attendee/Admin) and **per-track assignments**
 
 ## 7. User Flows
 
-> **Note:** the summaries below are updated for the Attendee/booking model. Detailed step-by-step user flows will live in a dedicated flows document (to be rebuilt).
+> **Note:** the summaries below are the scope-level view of each actor's journey. The detailed step-by-step flows live in **[[03-UserFlows|03 — User Flows]]**, which is authoritative for user-facing behavior.
 
 ### 7.1 Attendee Flow (booking)
 ```

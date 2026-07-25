@@ -1,9 +1,11 @@
 # TEDxAlkawmia — User Stories
 
-> **Version:** 1.0
-> **Date:** 2026-07-20
+> **Version:** 1.1
+> **Date:** 2026-07-24
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [04 — Personas](./04-Personas.md)
-> **Decisions:** grilling session 2026-07-20 (Q1–Q28). Where a story depends on a resolved decision, it is cited as **(D:Qn)**.
+> **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56 Archived→Cancelled). Where a story depends on a resolved decision, it is cited as **(D:Qn)**.
+>
+> **v1.1 (2026-07-24):** Added Q56 Archived→Cancelled to the event lifecycle (US-ADM-EVT-03/04). Refreshed provenance from (Q1–Q28) to (Q1–Q56). No story IDs renamed — anchors `[[05-UserStories#US-*]]` are stable.
 
 ---
 
@@ -43,7 +45,7 @@ Each story follows the canonical form:
 ### US-AUTH-03
 *As an **Attendee**, I want my session to refresh silently, so that I stay logged in without re-entering my password.*
 - **Traces:** AUTH-06 · FR-AUTH-08, FR-AUTH-09 · Flow §1.2
-- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02).
+- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02). An expired refresh token (past `ExpiresAtUtc`) is rejected with `TOKEN_INVALID` (`ReasonRevoked = Expired`), distinct from `TOKEN_REUSED` (rotation violation) — the client must distinguish these for appropriate UX (D:Q47 `ReasonRevoked` enum: `Rotated | Reuse | Logout | Expired`).
 
 ### US-AUTH-04
 *As an **Attendee**, I want to log out, so that my refresh token can no longer be used.*
@@ -58,7 +60,7 @@ Each story follows the canonical form:
 ### US-AUTH-06
 *As an **Attendee**, I want to set a new password using the reset link, so that I can log in again.*
 - **Traces:** AUTH-05 · FR-AUTH-11 · Flow §1.3
-- **Notes:** The reset token must be valid, unexpired, and unused; used/expired tokens are rejected with a clear message. New password must meet the policy. On success, existing refresh tokens for the account SHOULD be revoked.
+- **Notes:** The reset token must be valid, unexpired, and unused; used/expired/already-consumed tokens are rejected with `RESET_TOKEN_INVALID` (D:Q47, DataModel §1.2). New password must meet the policy. On success, **all existing refresh tokens for the account are revoked** (mandatory — NFR-SEC-02, D:Q24; implemented via `IX_RefreshToken_AccountId`).
 
 ### US-AUTH-07
 *As the **system**, I want every protected endpoint to enforce the global role and per-track policies server-side, so that the client is never trusted for access decisions.*
@@ -101,7 +103,7 @@ Each story follows the canonical form:
 ### US-MNG-02
 *As an **Admin**, I want to view a single user's full detail, so that I can see their roles, assignments, and status before acting.*
 - **Traces:** USER-05 · FR-USER-01, FR-USER-05 · Flow §7
-- **Notes:** Shows global role, active Member/Board assignments, and account status.
+- **Notes:** Shows global role, active Member/Board assignments, and account status. **Read-only prerequisite** for the role-action stories (US-ROLE-01–04) — role mutations are performed from this surface. See PRD ADM-02 for the full user management feature scope.
 
 ### US-MNG-03
 *As an **Admin**, I want to deactivate (and reactivate) a user account, so that I can revoke access without losing history.*
@@ -154,6 +156,11 @@ Each story follows the canonical form:
 - **Traces:** — · FR-ROLE-04 · Flow §7
 - **Notes:** Two filtered unique indexes enforce ≤1 active Member enrollment and ≤1 active Board assignment per user; the "must differ" rule is checked at assignment time. Violations are rejected, not silently corrected.
 
+### US-ROLE-08
+*As an **Admin** or **Board@T**, I want to search for existing Attendees by name or email to find a user to enroll, so that I can identify the right account without creating a duplicate.*
+- **Traces:** TRK-03 · FR-ROLE-03 · DataModel §1.1 · D:Q15, D:Q26
+- **Notes:** Returns only **active** (`IsActive = true`) Attendee-global-role accounts. Excludes users already active Members or who would violate dual-role rules — server-side enforcement at enroll time (D:Q15, D:Q51). Paginated with `meta` (D:Q26). A Board may only search in the context of enrolling into their supervised track.
+
 ---
 
 
@@ -198,12 +205,12 @@ Each story follows the canonical form:
 ### US-ADM-EVT-03
 *As an **Admin**, I want to publish, archive, or re-list an event, so that I control its public visibility.*
 - **Traces:** EVT-06 · FR-EVT-04 · Flow §6
-- **Notes:** **State machine (D:Q23):** Draft ⇄ Published **only while zero orders exist**; Published → Archived or → Cancelled; Archived → Published. Archived is a **manual hide** (kept, off all listings) distinct from a date-past event.
+- **Notes:** **State machine (D:Q23, D:Q56):** Draft ⇄ Published **only while zero orders exist**; Published → Archived; Archived → Published. **Draft → Cancelled is blocked** — a zero-order Draft is disposed of by soft-delete (D:Q22, D:Q56), never cancelled. Archived is a **manual hide** (kept, off all listings) distinct from a date-past event. Cancellation (from Published or Archived) is handled entirely by **US-ADM-EVT-04** — do not implement cancel transitions here.
 
 ### US-ADM-EVT-04
 *As an **Admin**, I want to cancel an event that is called off, so that ticket holders are handled correctly.*
 - **Traces:** EVT-06 · FR-EVT-04, FR-PAY-07 · Flow §6
-- **Notes:** Cancelling (status → **Cancelled**, terminal) **voids all Issued tickets**, **releases all PendingPayment holds**, and **records offline refund entries** for Paid orders (money handled offline, D:Q6/Q22). Cancelled events are hidden from listings but **retained**. No un-cancel.
+- **Notes:** Cancel is reachable **from Published or Archived** (D:Q56) — the ripple is identical either way. **Draft → Cancelled is blocked** — a zero-order Draft is disposed of by soft-delete (D:Q22, D:Q56), never cancelled. Cancelling (status → **Cancelled**, terminal) **voids all Issued tickets**, **releases all PendingPayment holds**, and **creates a `RefundEntry` row for each Paid order** recording `Reason` (admin-supplied), `VoidedTicketCount`, `SeatsReleased`, and `CheckedInTicketsRetained` (D:Q6, DataModel §2.6); money is handled offline. A ticket already **CheckedIn is non-voidable** and its seat stays consumed. Cancelled events are hidden from listings but **retained**. No un-cancel.
 
 ### US-ADM-EVT-05
 *As an **Admin**, I want to soft-delete a mistaken/empty event, so that it disappears without harming history.*
@@ -214,6 +221,11 @@ Each story follows the canonical form:
 *As an **Admin**, I want to view all orders and attendees for an event, so that I can manage and reconcile it.*
 - **Traces:** EVT-06, ADM-03 · FR-EVT-08 · Flow §6.2
 - **Notes:** Paginated; shows orders across all statuses and the tickets/attendees they produced.
+
+### US-ADM-EVT-07
+*As an **Admin**, I want to view the promo codes scoped to a specific event (including redemption counts against caps), so that I can manage event-level discounts and monitor uptake.*
+- **Traces:** ORD-05 · FR-PROMO-05 · DataModel §2.7 · D:Q50
+- **Notes:** Read-only report surface on the event management page. Uses `IX_PromoRedemption_PromoCode` to count redemptions with `Status IN (Claimed, Confirmed)`. Shows both active and inactive event-scoped codes.
 
 ---
 
@@ -228,6 +240,11 @@ Each story follows the canonical form:
 *As an **Admin**, I want to activate/deactivate and soft-delete packages, so that I can manage what's on sale without breaking history.*
 - **Traces:** ORD-01 · FR-PKG-03 · Flow §6
 - **Notes:** A package **referenced by existing orders MUST NOT be hard-deleted** (soft-delete only). Deactivating hides it from new purchases but leaves historical orders intact (prices are snapshotted, D:Q4).
+
+### US-ADM-PKG-03
+*As an **Admin**, I want to list all packages for an event and view each package's details, so that I can manage the event's package offerings.*
+- **Traces:** ORD-01 · FR-PKG-01, FR-PKG-04 · DataModel §2.2 · D:Q2
+- **Notes:** Read path. Remaining seats per package are computed (not stored) from held + issued seats. Active and inactive packages shown with redemption counts. Backed by `MaxQuantityPerOrder` and `RowVersion` (DataModel §2.2).
 
 ### US-PKG-03
 *As an **Attendee** or **Visitor**, I want to see an event's individual-ticket price and any active packages, so that I can choose how to buy.*
@@ -246,12 +263,17 @@ Each story follows the canonical form:
 ### US-ADM-PRM-02
 *As an **Admin**, I want to constrain a promo code's usage, so that I can control its reach and validity.*
 - **Traces:** ORD-05 · FR-PROMO-02, FR-PROMO-03 · Flow §6
-- **Notes:** Optional **global redemption cap**, **per-user limit**, **validity window (from/until)**, and **event scope** (null = all events). The system rejects a code that is inactive, outside its window, over its global cap, over the user's per-user limit, or scoped to a different event.
+- **Notes:** Optional **global redemption cap**, **per-user limit**, **validity window**, and **event scope** (null = all events). `ValidFrom` and `ValidUntil` are **independently nullable** — `null ValidFrom` = no lower bound (never raises `PROMO_NOT_YET_VALID`); `null ValidUntil` = no expiry (never raises `PROMO_EXPIRED`); both null = always valid (D:Q50, DataModel §2.7). If both are provided, `ValidFromUtc` must be strictly before `ValidUntilUtc` — enforced at the application layer (DataModel §2.7), not a schema constraint. The system rejects a code that is inactive, outside its window, over its global cap, over the user's per-user limit, or scoped to a different event; runtime failures return distinct codes: `PROMO_NOT_YET_VALID`, `PROMO_EXPIRED`, `PROMO_CAP_REACHED`, `PROMO_USER_LIMIT`, `PROMO_WRONG_EVENT` (D:Q50).
 
 ### US-ADM-PRM-03
 *As an **Admin**, I want each redemption recorded, so that limits are enforced and there's an audit trail.*
 - **Traces:** ORD-05 · FR-PROMO-04 · Flow §6
 - **Notes:** A redemption records code, user, order, timestamp. **Timing (D:Q19):** a redemption **slot is atomically claimed at payment initiation** (paid orders) or **at confirmation** (free/100%-off orders), **confirmed on Paid**, and **released on payment failure or hold expiry** — so unpaid holds never burn a limited promo and the cap is never exceeded.
+
+### US-ADM-PRM-04
+*As an **Admin**, I want to list, view, edit, and soft-delete existing promo codes, so that I can manage promotions throughout their lifecycle.*
+- **Traces:** ORD-05 · FR-PROMO-05 · DataModel §2.7 · D:Q50, D:Q28c
+- **Notes:** Editable fields: discount value, validity window, caps, active status, event scope. Soft-delete is blocked if the code has active/confirmed redemptions. Editing when both `ValidFromUtc` and `ValidUntilUtc` are present requires `ValidFrom < ValidUntil` (DataModel §2.7). Concurrent edits guarded by `RowVersion` → `CONCURRENCY_CONFLICT`.
 
 ---
 
@@ -270,7 +292,7 @@ Each story follows the canonical form:
 ### US-ORD-02
 *As an **Attendee**, I want to reserve individual tickets or a package, so that the seats are held while I pay.*
 - **Traces:** ORD-03 · FR-ORD-02, FR-ORD-03, FR-ORD-04, FR-ORD-05 · Flow §3.2
-- **Notes:** Reserving holds `quantity` seats for an individual-ticket order, or `seatsPerPackage × quantity` for a package order, for a **15-minute checkout window** (D:Q3, FR-ORD-05). The order carries a **nullable package reference** — `null` for an individual-ticket order (D:Q1 addendum). The server **re-prices and re-validates** at reserve (live event/package price + promo validity + per-user limit) and **snapshots** the unit price, base, discount, and final — plus the package name (package order) or event title (individual order) — onto the order (D:Q4, FR-ORD-04); later catalog/price/promo edits never alter this order. If the price differs from the quote, the API responds with `PRICE_CHANGED` and the new quote for explicit re-confirmation (D:Q4) — it never silently charges a different amount. Capacity check is **concurrency-safe** (SERIALIZABLE) and uses the clock-aware held-seats predicate (D:Q3); it must not oversell (Persona: Kareem, whole-package seat count). **At most one active (PendingPayment, unexpired) order per user per event** (D:Q5) — re-reserving points the user to their existing pending order.
+- **Notes:** Reserving holds `quantity` seats for an individual-ticket order, or `seatsPerPackage × quantity` for a package order, for a **15-minute checkout window** (D:Q3, FR-ORD-05). The order carries a **nullable package reference** — `null` for an individual-ticket order (D:Q1 addendum). The server **re-prices and re-validates** at reserve (live event/package price + promo validity + per-user limit) and **snapshots** the unit price, base, discount, and final — plus the package name (package order) or event title (individual order) as `UnitNameSnapshot` — onto the order (D:Q4, FR-ORD-04); later catalog/price/promo edits never alter this order. If the price differs from the quote, the API responds with `PRICE_CHANGED` and the new quote for explicit re-confirmation (D:Q4) — it never silently charges a different amount. Capacity check is **concurrency-safe** (SERIALIZABLE) and uses the clock-aware held-seats predicate (D:Q3); it must not oversell (Persona: Kareem, whole-package seat count). **At most one active (PendingPayment, unexpired) order per user per event** (D:Q5) — re-reserving returns `ACTIVE_ORDER_EXISTS` and points the user to their existing pending order. Quantity-cap violation returns `QUANTITY_EXCEEDS_MAX` (D:Q2). A **Paid** order does not block a new reserve for the same event — only one *pending* unexpired order is blocked (D:Q5).
 
 ### US-ORD-03
 *As an **Attendee**, I want to cancel my own unpaid order, so that I can release the seats if I change my mind.*
@@ -292,6 +314,11 @@ Each story follows the canonical form:
 - **Traces:** ORD-09 · FR-ORD-05, FR-ORD-08 · Flow §3.4
 - **Notes:** A background sweeper transitions lapsed `PendingPayment` orders to **Expired** and releases any claimed promo slot (D:Q19). **Seat availability does not depend on the sweeper** — a hold with `HoldExpiresAt < now` stops counting against capacity immediately (D:Q3); the sweeper is cleanup only.
 
+### US-SYS-01
+*As the **system**, I want a background sweeper that expires lapsed holds, releases associated promo slots, and drains the outbox with retry/backoff, so that seat availability is always correct and side-effects are delivered reliably.*
+- **Traces:** ORD-09 · FR-ORD-05, FR-ORD-08 · D:Q3, Q19, Q34, Q45, Q53
+- **Notes:** Sweeper runs as a `BackgroundService` guarded by `sp_getapplock` (single-instance). Hold expiry: orders with `HoldExpiresAtUtc < now` AND `Status = PendingPayment` → `Order.Expire()` + `PromoRedemption → Released`. Outbox: unprocessed rows with `NextAttemptAtUtc <= now` delivered at-least-once; backoff incremented on failure. Correctness of seat availability does NOT depend on sweeper timing — the clock-aware predicate handles it immediately (D:Q3).
+
 ---
 
 ## 10. Payment via Paymob (PRD §6.4 · SRS §3.8 · Flow §3)
@@ -304,7 +331,7 @@ Each story follows the canonical form:
 ### US-PAY-02
 *As the **system**, I want to confirm payment only from a signature-verified Paymob webhook, so that tickets are never issued on an unverified or client-reported result.*
 - **Traces:** ORD-04 · FR-PAY-02, FR-PAY-03, FR-PAY-04, FR-PAY-05 · Flow §3.3
-- **Notes:** The webhook handler **verifies the HMAC signature** and **validates the reported amount against the order's snapshotted final price** before marking the order **Paid** (NFR-SEC-04). It is **idempotent** — a replayed callback for an already-paid order issues **no duplicate tickets** and double-counts no seats (FR-PAY-03, NFR-REL-02). Each payment attempt is recorded (status, Paymob transaction id, amount, raw verified payload) for reconciliation (FR-PAY-05). On success the promo redemption is **confirmed** (D:Q19); on failure/expiry the claimed slot is **released**.
+- **Notes:** The webhook handler **verifies the HMAC signature** and **validates the reported amount against the order's snapshotted final price** before marking the order **Paid** (NFR-SEC-04). **Amount mismatch** (`TotalSnapshot ≠ reported amount`): webhook rejected, **no tickets issued**, `Payment.Status = Failed` with the mismatched amount recorded for audit, and a structured error is logged at ERROR severity with `correlationId` for manual review (D:Q18, SD §7.6). Signature failure is rejected before any DB write. It is **idempotent** — a replayed callback for an already-paid order issues **no duplicate tickets** and double-counts no seats (FR-PAY-03, NFR-REL-02). Each payment attempt is recorded (status, Paymob transaction id, amount, raw verified payload) for reconciliation (FR-PAY-05). On success the promo redemption is **confirmed** (D:Q19); on failure/expiry the claimed slot is **released**.
 
 ### US-PAY-03
 *As an **Attendee** buying a free or 100%-off order, I want my tickets issued immediately, so that I skip the payment gateway.*
@@ -319,7 +346,12 @@ Each story follows the canonical form:
 ### US-PAY-05
 *As an **Admin**, I want to view payment attempts across orders, so that I can reconcile revenue and support buyers.*
 - **Traces:** ORD-04 · FR-PAY-05 · Flow §6.2
-- **Notes:** Lists each recorded payment attempt (status, Paymob transaction id, amount, timestamp) for reconciliation and support (D:Q6/Q7 refund-entry distinction). Read-only; Admin-only. Backs `GET /admin/payments`.
+- **Notes:** Lists each recorded payment attempt (status, Paymob transaction id, amount, timestamp) for reconciliation and support. A paid-then-refunded order is distinguished from a never-paid cancellation by the presence of a `RefundEntry`, not by order status (D:Q6, DataModel §2.3 Issue 7). Read-only; Admin-only. Backs `GET /admin/payments`.
+
+### US-ADM-PAY-01
+*As an **Admin**, I want to list and filter all orders across events (by event, status, date range, attendee name/email), so that I can manage the platform's financial state and support buyers.*
+- **Traces:** ADM-03 · FR-ORD-07 · PRD §7.4 · DataModel §2.3 · D:Q26
+- **Notes:** Paginated with `meta` (D:Q26). Distinguishes voided-paid (has `RefundEntry`) from user-cancelled-unpaid (no `RefundEntry`) even though both carry `Cancelled` status (DataModel §2.3 Issue 7). Backs `GET /admin/orders`.
 
 ---
 
@@ -328,21 +360,26 @@ Each story follows the canonical form:
 ### US-TKT-01
 *As an **Attendee**, I want one QR ticket per seat once my order is paid, so that each attendee can enter independently.*
 - **Traces:** ORD-06 · FR-TKT-01, FR-TKT-02, FR-TKT-04 · Flow §3.3
-- **Notes:** On **Paid**, the system issues exactly **one ticket per held seat**, each with a **unique QR token** and a short human-readable **public reference** (e.g. `TKT-7F3A9C`). The QR encodes the **public reference + a 256-bit random secret**; the server stores only the reference (indexed) and a **deterministic SHA-256 hash** of the secret — the raw secret exists only inside the QR image (D:Q8, FR-TKT-04, NFR-SEC-05). A reserved/unpaid order has **zero tickets** (FR-TKT-02).
+- **Notes:** On **Paid**, the system issues exactly **one ticket per held seat**, each with a **unique QR token** and a short human-readable **public reference** (e.g. `TKT-7F3A9C`), and an optional **guest name** (`guestName`, DataModel §2.4). The QR encodes the **public reference + a 256-bit random secret**; the server stores only the reference (indexed) and a **deterministic SHA-256 hash** of the secret — the raw secret exists only inside the QR image (D:Q8, FR-TKT-04, NFR-SEC-05). A reserved/unpaid order has **zero tickets** (FR-TKT-02).
 
 ### US-TKT-02
 *As a **Group Buyer (Attendee)**, I want to put an optional guest name on each ticket, so that my friends can each carry their own, without being forced to name them.*
 - **Traces:** ORD-06 · FR-TKT-03 · Flow §3.3, §4 · Persona: Kareem
-- **Notes:** Each ticket **may** carry a guest name; a **nameless ticket is still fully valid**. Guests need no account. A ticket's name may be edited while the ticket is `Issued`; once `CheckedIn` it is no longer editable (Persona: Kareem — "reassign after check-in" forbidden).
+- **Notes:** Each ticket **may** carry a guest name (`guestName`); a **nameless ticket is still fully valid**. Guests need no account. A ticket's `GuestName` is editable only while `Status = Issued`; `CheckedIn` and `Voided` tickets are non-editable (D:Q7). The `RowVersion` guards concurrent edits (Persona: Kareem — "reassign after check-in" forbidden).
 
 ### US-TKT-03
 *As an **Attendee**, I want to view and present my tickets on my phone, so that I can be scanned at the door.*
 - **Traces:** ORD-06 · FR-TKT-01 · Flow §4.1
-- **Notes:** Tickets render from a **server-generated QR image** returned only to the account's own paid orders over HTTPS (D:Q3-audit). The raw QR payload (public reference + 256-bit secret) is **never returned as a JSON field** — the backend renders the QR to an image and the frontend simply displays it, so the secret never appears in an API response body.
+- **Notes:** Tickets render from a **server-generated QR image** returned only to the account's own paid orders over HTTPS (D:Q8). The raw QR payload (public reference + 256-bit secret) is **never returned as a JSON field** — the backend renders the QR to an image and the frontend simply displays it, so the secret never appears in an API response body.
 
 ---
 
 ## 12. Check-in at the Door (PRD §6.4 · SRS §3.9 · Flow §5)
+
+### US-ADM-TKT-01
+*As an **Admin**, I want to list, search (by guest name or ticket reference), and filter tickets for an event by status (Issued/CheckedIn/Voided), so that I can manage and verify admissions at the door.*
+- **Traces:** CHK-01 · FR-TKT-01 · DataModel §2.4 · D:Q7, Q9
+- **Notes:** Read-only. Backed by `IX_Ticket_Event_Status (EventId, Status)`. No-show is derived (`Issued AND event.EndsAtUtc < now`), never a stored status (D:Q7). `CheckedInBy` and `CheckedInAtUtc` visible for auditing. Paginated with `meta` (D:Q26).
 
 ### US-CHK-01
 *As an **Admin**, I want to scan a ticket's QR at the venue, so that I admit the holder exactly once.*
@@ -352,7 +389,7 @@ Each story follows the canonical form:
 ### US-CHK-02
 *As an **Admin**, I want a rejected scan to tell me exactly why, so that I can act correctly at the door.*
 - **Traces:** CHK-01 · FR-TKT-05, FR-TKT-06 · Flow §5
-- **Notes:** The scan yields one of **five distinct outcomes** (D:Q9, D:Q2-audit): **success** · **already-checked-in** (returns who scanned and when) · **wrong-event** (valid ticket, but for a different event) · **voided** (a known ticket whose paid order was voided/refunded — `TICKET_VOIDED`, distinct from a garbage token so door staff can tell a refunded ticket from a fake one) · **unknown/invalid** (no matching reference or bad secret — `TICKET_INVALID`). Every rejected outcome is logged (FR-TKT-06).
+- **Notes:** The scan yields one of **five distinct outcomes** (D:Q9; every rejection logged per FR-TKT-06): **success** · **already-checked-in** (returns who scanned and when) · **wrong-event** (valid ticket, but for a different event) · **voided** (a known ticket whose paid order was voided/refunded — `TICKET_VOIDED`, distinct from a garbage token so door staff can tell a refunded ticket from a fake one) · **unknown/invalid** (no matching reference or bad secret — `TICKET_INVALID`). Every rejected outcome is logged (FR-TKT-06).
 
 ### US-CHK-03
 *As an **Admin**, I want every scan — success or rejection — recorded, so that there's an audit trail and no silent drops.*
@@ -376,12 +413,15 @@ Each story follows the canonical form:
 | US-ORD-04 | ORD-06 | FR-ORD-02, FR-TKT-01 | §3 | Q1 |
 | US-ORD-05 | ORD-08 | FR-ORD-07 | §4.1 | Q26 |
 | US-ORD-06 | ORD-09 | FR-ORD-05/08 | §3.4 | Q3,Q19 |
+| US-SYS-01 | ORD-09 | FR-ORD-05/08 | §3.4 | Q3,Q19,Q34,Q45,Q53 |
 | US-PAY-01 | ORD-04 | FR-PAY-01 | §3.3 | Q18,Q19,Q28a |
 | US-PAY-02 | ORD-04 | FR-PAY-02/03/04/05 | §3.3 | Q19 |
 | US-PAY-03 | ORD-05 | FR-PAY-06 | §3.3 | Q18,Q19 |
 | US-PAY-04 | ORD-08 | FR-PAY-02 | §3.3 | — |
 | US-PAY-05 | ORD-04 | FR-PAY-05 | §6.2 | Q6,Q7 |
+| US-ADM-PAY-01 | ADM-03 | FR-ORD-07 | §6.2 | Q6,Q26 |
 | US-TKT-01 | ORD-06 | FR-TKT-01/02/04 | §3.3 | Q8 |
+| US-ADM-TKT-01 | CHK-01 | FR-TKT-01 | §5 | Q7,Q9,Q26 |
 | US-TKT-02 | ORD-06 | FR-TKT-03 | §3.3,§4 | Q6 |
 | US-TKT-03 | ORD-06 | FR-TKT-01 | §4.1 | Q8 |
 | US-CHK-01 | CHK-01 | FR-TKT-05/06 | §5 | Q8,Q9 |
@@ -395,14 +435,29 @@ Each story follows the canonical form:
 ## 13. Track Management (PRD §6.7 · SRS §3.10 · Flow §7, §9)
 
 ### US-ADM-TRK-01
-*As an **Admin**, I want to create, edit, and soft-delete training tracks, so that I can organize the training program.*
+*As an **Admin**, I want to create a training track, so that I can add it to the training program.*
 - **Traces:** TRK-01 · FR-TRK-01 · Flow §7
-- **Notes:** A track has name, description, and schedule. **Track names must be unique among live (non-deleted) tracks.**
+- **Notes:** Fields: `NameEn`, `NameAr`, `DescriptionEn`, `DescriptionAr`, `Schedule`. **Track names must be unique among live (non-deleted) tracks** (`TRACK_NAME_TAKEN`). Created with `IsActive = true` by default. See US-ADM-TRK-03 for editing, US-ADM-TRK-02 for soft-delete.
+
+### US-ADM-TRK-03
+*As an **Admin**, I want to edit a track's name, description, schedule, and active status, so that I can keep track information accurate.*
+- **Traces:** TRK-01 · FR-TRK-01 · DataModel §3.1 · D:Q14
+- **Notes:** `NameEn` must be unique among live tracks (`TRACK_NAME_TAKEN`). Both `NameEn` and `NameAr` are required. Concurrent edits guarded by `RowVersion` → `CONCURRENCY_CONFLICT`.
+
+### US-ADM-TRK-04
+*As an **Admin**, I want to list all training tracks with filters (active/inactive, search by name), so that I can navigate and manage the training program.*
+- **Traces:** TRK-01 · FR-TRK-01 · DataModel §3.1 · D:Q26
+- **Notes:** Paginated with `meta` (D:Q26). Shows each track's member count, Board assignment status, and active/inactive state. Soft-deleted tracks are hidden from the normal list but visible via archive view for Admin (D:Q54).
 
 ### US-ADM-TRK-02
 *As an **Admin**, I want to soft-delete a track and be told its impact, so that I retire a track without orphaning people or losing history.*
 - **Traces:** TRK-01 · FR-TRK-01, FR-ROLE-05 · Flow §7
 - **Notes:** **(D:Q14)** Soft-deleting a track **auto-ends its active Member enrollments and Board assignment** (sets `EndedAt`), **retaining all history** (attendance, evaluations, sessions). Those users become **free to be assigned elsewhere** (unblocks the dual-role caps, FR-ROLE-04). The action is behind an **Admin confirmation stating the impact** ("this ends N enrollments and 1 Board assignment"). The track and its records remain queryable for reporting.
+
+### US-ADM-TRK-05
+*As an **Admin**, I want to view all enrollments for a track (active and ended), so that I can review the full membership history and investigate any disputes.*
+- **Traces:** TRK-05 · FR-TRK-04 · DataModel §3.2 · D:Q11, Q14
+- **Notes:** Shows `EndedAtUtc` where set. Backed by `IX_Assignment_Track_Role (TrackId, TrackRole, EndedAtUtc)`. Different from the Board's roster view (which shows active only). Admin can access soft-deleted track's enrollment history.
 
 ### US-BRD-TRK-01
 *As a **Board@T** or **Admin**, I want to view a track's full detail — members, sessions, and progress summaries — so that I can supervise it.*
@@ -428,6 +483,16 @@ Each story follows the canonical form:
 - **Traces:** SES-03 · FR-TRK-02, NFR-REL-03 · Flow §9
 - **Notes:** **(D:Q13)** A session may be **hard-deleted only if it has zero attendance and zero evaluation records**. A session that has any records can only be **soft-deleted/cancelled**, preserving training history (FR-ROLE-05). Board scope restricted to own track. Priority P1.
 
+### US-BRD-SES-04
+*As a **Board@T** or **Admin**, I want to mark a session as Held (after it occurs) or Cancelled (if it is called off), so that the session status accurately reflects reality for attendance and reporting.*
+- **Traces:** SES-02 · DataModel §3.3 · D:Q12, Q13
+- **Notes:** `Scheduled → Held` (after `EndsAtUtc`). `Scheduled | Held → Cancelled` (session called off). A Cancelled session with attendance/evaluation records is soft-deleted only (`SESSION_HAS_RECORDS`). Board scope restricted to own track (D:Q13); Admin may transition any track's session.
+
+### US-ADM-SES-01
+*As an **Admin**, I want to manage sessions for any track (create, edit, delete, status transitions), so that I can administer the training program platform-wide.*
+- **Traces:** SES-01, SES-02, SES-03 · FR-TRK-02 · Flow §9
+- **Notes:** An **Admin** may manage sessions for **any** track; a **Board** may only manage sessions for their supervised track (D:Q13). The API enforces this via `ITrackScopedRequest` for Board requests; Admin bypasses the track-scope check (SD §9.5). All session write rules (US-BRD-SES-01/02/03/04) apply identically to the Admin — the only difference is scope.
+
 ### US-MEM-SES-01
 *As a **Member@T**, I want to view my track's upcoming and past sessions, so that I know where to be and what I missed.*
 - **Traces:** SES-04 · FR-TRK-03 · Flow §8
@@ -447,10 +512,20 @@ Each story follows the canonical form:
 - **Traces:** ATT-03, MDB-04 · FR-ATT-03 · Flow §8
 - **Notes:** Percentage = (Present + Late) ÷ **counted sessions**; **Late counts as attended**. **(D:Q12)** The denominator is **only sessions that have occurred AND have a recorded attendance entry for this enrollment** — future sessions are excluded, and a past session with no record for the member is **excluded** (not silently counted absent; an Absent must be **explicitly recorded**). **(D:Q11)** The percentage is scoped to the member's **current active enrollment**; prior enrollments don't dilute it.
 
+### US-MEM-05
+*As a **Member@T**, I want to view my detailed attendance log (session-by-session breakdown with Present/Late/Absent status and dates), so that I know exactly which sessions I attended or missed.*
+- **Traces:** MDB-04 · FR-ATT-03 · DataModel §3.4 · D:Q11, Q12
+- **Notes:** Scoped to **current active enrollment** (D:Q11). Shows all sessions with a recorded entry; sessions with no recorded entry are excluded (never inferred as Absent — D:Q12). Ordered by session date, newest first. Board's `RecordedBy` stamp visible for transparency.
+
 ### US-BRD-02
 *As a **Board@T**, I want to view attendance for all members of my track, so that I can spot who's falling behind.*
 - **Traces:** ATT-04 · FR-ATT-04 · Flow §9
 - **Notes:** Board scope restricted to own track.
+
+### US-BRD-07
+*As a **Board@T**, I want to view a paginated roster of my track's active members with each member's current attendance percentage and latest evaluation score, so that I can quickly identify who needs attention.*
+- **Traces:** BDB-02 · FR-ATT-04, FR-EVL-04 · DataModel §3.2, §3.4, §3.5 · D:Q11, Q26
+- **Notes:** Only **active** enrollments shown (`EndedAtUtc IS NULL`). Board sees **own track only** (D:Q13). Attendance % computed per D:Q12. Board scope enforced via `AuthorizationBehavior` (D:Q35). Paginated with `meta` (D:Q26).
 
 ### US-ADM-ATT-01
 *As an **Admin**, I want to view attendance across all tracks, so that I can oversee the whole program.*
@@ -507,17 +582,17 @@ Each story follows the canonical form:
 ### US-NTF-01
 *As an **Admin**, I want to send platform-wide or role-scoped in-app notifications, so that I can reach the right audience.*
 - **Traces:** NTF-01 · FR-NTF-01 · Flow §11
-- **Notes:** **(D:Q21)** Audience options: **platform-wide** (all active users), **by global role** (all Attendees / all Admins), or **by track**. Recipients are **resolved and fanned out to per-recipient rows at send time (snapshot)** — later enrollees do not retroactively receive past notifications.
+- **Notes:** **(D:Q21)** Audience options: **platform-wide** (all active users), **by global role** (all Attendees / all Admins), or **by track**. Recipients are **resolved and fanned out to per-recipient rows at send time (snapshot)** — later enrollees do not retroactively receive past notifications. If the chosen audience resolves to **zero recipients** (e.g. a track with no active members), the send is **rejected with `NO_RECIPIENTS_RESOLVED` (422)** and **no `Notification` row is created** — the rejection is atomic (DataModel §4.1, D:Q-ERD2). On success, the response includes `recipientsCreated` count (DataModel §4.1). Acceptance tests must verify zero `Notification` rows exist after a zero-audience send.
 
 ### US-NTF-02
 *As a **Board@T**, I want to send an in-app notification to my track's members, so that I can reach just my group.*
 - **Traces:** NTF-02 · FR-NTF-02 · Flow §11
-- **Notes:** **(D:Q21)** Targets the **track's current active members only**, fanned out at send time. Board scope restricted to own track.
+- **Notes:** **(D:Q21)** Targets the **track's current active members only**, fanned out at send time. Board scope restricted to own track. A track with **no active members** is rejected with **`NO_RECIPIENTS_RESOLVED` (422)** — no `Notification` row is created (D:Q-ERD2).
 
 ### US-NTF-03
 *As any authenticated user, I want an inbox of my notifications with unread state, and to mark them read, so that I can keep track of what I've seen.*
 - **Traces:** NTF-03, NTF-04 · FR-NTF-03 · Flow §11
-- **Notes:** **(D:Q21)** Each recipient has **their own read state** (per-recipient row). Notifications are **in-app only** in current scope (no email/SMS/push beyond the password-reset email, FR-NTF-04).
+- **Notes:** **(D:Q21)** Each recipient has **their own read state** (per-recipient row). Notifications are **in-app only** in current scope (no email/SMS/push beyond the password-reset email — D:Q28c / PRD ANTF-01/02).
 
 ---
 
@@ -526,7 +601,7 @@ Each story follows the canonical form:
 ### US-PUB-01
 *As a **Visitor**, I want to view the public pages (Home, About, Team, Events, Event Detail, Contact) and the auth pages, so that I can learn about TEDxAlkawmia and decide whether to join.*
 - **Traces:** PUB-01…PUB-09 · FR-PUB-01, FR-PUB-04 · Flow §2
-- **Notes:** Pages are **responsive and mobile-friendly**. Team and Partners/Sponsors content is **static** in current scope (no admin editing, no dedicated tables, FR-PUB-03).
+- **Notes:** Pages are **responsive and mobile-friendly**. Team and Partners/Sponsors content is **static** in current scope (no admin editing, no dedicated tables, FR-PUB-03). The Home Page **dynamically renders the nearest N upcoming Published events** (same dataset as the events list, D:Q23) — it is not purely static. Static content (About, Team, Partners) is provided by the TEDxAlkawmia team and rendered without an admin CMS.
 
 ### US-PUB-02
 *As a **Visitor**, I want to submit a contact form without an account, so that I can ask a question.*
@@ -541,7 +616,7 @@ Each story follows the canonical form:
 ### US-ADM-CON-01
 *As an **Admin**, I want to review, read, and archive contact submissions, so that I can respond to inquiries.*
 - **Traces:** PUB-06 · FR-PUB-02 · Flow §12
-- **Notes:** **(D:Q20)** Admin-only visibility; submissions listed with New/Read/Archived status. **No in-app reply** in current scope (Admin replies via their own email client); no notification to Board/Member.
+- **Notes:** **(D:Q20)** Admin-only visibility; submissions listed with New/Read/Archived status. Opening a contact message automatically transitions its status from `New → Read` (DataModel §4.3); `UpdatedAtUtc` and `UpdatedBy` are stamped by the audit interceptor on status change. The Admin may manually set `Read → Archived`. **No in-app reply** in current scope (Admin replies via their own email client); no notification to Board/Member.
 
 ---
 
@@ -552,7 +627,7 @@ Each story follows the canonical form:
 ### US-ADM-DASH-01
 *As an **Admin**, I want a dashboard overview with summary cards, so that I can see the platform's state at a glance.*
 - **Traces:** ADM-01 · (SRS §3, cross-cutting) · Flow §6
-- **Notes:** Read-only aggregate for the admin landing page — counts derivable from the per-domain endpoints (total/active users, total/published events, tickets sold, checked-in today, open tracks, new contact submissions). Each figure reflects committed data (not cached for money decisions, NFR-PERF-05). Backs `GET /admin/dashboard`. Priority P0.
+- **Notes:** Read-only aggregate for the admin landing page — counts derivable from the per-domain endpoints (total/active users, total/published events, tickets sold, checked-in today, open tracks, new contact submissions). Dashboard includes a count/list of tracks **flagged as needing a new Board** (where the active Board assignment was ended by deactivation or explicit removal — D:Q10); clicking a flagged track navigates to the track detail for re-assignment. Each figure reflects committed data (not cached for money decisions, NFR-PERF-05). Backs `GET /admin/dashboard`. Priority P0.
 
 ### US-ADM-RPT-01
 *As an **Admin**, I want event reports (registration counts, attendance/check-in rates per event), so that I can measure event performance.*
@@ -567,7 +642,7 @@ Each story follows the canonical form:
 ### US-ADM-RPT-03
 *As an **Admin**, I want financial reports (revenue per event, payment summaries), so that I can reconcile money.*
 - **Traces:** RPT-03 · (SRS §7), FR-PAY-05 · Flow §6
-- **Notes:** Revenue counts **Paid** orders using snapshotted final prices (D:Q4, FR-ORD-04); voided/refunded orders reflected per the offline refund entries (D:Q6). Priority P1. Exportable via `?format=csv|pdf`.
+- **Notes:** Revenue counts **Paid** orders using `PaidAtUtc` (the write-once revenue-recognition timestamp, never the mutable `UpdatedAtUtc`) for date-ranged queries (D:Q55, DataModel §2.3). Revenue summary includes breakdown by `UnitType` (Individual vs. Package, DataModel §2.3). Paid orders with a matching `RefundEntry` are categorized as 'Refunded', not 'Revenue'; date range filter uses `PaidAtUtc` for revenue and `CancelledAtUtc` for refunds. Voided/refunded orders are identified by joining `RefundEntry` — both voided-paid and user-cancelled-unpaid orders land in `Cancelled` status, so status alone is insufficient (D:Q6, DataModel §2.3 Issue 7). Prices are snapshotted at reserve (D:Q4, FR-ORD-04). Priority P1. Exportable via `?format=csv|pdf` (D:Q28c).
 
 ---
 
@@ -591,16 +666,23 @@ The following PRD items are **not** covered by these user stories, acceptance cr
 
 | ID | Title | Primary role |
 |----|-------|--------------|
-| US-ADM-TRK-01 | Create/edit/soft-delete track | Admin |
+| US-ADM-TRK-01 | Create training track | Admin |
 | US-ADM-TRK-02 | Soft-delete track with impact | Admin |
+| US-ADM-TRK-03 | Edit track details | Admin |
+| US-ADM-TRK-04 | List all tracks with filters | Admin |
+| US-ADM-TRK-05 | View all enrollments for a track | Admin |
 | US-BRD-TRK-01 | View track detail | Board/Admin |
 | US-BRD-SES-01 | Create session | Board/Admin |
 | US-BRD-SES-02 | Edit session | Board/Admin |
 | US-BRD-SES-03 | Delete session (records-free only) | Board/Admin |
+| US-BRD-SES-04 | Transition session status (Held/Cancelled) | Board/Admin |
+| US-ADM-SES-01 | Manage sessions across any track | Admin |
 | US-MEM-SES-01 | View my track's sessions | Member |
 | US-BRD-01 | Record attendance | Board |
 | US-MEM-01 | View my attendance % | Member |
+| US-MEM-05 | View detailed attendance log | Member |
 | US-BRD-02 | View track attendance | Board |
+| US-BRD-07 | Member roster with attendance % and eval score | Board |
 | US-ADM-ATT-01 | Cross-track attendance | Admin |
 | US-BRD-03 | Evaluate member | Board |
 | US-BRD-04 | Edit evaluation | Board |

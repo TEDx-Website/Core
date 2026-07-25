@@ -13,12 +13,11 @@ The following documents in the `docs/` folder are up-to-date and can be fully re
 - [PRD (Product Requirements Document)](docs/01-PRD.md)
 - [Data Model](docs/10-DataModel.md)
 - [Decision Logs](docs/08-DecisionLog.md)
+- [User Stories](docs/05-UserStories.md)
+- [Acceptance Criteria](docs/06-AcceptanceCriteria.md)
+- [API Contract](docs/07-ApiContract.md)
+- [SRS](docs/02-SRS.md)
 
 ### Entity-Relationship Diagram
 You can also view the interactive ER Diagram here:
 🔗 **[TEDx ER Diagram](https://tedx-er-diagram.vercel.app/)**
-
----
-
-## Work In Progress (Needs Updates)
-Please note that the remaining documentation files in the `docs/` folder (such as SRS, User Stories, Acceptance Criteria, and API Contracts) are currently considered works in progress and still need some updates before they can be fully relied upon.

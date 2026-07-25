@@ -1,6 +1,6 @@
 # State Machines — Entity Lifecycles
 
-> **Version:** 1.3 · **Date:** 2026-07-23 · Companion to [[09-SystemDesign#4. Domain Layer Design|09 — System Design §4 (Domain Layer)]]
+> **Version:** 1.3 · **Date:** 2026-07-24 · Companion to [[09-SystemDesign#4. Domain Layer Design|09 — System Design §4 (Domain Layer)]] · [[12-SequenceDiagrams|12 — Sequence Diagrams]] (the runtime sequences these states move through)
 > **Decisions:** D:Q3, Q6, Q7, Q11, Q13, Q14, Q16, Q19, Q22, Q23, Q24, Q47, Q50, Q53, Q55, Q56 · **Reads from:** [[10-DataModel|10 — Data Model]], [[08-DecisionLog|08 — Decision Log]]
 
 ---
@@ -267,4 +267,4 @@ Entities with **no** lifecycle (plain CRUD reference/records) are intentionally 
 
 ---
 
-*State machines v1.2 — 2026-07-23. Schema in [[10-DataModel|10 — Data Model]]; domain/aggregate design and the flows that drive these transitions in [[09-SystemDesign|09 — System Design §4, §7]].*
+*State machines v1.3 — 2026-07-24. Schema in [[10-DataModel|10 — Data Model]]; domain/aggregate design and the flows that drive these transitions in [[09-SystemDesign|09 — System Design §4, §7]]; the runtime sequences these states move through in [[12-SequenceDiagrams|12 — Sequence Diagrams]].*
