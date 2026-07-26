@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="TEDx_Website.API/TEDx_Website.API.csproj" />
-  <Project Path="TEDx_Website.Application/TEDx_Website.Application.csproj" />
-  <Project Path="TEDx_Website.Domain/TEDx_Website.Domain.csproj" />
-  <Project Path="TEDx_Website.Infrastructure/TEDx_Website.Infrastructure.csproj" />
-</Solution>
