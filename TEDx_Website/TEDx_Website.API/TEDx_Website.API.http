@@ -1,0 +1,6 @@
+@TEDx_Website.API_HostAddress = http://localhost:5225
+
+GET {{TEDx_Website.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
