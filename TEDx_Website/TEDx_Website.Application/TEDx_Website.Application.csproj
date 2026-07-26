@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TEDx_Website.Domain\TEDx_Website.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\Behaviors\" />
+    <Folder Include="Eventing\Commands\" />
+    <Folder Include="Eventing\DTOs\" />
+    <Folder Include="Eventing\Interfaces\" />
+    <Folder Include="Eventing\Validators\" />
+    <Folder Include="Eventing\Queries\" />
+    <Folder Include="Identity\Commands\" />
+    <Folder Include="Identity\DTOs\" />
+    <Folder Include="Identity\Interfaces\" />
+    <Folder Include="Identity\Validators\" />
+    <Folder Include="Identity\Queries\" />
+    <Folder Include="Training\Commands\" />
+    <Folder Include="Training\DTOs\" />
+    <Folder Include="Training\Interfaces\" />
+    <Folder Include="Training\Validators\" />
+    <Folder Include="Training\Queries\" />
+  </ItemGroup>
+
+</Project>
