@@ -3,44 +3,20 @@ namespace TEDx.Domain.Common
     public sealed class Result<TValue>
     {
         private readonly TValue? _value;
-        private readonly List<Error> _errors;
-
+        private readonly IReadOnlyList<Error> _errors;
         public bool IsSuccess { get; }
         public bool IsError => !IsSuccess;
-
-        public TValue Value => _value!;
-        public List<Error> Errors => _errors;
+        public TValue Value => IsSuccess ? _value! : default;
+        public IReadOnlyList<Error> Errors => _errors;
         public Error FirstError => _errors.Count > 0 ? _errors[0] : default;
 
-        public Result(TValue? value, List<Error>? errors, bool isSuccess)
+        private Result(TValue value)
         {
-            if (isSuccess)
-            {
-                _value = value ?? throw new ArgumentNullException(nameof(value));
-                _errors = [];
-                IsSuccess = true;
-            }
-            else
-            {
-                if (errors is null || errors.Count == 0)
-                {
-                    throw new ArgumentException("Provide at least one error.", nameof(errors));
-                }
-
-                _errors = errors;
-                _value = default!;
-                IsSuccess = false;
-            }
+            _value = value ?? throw new ArgumentNullException(nameof(value));
+            _errors = [];
+            IsSuccess = true;
         }
-
-        private Result(Error error)
-        {
-            _errors = [error];
-            _value = default!;
-            IsSuccess = false;
-        }
-
-        private Result(List<Error> errors)
+        private Result(IReadOnlyList<Error> errors)
         {
             if (errors is null || errors.Count == 0)
             {
@@ -50,21 +26,19 @@ namespace TEDx.Domain.Common
             }
 
             _errors = errors;
-            _value = default!;
+            _value = default;
             IsSuccess = false;
         }
+        public static Result<TValue> Success(TValue value) => new(value);
+        public static Result<TValue> Failure(Error error) => new([error]);
+        public static Result<TValue> Failure(IReadOnlyList<Error> errors)
+               => new(errors);
 
-        private Result(TValue value)
-        {
-            _value = value ?? throw new ArgumentNullException(nameof(value));
-            _errors = [];
-            IsSuccess = true;
-        }
+        public static implicit operator Result<TValue>(TValue value)
+            => Success(value);
 
-        public static Result<TValue> Failure(List<Error> errors) => new(errors);
+        public static implicit operator Result<TValue>(Error error)
+            => Failure(error);
 
-        public static implicit operator Result<TValue>(TValue value) => new(value);
-        public static implicit operator Result<TValue>(Error error) => new(error);
-        public static implicit operator Result<TValue>(List<Error> errors) => new(errors);
     }
 }
