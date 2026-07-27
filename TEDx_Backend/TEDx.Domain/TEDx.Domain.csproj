@@ -6,4 +6,19 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Eventing\Entities\" />
+    <Folder Include="Eventing\Enums\" />
+    <Folder Include="Eventing\Interfaces\" />
+    <Folder Include="Eventing\ValueObjects\" />
+    <Folder Include="Identity\Interfaces\" />
+    <Folder Include="Identity\Entities\" />
+    <Folder Include="Identity\Enums\" />
+    <Folder Include="Identity\ValueObjects\" />
+    <Folder Include="Training\Entities\" />
+    <Folder Include="Training\Enums\" />
+    <Folder Include="Training\Interfaces\" />
+    <Folder Include="Training\ValueObject\" />
+  </ItemGroup>
+
 </Project>

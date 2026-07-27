@@ -11,4 +11,10 @@
     <ProjectReference Include="..\TEDx.Domain\TEDx.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Identity\" />
+    <Folder Include="Eventing\" />
+    <Folder Include="Training\" />
+  </ItemGroup>
+
 </Project>
