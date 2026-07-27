@@ -29,6 +29,14 @@ namespace TEDx.Domain.Common
             _value = default;
             IsSuccess = false;
         }
+        public TResult Match<TResult>(
+        Func<TValue, TResult> onSuccess,
+        Func<IReadOnlyList<Error>, TResult> onFailure)
+        {
+            return IsSuccess
+                ? onSuccess(Value)
+                : onFailure(Errors);
+        }
         public static Result<TValue> Success(TValue value) => new(value);
         public static Result<TValue> Failure(Error error) => new([error]);
         public static Result<TValue> Failure(IReadOnlyList<Error> errors)
