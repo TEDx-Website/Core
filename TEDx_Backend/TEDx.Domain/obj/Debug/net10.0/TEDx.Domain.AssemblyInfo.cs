@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TEDx.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+588f6610566a56eb4b07c910cdeb0585a5654d6d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+55d89214f6025fa2f70ef5609ca517d3b7522e00")]
 [assembly: System.Reflection.AssemblyProductAttribute("TEDx.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TEDx.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
