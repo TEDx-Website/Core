@@ -10,7 +10,7 @@ namespace TEDx.Domain.Common
 
         public TValue Value => _value!;
         public List<Error> Errors => _errors;
-        public Error FirstError => _errors.Count > 0 ? _errors[0] : Error.None;
+        public Error FirstError => _errors.Count > 0 ? _errors[0] : default;
 
         public Result(TValue? value, List<Error>? errors, bool isSuccess)
         {
@@ -60,5 +60,11 @@ namespace TEDx.Domain.Common
             _errors = [];
             IsSuccess = true;
         }
+
+        public static Result<TValue> Failure(List<Error> errors) => new(errors);
+
+        public static implicit operator Result<TValue>(TValue value) => new(value);
+        public static implicit operator Result<TValue>(Error error) => new(error);
+        public static implicit operator Result<TValue>(List<Error> errors) => new(errors);
     }
 }
