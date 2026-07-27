@@ -536,6 +536,9 @@ Each story follows the canonical form:
 
 ## 16. Evaluations (PRD §6.10 · SRS §3.12 · Flow §9)
 
+> **Coverage note (2026-07-25):** 4 stories cover all **5** EVL features — `US-BRD-03` traces **both EVL-01 (score) and EVL-05 (feedback)** in a single story (they're one user action). No feature is unmapped; this is not a gap.
+
+
 ### US-BRD-03
 *As a **Board@T**, I want to evaluate a member after a session with a score and optional feedback, so that I can track their development.*
 - **Traces:** EVL-01, EVL-05 · FR-EVL-01, FR-EVL-02 · Flow §9

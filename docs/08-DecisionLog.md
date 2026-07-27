@@ -217,9 +217,6 @@ Where the decision resolves a conflict in an existing document, that is called o
 
 ## Section I — Solution Shape & Application Layer
 
-### Q29 — Overall architecture style
-**Decision:** **Modular monolith + Clean Architecture**, four projects: **Domain / Application / Infrastructure / Api**. The three bounded contexts (Identity, Eventing/Ticketing, Training) are **folders inside each layer** (Q29a), not separate assemblies.
-**Rationale:** A single deployable with clean internal boundaries fits a two-dev team and a single database; context-as-folder keeps separation without assembly overhead. No microservice split is planned.
 
 ### Q29b — Persistence context count
 **Decision:** **A single `DbContext`** now. If the contexts ever need physical separation, splitting into three `DbContext`s is a future migration.

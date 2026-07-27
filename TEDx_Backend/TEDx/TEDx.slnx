@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="../TEDx.Application/TEDx.Application.csproj" />
-  <Project Path="../TEDx.Domain/TEDx.Domain.csproj" />
-  <Project Path="../TEDx.Infrastructure/TEDx.Infrastructure.csproj" />
-  <Project Path="TEDx.csproj" />
-</Solution>

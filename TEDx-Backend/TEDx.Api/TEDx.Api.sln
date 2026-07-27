@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEDx.Api", "TEDx.Api.csproj", "{E07E54D1-6FE2-42E0-8E43-3B3D65DF4DEB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5EF54B40-0CAC-4E51-8289-795EA9336A9E} = {5EF54B40-0CAC-4E51-8289-795EA9336A9E}
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0} = {8039C85A-37B0-447A-8033-3C0D11A58AA0}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEDx.Application", "..\TEDx.Application\TEDx.Application.csproj", "{8039C85A-37B0-447A-8033-3C0D11A58AA0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726} = {AAE8E800-9165-4C63-99C2-D0769E9F7726}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEDx.Domain", "..\TEDx.Domain\TEDx.Domain.csproj", "{AAE8E800-9165-4C63-99C2-D0769E9F7726}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TEDx.Infrastructure", "..\TEDx.Infrastructure\TEDx.Infrastructure.csproj", "{5EF54B40-0CAC-4E51-8289-795EA9336A9E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0} = {8039C85A-37B0-447A-8033-3C0D11A58AA0}
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726} = {AAE8E800-9165-4C63-99C2-D0769E9F7726}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E07E54D1-6FE2-42E0-8E43-3B3D65DF4DEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E07E54D1-6FE2-42E0-8E43-3B3D65DF4DEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E07E54D1-6FE2-42E0-8E43-3B3D65DF4DEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E07E54D1-6FE2-42E0-8E43-3B3D65DF4DEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8039C85A-37B0-447A-8033-3C0D11A58AA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAE8E800-9165-4C63-99C2-D0769E9F7726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EF54B40-0CAC-4E51-8289-795EA9336A9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EF54B40-0CAC-4E51-8289-795EA9336A9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EF54B40-0CAC-4E51-8289-795EA9336A9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EF54B40-0CAC-4E51-8289-795EA9336A9E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E98D12BF-410B-4903-825D-A126F7869017}
+	EndGlobalSection
+EndGlobal

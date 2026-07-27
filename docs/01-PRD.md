@@ -197,6 +197,8 @@ Two dimensions: a **global role** (Attendee/Admin) and **per-track assignments**
 | ATT-04 | View Attendance (Board) | Board views attendance for their track. | P0 |
 | ATT-05 | Attendance Report (Admin) | Admin views attendance across all tracks. | P1 |
 
+> **Numbering note:** `ATT-02` is intentionally unused (historical renumbering). IDs are stable anchors — not renumbered to avoid breaking downstream references. Verified 2026-07-25.
+
 #### 6.10 Evaluation Management
 | ID | Feature | Description | Priority |
 |----|---------|-------------|----------|
@@ -314,12 +316,15 @@ Login → Dashboard → Manage Users (assign roles)
 
 ## 8. Success Metrics
 
-| Metric | Target | Measurement |
+> **Authoritative source moved.** Product success metrics now live in **[00 — OKRs](./00-OKRs.md)**, which is the strategic root of the planning hierarchy (Objectives O1–O4, Key Results KR1.1–KR4.3). That document supersedes the table previously here.
+>
+> **Why moved:** the earlier table mixed in a baseline-dependent metric (*"Admin time saved > 50% reduction"*) that assumes historical data this 0→1 platform does not have. The OKRs replace improvement-over-baseline targets with **adoption / coverage / readiness** targets appropriate to a first-time platform (grilling 2026-07-25).
+>
+> The operational/NFR thresholds below are retained as **engineering quality targets** (not product OKRs):
+
+| Engineering target | Threshold | Measurement |
 |--------|--------|-------------|
-| Event registration completion rate | > 80% | Registrations / Event page views |
 | QR code scan success rate | > 95% | Successful scans / Total attendees |
-| Member attendance tracking adoption | 100% of tracks | Tracks using digital attendance |
-| Admin time saved on manual tasks | > 50% reduction | Pre/post comparison survey |
 | Platform uptime | > 99.5% | Monitoring tools |
 | Page load time (public pages) | < 2 seconds | Lighthouse / monitoring |
 
@@ -329,7 +334,7 @@ Login → Dashboard → Manage Users (assign roles)
 
 ### Constraints
 - **Budget:** Minimize paid third-party services early (Cloudinary free tier; Paymob is transaction-based).
-- **Team:** 2 backend, 2 frontend, 1 UI/UX designer.
+- **Team:** 2 backend, 2 frontend, 1 UI/UX designer. *(Baseline delivery team is 2 BE, **1 FE**, 1 UI/UX; a **2nd frontend developer is added for the Event MVP window** to close a critical-path capacity gap — see [00d — MVP §Team decision](./00d-MVP.md). The "2 frontend" figure here reflects that MVP-window staffing.)*
 - **Scale:** Under 100 concurrent users initially.
 - **Language:** English UI, but **i18n-ready** — no hardcoded user-facing strings, locale-aware dates/currency, so Arabic/RTL can be added later without a rewrite.
 - **Payments:** online via **Paymob** (needs a merchant account); this is core, not deferred.
