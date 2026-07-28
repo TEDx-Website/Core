@@ -47,12 +47,12 @@ public readonly record struct Error
         => new(code, description, ErrorType.Unexpected, metaData);
 
     public static Error Business(string code = nameof(Business),
-        string description = "Unexpected error.",
+        string description = "Business error.",
         IReadOnlyDictionary<string, object?>? metaData = null)
         => new(code, description, ErrorType.Business, metaData);
 
     public static Error None(string code = nameof(None),
-        string description = "Unexpected error.",
+        string description = "None error.",
         IReadOnlyDictionary<string, object?>? metaData = null)
         => new(code, description, ErrorType.None, metaData);
 }

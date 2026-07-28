@@ -2,12 +2,14 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Respones;
+using Microsoft.Extensions.Logging;
 namespace TEDx.Api.Middleware
 {
     public sealed class GlobalExceptionMiddleware 
     {
-        private readonly RequestDelegate _next;
-        private readonly ILogger<GlobalExceptionMiddleware> _logger;
+        private readonly RequestDelegate _next; // بيمثلل اللي بعدك ف Pipeline
+                                                // 
+        private readonly ILogger<GlobalExceptionMiddleware> _logger; // Serilog
 
         public GlobalExceptionMiddleware(
             RequestDelegate next,
@@ -24,39 +26,33 @@ namespace TEDx.Api.Middleware
             }
             catch (Exception exception)
             {
-                var correlationId = context.TraceIdentifier;
-
-                _logger.LogError(
-                    exception,
-                    "Unhandled exception occurred. CorrelationId: {CorrelationId}",
-                    correlationId);
-
-
                 await HandleExceptionAsync(
                     context,
-                    correlationId);
+                    exception
+                    );
             }
         }
-
-
-        private static async Task HandleExceptionAsync(
+        private async Task HandleExceptionAsync(
             HttpContext context,
-            string correlationId)
+            Exception exception)
         {
+            _logger.LogError(
+                exception,
+                "Unhandled exception occurred.");
+
             context.Response.ContentType = "application/json";
 
             context.Response.StatusCode =
                 StatusCodes.Status500InternalServerError;
 
+            var correlationId = context.Items["CorrelationId"]?.ToString() ?? context.TraceIdentifier;
 
-            var response = new
-            {
-                statusCode = context.Response.StatusCode,
-                message = "An unexpected error occurred.",
+            var response = new ErrorResponse
+            (
+                "An unexpected error occurred.",
                 correlationId
-            };
-
-
+            
+            );
             await context.Response.WriteAsJsonAsync(response);
         }
 
