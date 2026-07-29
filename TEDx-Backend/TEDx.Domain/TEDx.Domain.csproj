@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
  
   <ItemGroup>
-    <Folder Include="Identity\Entities\" />
-    <Folder Include="Identity\Enums\" />
     <Folder Include="Identity\ValueObjects\" />
-    <Folder Include="Ticketing\Entities\" />
-    <Folder Include="Ticketing\Enums\" />
     <Folder Include="Ticketing\ValueObjects\" />
-    <Folder Include="Training\Entities\" />
-    <Folder Include="Training\Enums\" />
     <Folder Include="Training\ValueObjects\" />
+  </ItemGroup>
+ 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
   </ItemGroup>
 </Project>
