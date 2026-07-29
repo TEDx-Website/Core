@@ -8,7 +8,7 @@ namespace TEDx.Api.Middleware
     public sealed class GlobalExceptionMiddleware 
     {
         private readonly RequestDelegate _next; // بيمثلل اللي بعدك ف Pipeline
-                                                // 
+                                                
         private readonly ILogger<GlobalExceptionMiddleware> _logger; // Serilog
 
         public GlobalExceptionMiddleware(
@@ -45,13 +45,14 @@ namespace TEDx.Api.Middleware
             context.Response.StatusCode =
                 StatusCodes.Status500InternalServerError;
 
+
             var correlationId = context.Items["CorrelationId"]?.ToString() ?? context.TraceIdentifier;
 
             var response = new ErrorResponse
             (
                 "An unexpected error occurred.",
                 correlationId
-            
+             
             );
             await context.Response.WriteAsJsonAsync(response);
         }
