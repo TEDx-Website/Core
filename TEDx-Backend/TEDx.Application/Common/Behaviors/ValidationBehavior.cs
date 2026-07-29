@@ -23,7 +23,7 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             return await next();
 
         var errors = failures
-            .Select(f => new Error(Errors.ValidationError.Code, f.ErrorMessage, ErrorType.Validation, f.PropertyName))
+            .Select(f => Error.Validation(Errors.ValidationError.Code, f.ErrorMessage, f.PropertyName))
             .ToList();
 
         var responseType = typeof(TResponse);

@@ -1,11 +1,11 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Respones;
+
 namespace TEDx.Api.Middleware
 {
-    public sealed class GlobalExceptionMiddleware 
+    public sealed class GlobalExceptionMiddleware
     {
+        private const string CorrelationItemKey = "CorrelationId";
+
         private readonly RequestDelegate _next;
         private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
@@ -16,6 +16,7 @@ namespace TEDx.Api.Middleware
             _next = next;
             _logger = logger;
         }
+
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -24,41 +25,33 @@ namespace TEDx.Api.Middleware
             }
             catch (Exception exception)
             {
-                var correlationId = context.TraceIdentifier;
+                var correlationId = context.Items[CorrelationItemKey] as string
+                    ?? context.TraceIdentifier;
 
                 _logger.LogError(
                     exception,
                     "Unhandled exception occurred. CorrelationId: {CorrelationId}",
                     correlationId);
 
-
-                await HandleExceptionAsync(
-                    context,
-                    correlationId);
+                await HandleExceptionAsync(context, correlationId);
             }
         }
-
 
         private static async Task HandleExceptionAsync(
             HttpContext context,
             string correlationId)
         {
             context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-            context.Response.StatusCode =
-                StatusCodes.Status500InternalServerError;
-
-
-            var response = new
+            var response = ApiResponse<object>.FailureResult(new ApiErrorResponse
             {
-                statusCode = context.Response.StatusCode,
-                message = "An unexpected error occurred.",
-                correlationId
-            };
-
+                Code = "INTERNAL_SERVER_ERROR",
+                Message = "An unexpected error occurred.",
+                TraceId = correlationId,
+            });
 
             await context.Response.WriteAsJsonAsync(response);
         }
-
     }
 }
