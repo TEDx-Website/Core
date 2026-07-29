@@ -1,8 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-  </PropertyGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
   <ItemGroup>
     <ProjectReference Include="..\TEDx.Application\TEDx.Application.csproj" />
     <ProjectReference Include="..\TEDx.Domain\TEDx.Domain.csproj" />

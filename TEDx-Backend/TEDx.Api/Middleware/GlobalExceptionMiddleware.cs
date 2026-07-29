@@ -1,15 +1,13 @@
-using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Respones;
-using Microsoft.Extensions.Logging;
+
 namespace TEDx.Api.Middleware
 {
-    public sealed class GlobalExceptionMiddleware 
+    public sealed class GlobalExceptionMiddleware
     {
-        private readonly RequestDelegate _next; // بيمثلل اللي بعدك ف Pipeline
-                                                
-        private readonly ILogger<GlobalExceptionMiddleware> _logger; // Serilog
+        private const string CorrelationItemKey = "CorrelationId";
+
+        private readonly RequestDelegate _next;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
         public GlobalExceptionMiddleware(
             RequestDelegate next,
@@ -18,6 +16,7 @@ namespace TEDx.Api.Middleware
             _next = next;
             _logger = logger;
         }
+
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -26,36 +25,33 @@ namespace TEDx.Api.Middleware
             }
             catch (Exception exception)
             {
-                await HandleExceptionAsync(
-                    context,
-                    exception
-                    );
+                var correlationId = context.Items[CorrelationItemKey] as string
+                    ?? context.TraceIdentifier;
+
+                _logger.LogError(
+                    exception,
+                    "Unhandled exception occurred. CorrelationId: {CorrelationId}",
+                    correlationId);
+
+                await HandleExceptionAsync(context, correlationId);
             }
         }
-        private async Task HandleExceptionAsync(
+
+        private static async Task HandleExceptionAsync(
             HttpContext context,
-            Exception exception)
+            string correlationId)
         {
-            _logger.LogError(
-                exception,
-                "Unhandled exception occurred.");
-
             context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-            context.Response.StatusCode =
-                StatusCodes.Status500InternalServerError;
+            var response = ApiResponse<object>.FailureResult(new ApiErrorResponse
+            {
+                Code = "INTERNAL_SERVER_ERROR",
+                Message = "An unexpected error occurred.",
+                TraceId = correlationId,
+            });
 
-
-            var correlationId = context.Items["CorrelationId"]?.ToString() ?? context.TraceIdentifier;
-
-            var response = new ErrorResponse
-            (
-                "An unexpected error occurred.",
-                correlationId
-             
-            );
             await context.Response.WriteAsJsonAsync(response);
         }
-
     }
 }
