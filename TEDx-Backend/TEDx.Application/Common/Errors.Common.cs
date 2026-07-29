@@ -19,7 +19,7 @@ public static partial class Errors
             "The resource was modified by another request.");
 
     public static readonly Error RateLimited =
-        Error.Business(
+        Error.RateLimited(
             "RATE_LIMITED",
             "Too many requests. Try again later.");
 

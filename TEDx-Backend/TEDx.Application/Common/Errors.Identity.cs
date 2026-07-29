@@ -53,7 +53,7 @@ public static partial class Errors
             "The token has already been used; re-authentication is required.");
 
     public static readonly Error ResetTokenInvalid =
-        Error.Business(
+        Error.BadRequest(
             "RESET_TOKEN_INVALID",
             "The password-reset token is invalid or expired.");
 

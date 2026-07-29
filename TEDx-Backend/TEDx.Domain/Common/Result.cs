@@ -6,7 +6,10 @@ namespace TEDx.Domain.Common
         private readonly IReadOnlyList<Error> _errors;
         public bool IsSuccess { get; }
         public bool IsError => !IsSuccess;
-        public TValue Value => IsSuccess ? _value! : default;
+        public TValue Value => IsSuccess
+            ? _value!
+            : throw new InvalidOperationException(
+                "Cannot access Value on a failed Result. Check IsSuccess/IsError and read Errors instead.");
         public IReadOnlyList<Error> Errors => _errors;
         public Error FirstError => _errors.Count > 0 ? _errors[0] : default;
 
