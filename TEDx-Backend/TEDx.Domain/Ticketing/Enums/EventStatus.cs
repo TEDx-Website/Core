@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TEDx.Domain.Ticketing.Enums
 {
     public enum EventStatus
     {
-        Active,
-        Cancelled,
-        Ended,
-        Voided
+        Draft = 0,
+        Published = 1,
+        Archived = 2,
+        Cancelled = 3
     }
 }

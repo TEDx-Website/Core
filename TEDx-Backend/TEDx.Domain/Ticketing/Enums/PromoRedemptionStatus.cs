@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TEDx.Domain.Ticketing.Enums
 {
     public enum PromoRedemptionStatus
     {
-        Active,
-        Expired,
-        Used,
-        NotValid
+        Claimed = 0,
+        Confirmed = 1,
+        Released = 2
     }
 }

@@ -24,7 +24,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
-            builder.HasOne<ApplicationUser>().WithMany()
+            builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<Track>().WithMany()

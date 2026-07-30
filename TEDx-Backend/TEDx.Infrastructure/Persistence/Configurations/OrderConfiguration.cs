@@ -36,7 +36,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasConversion<int>()
                 .IsRequired();
 
-            builder.Property(x => x.UnitNAmeSnapshot)
+            builder.Property(x => x.UnitNameSnapshot)
                 .HasMaxLength(200)
                 .IsRequired();
 
@@ -65,11 +65,11 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.Status)
                 .HasConversion<int>()
-                .HasDefaultValue(OrderStatus.Pending);
+                .HasDefaultValue(OrderStatus.PendingPayment);
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<ApplicationUser>().WithMany()
+            builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<Event>().WithMany()

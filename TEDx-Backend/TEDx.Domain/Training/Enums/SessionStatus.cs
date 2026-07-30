@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TEDx.Domain.Training.Enums
 {
-    public class SessionStatus
+    public enum SessionStatus
     {
-        
+        Scheduled = 0,
+        Held = 1,
+        Cancelled = 2
     }
 }

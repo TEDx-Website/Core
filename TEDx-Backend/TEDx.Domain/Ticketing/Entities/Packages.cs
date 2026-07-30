@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class Packages : IAuditable , IConcurrent , ISoftDelete
+    public class Packages : AuditableEntity , IConcurrent , ISoftDelete
     {
         public Guid Id {  get; set; }
         public Guid EventId { get; set; }
@@ -15,10 +16,6 @@ namespace TEDx.Domain.Ticketing.Entities
         public int SeatsPerPackage { get; set; } // NN Check
         public int MaxQuantityPerOrder { get; set; }
         public bool IsActive { get; set; } // NN Df
-        public DateTime CreatedAtUtc { get; set; } // nn
-        public string? CreatedBy { get; set; }
-        public DateTime? UpdatedAtUtc { get; set; }
-        public string? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; } // nn df
         public DateTime? DeletedAtUtc { get; set; }
         public byte[] RowVersion { get; set; }//nn

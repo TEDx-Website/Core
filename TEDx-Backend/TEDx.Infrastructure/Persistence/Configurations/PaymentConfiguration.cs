@@ -34,9 +34,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.IdempotencyKey)
                 .IsUnique();
 
-            builder.Property(x => x.PayementStatus)
+            builder.Property(x => x.PaymentStatus)
                 .HasConversion<int>()
-                .HasDefaultValue(PayementStatus.pending);
+                .HasDefaultValue(PaymentStatus.Initiated);
 
             builder.Property(x => x.Amount)
                 .HasPrecision(18, 2)

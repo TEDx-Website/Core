@@ -20,15 +20,15 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.PromoRedemptionStatus)
                 .HasConversion<int>()
-                .HasDefaultValue(PromoRedemptionStatus.Active);
+                .HasDefaultValue(PromoRedemptionStatus.Claimed);
 
-            builder.HasOne<ApplicationUser>().WithMany()
+            builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<PromoCodes>().WithMany()
                 .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
 
         }
     }

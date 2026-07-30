@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Communication
 {
-    public class ContactMessage : IContactAudit
+    public class ContactMessage : AuditableEntity
     {
         public Guid Id { get; private set; }
         public string Name { get; private set; } = null!;
@@ -13,8 +13,5 @@ namespace TEDx.Domain.Communication
         public string Subject { get; private set; } = null!;
         public string Message { get; private set; } = null!;
         public ContactStatus Status { get; private set; }
-        public DateTime CreatedAtUtc { get; set; }
-        public DateTime UpdatedAtUtc { get; set; }
-        public Guid UpdatedBy { get; set; }
     }
 }

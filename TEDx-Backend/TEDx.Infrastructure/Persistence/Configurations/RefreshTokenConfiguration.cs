@@ -29,7 +29,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.CreatedBtIp)
                 .HasMaxLength(45);
 
-            builder.HasOne<ApplicationUser>().WithMany()
+            builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Cascade);
         }
     }

@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class PromoCodes : IAuditable, ISoftDelete , IConcurrent
+    public class PromoCodes : AuditableEntity, ISoftDelete , IConcurrent
     {
         public Guid Id {  get; set; }
         public string? Code { get; set; } // NN UQ
@@ -18,10 +19,6 @@ namespace TEDx.Domain.Ticketing.Entities
         public DateTime ValidUnitUtc { get; set; }
         public int MaxTotalRedemption {  get; set; }
         public int MaxPerUser {  get; set; }
-        public DateTime CreatedAtUtc { get; set; } // nn
-        public string? CreatedBy { get; set; }
-        public DateTime? UpdatedAtUtc { get; set; }
-        public string? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; } // nn df
         public DateTime? DeletedAtUtc { get; set; }
         public byte[] RowVersion { get; set; }//nn

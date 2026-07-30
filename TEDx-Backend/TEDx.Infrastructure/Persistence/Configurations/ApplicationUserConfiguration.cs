@@ -5,16 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TEDx.Domain.Communication;
 using TEDx.Domain.Identity.Entities;
+using TEDx.Domain.Identity.Enums;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Training.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+    public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<ApplicationUser> builder)
+        public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("Events");
+            builder.ToTable("Users");
 
             builder.HasKey(x => x.Id);
 
@@ -56,7 +57,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(x => x.Role)
-                .HasDefaultValue("Attendee").IsRequired();
+                .HasConversion<int>()
+                .HasDefaultValue(GlobalRole.Attendee)
+                .IsRequired();
 
             builder.Property(x => x.IsActive)
                .HasDefaultValue(true).IsRequired();
@@ -67,17 +70,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .WithOne().HasForeignKey(x => x.AccountId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //builder.HasMany<PromoRedemptionConfiguration>()
-            //    .WithOne().HasForeignKey(x => x.AccountId)
-            //    .OnDelete(DeleteBehavior.Restrict);
-
             builder.HasMany<NotificationRecepient>()
                 .WithOne().HasForeignKey(x => x.AccountId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            //builder.HasMany<TrackAssignmentConfiguration>()
-            //    .WithOne().HasForeignKey(x => x.AccountId)
-            //    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany<RefreshToken>()
                 .WithOne().HasForeignKey(x => x.AccountId)

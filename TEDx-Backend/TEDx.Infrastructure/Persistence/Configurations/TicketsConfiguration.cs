@@ -35,7 +35,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.TicketsStatus)
                 .HasConversion<int>()
-                .HasDefaultValue(TicketsStatus.Active);
+                .HasDefaultValue(TicketsStatus.Issued);
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
@@ -44,7 +44,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace TEDx.Application.Common.Interfaces;
 public interface IAppDbContext
 {
     // Identity
-    DbSet<ApplicationUser> ApplicationUsers { get; }
+    DbSet<User> ApplicationUsers { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
 
     // Eventing

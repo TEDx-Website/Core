@@ -20,7 +20,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.IsRead)
                 .HasDefaultValue(false);
 
-            builder.HasOne<ApplicationUser>().WithMany()
+            builder.HasOne<User>().WithMany()
                .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne<Notification>().WithMany()
               .HasForeignKey(x => x.NotificationId).OnDelete(DeleteBehavior.Restrict);

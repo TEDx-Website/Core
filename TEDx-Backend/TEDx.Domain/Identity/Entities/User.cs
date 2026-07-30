@@ -6,7 +6,7 @@ using TEDx.Domain.Common.DomainInterfaces;
 using TEDx.Domain.Identity.Enums;
 namespace TEDx.Domain.Identity.Entities
 {
-    public class ApplicationUser : IdentityUser<Guid> , IAuditable , ISoftDelete
+    public class User : IdentityUser<Guid> , IAuditable , ISoftDelete
     {
         public string? FirstName { get; set; } // 100
         public string? LastName { get; set; }// 100
