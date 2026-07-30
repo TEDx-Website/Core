@@ -24,8 +24,8 @@ public static class OptionsServiceExtensions
 
         services
             .AddOptions<TOptions>()
-            .Bind(configuration.GetSection(sectionName))
-            .ValidateOnStart();
+            .Bind(configuration.GetSection(sectionName));
+        //  .ValidateOnStart();
 
         return services;
     }

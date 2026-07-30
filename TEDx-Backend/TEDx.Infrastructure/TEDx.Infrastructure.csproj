@@ -1,6 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
- 
-<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\TEDx.Application\TEDx.Application.csproj" />
     <ProjectReference Include="..\TEDx.Domain\TEDx.Domain.csproj" />
