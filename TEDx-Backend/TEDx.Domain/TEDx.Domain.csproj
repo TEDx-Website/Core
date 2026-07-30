@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
- 
   <ItemGroup>
     <Folder Include="Identity\ValueObjects\" />
     <Folder Include="Ticketing\ValueObjects\" />
@@ -9,4 +8,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
   </ItemGroup>
+</Project>
 </Project>
