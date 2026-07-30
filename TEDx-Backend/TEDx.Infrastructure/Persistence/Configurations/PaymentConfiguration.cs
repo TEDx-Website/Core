@@ -49,8 +49,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RawPayloadJson)
                 .HasColumnType("nvarchar(max)");
 
-            builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.OrderId);
+            builder.HasOne(x => x.Order).WithMany(o => o.Payements)
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -40,14 +40,6 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasMany<Notification>().WithOne()
-              .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Sessions>().WithOne()
-             .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
-
-            //builder.HasMany<TrackAssignmentConfiguration>().WithOne()
-            // .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

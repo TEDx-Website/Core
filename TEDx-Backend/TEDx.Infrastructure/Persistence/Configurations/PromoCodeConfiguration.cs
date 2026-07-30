@@ -41,14 +41,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Event>().WithMany()
+            builder.HasOne(x => x.Event).WithMany(e => e.PromoCodes)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Order>().WithOne()
-                .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<PromoRedemption>().WithOne()
-               .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
 
         }
     }

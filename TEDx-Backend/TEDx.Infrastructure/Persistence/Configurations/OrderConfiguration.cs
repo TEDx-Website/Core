@@ -72,28 +72,14 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Event>().WithMany()
+            builder.HasOne(x => x.Event).WithMany(e => e.Orders)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Packages>().WithMany()
+            builder.HasOne(x => x.Package).WithMany(p => p.Orders)
                 .HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<PromoCodes>().WithMany()
+            builder.HasOne(x => x.PromoCode).WithMany(pc => pc.Orders)
                 .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Payement>().WithOne()
-                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Tickets>().WithOne()
-             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<RefundEntry>().WithOne()
-             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany<PromoRedemption>().WithOne()
-             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
-
-
-
         }
     }
 }

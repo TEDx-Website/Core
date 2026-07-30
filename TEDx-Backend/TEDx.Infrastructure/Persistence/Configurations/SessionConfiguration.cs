@@ -32,21 +32,16 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasMaxLength(300)
                 .IsRequired();
 
-            //builder.Property(x => x.SessionStatus)
-            //    .HasConversion<int>()
-            //    .HasDefaultValue(SessionStatus.);
+            builder.Property(x => x.SessionStatus)
+                .HasConversion<int>()
+                .HasDefaultValue(SessionStatus.Scheduled);
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Track>().WithMany()
+            builder.HasOne(x => x.Track).WithMany()
                 .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany<Attendence>().WithOne()
-              .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Evaluation>().WithOne()
-              .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

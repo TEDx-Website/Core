@@ -25,9 +25,10 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<PromoCodes>().WithMany()
+            builder.HasOne(x => x.PromoCodes).WithMany(pc => pc.PromoRedemptions)
                 .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<Order>().WithMany()
+
+            builder.HasOne(x => x.Order).WithMany(o => o.promoRedemptions)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
 
         }

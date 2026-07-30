@@ -65,19 +65,6 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                .HasDefaultValue(true).IsRequired();
 
             builder.HasQueryFilter(x => !x.IsDeleted);
-
-            builder.HasMany<Order>()
-                .WithOne().HasForeignKey(x => x.AccountId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<NotificationRecepient>()
-                .WithOne().HasForeignKey(x => x.AccountId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<RefreshToken>()
-                .WithOne().HasForeignKey(x => x.AccountId)
-                .OnDelete(DeleteBehavior.Cascade);
-
         }
 
     }

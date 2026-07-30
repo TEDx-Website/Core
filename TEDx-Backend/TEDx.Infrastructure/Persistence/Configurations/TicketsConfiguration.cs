@@ -40,10 +40,10 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Event>().WithMany()
+            builder.HasOne(x => x.Event).WithMany(e => e.Tickets)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Order>().WithMany()
+            builder.HasOne(x => x.Order).WithMany(o => o.Tickets)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
