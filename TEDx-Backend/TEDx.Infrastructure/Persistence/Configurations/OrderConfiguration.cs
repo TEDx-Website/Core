@@ -1,0 +1,99 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using TEDx.Domain.Identity.Entities;
+using TEDx.Domain.Ticketing.Entities;
+using TEDx.Domain.Ticketing.Enums;
+
+namespace TEDx.Infrastructure.Persistence.Configurations
+{
+    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    {
+        public void Configure(EntityTypeBuilder<Order> builder)
+        {
+            builder.ToTable("Orders");
+
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.AccountId)
+               .IsRequired();
+            builder.Property(x => x.EventId)
+               .IsRequired();
+            builder.Property(x => x.OrderReference)
+               .IsRequired();
+            builder.Property(x => x.UnitType)
+               .IsRequired();
+
+            builder.Property(x => x.OrderReference)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            builder.HasIndex(x => x.OrderReference)
+                .IsUnique();
+
+            builder.Property(x => x.UnitType)
+                .HasConversion<int>()
+                .IsRequired();
+
+            builder.Property(x => x.UnitNAmeSnapshot)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(x => x.Quantity)
+                .IsRequired();
+            //builder.HasIndex(x => x.Quantity).HasFilter("")
+
+            builder.Property(x => x.UnitPriceSnapshot)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            builder.Property(x => x.SubTotalSnapshot)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            builder.Property(x => x.DiscountSnapshot)
+                .HasPrecision(18, 2)
+                .HasDefaultValue(0m);
+
+            builder.Property(x => x.TotalSnapshot)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
+            builder.Property(x => x.PromoCodeSnapshot)
+                .HasMaxLength(40);
+
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
+                .HasDefaultValue(OrderStatus.Pending);
+            builder.Property(x => x.RowVersion)
+                .IsRowVersion();
+
+            builder.HasOne<ApplicationUser>().WithMany()
+                .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<Event>().WithMany()
+                .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<Packages>().WithMany()
+                .HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<PromoCodes>().WithMany()
+                .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany<Payement>().WithOne()
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany<Tickets>().WithOne()
+             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany<RefundEntry>().WithOne()
+             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasMany<PromoRedemption>().WithOne()
+             .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+
+
+        }
+    }
+}
