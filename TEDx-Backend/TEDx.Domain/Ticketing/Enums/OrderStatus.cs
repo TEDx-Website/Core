@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TEDx.Domain.Ticketing.Enums
 {
     public enum OrderStatus
     {
-        Pending,
-        Processing,
-        Shipped,
-        Delivered,
-        Cancelled
+        PendingPayment = 0,
+        Paid = 1,
+        Cancelled = 2,
+        Expired = 3
     }
 }

@@ -7,16 +7,19 @@ using TEDx.Domain.Training.Enums;
 
 namespace TEDx.Domain.Training.Entities
 {
-    public class TrackAssignment : AuditableEntity, IConcurrent
+    public class Session : AuditableEntity, ISoftDelete, IConcurrent
     {
         public Guid Id { get; set; }
-        public Guid AccountId { get; set; }
         public Guid TrackId { get; set; }
-        public TrackRole TrackRole { get; set; }
+        public string? TitleEn { get; set; }
+        public string? TitleAr { get; set; }
+        public string? Description { get; set; }
         public DateTime StartAtUtc { get; set; }
-        public DateTime EndAtUtc { get; set; }
-        public DateTime AssignedBy { get; set; }
-        public DateTime EndedBy { get; set; }
+        public DateTime EndedAtUtc { get; set; }
+        public string? Location { get; set; }
+        public SessionStatus Status { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTime? DeletedAtUtc { get; set; }
         public byte[] RowVersion { get; set; } = null!;
         public Track Track { get; set; } = null!;
         public List<Attendance>? Attendances { get; set; }

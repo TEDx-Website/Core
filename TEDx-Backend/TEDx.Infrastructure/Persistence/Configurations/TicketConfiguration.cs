@@ -8,9 +8,9 @@ using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class TicketConfiguration : IEntityTypeConfiguration<Tickets>
+    public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
     {
-        public void Configure(EntityTypeBuilder<Tickets> builder)
+        public void Configure(EntityTypeBuilder<Ticket> builder)
         {
             builder.ToTable("Tickets");
 
@@ -33,18 +33,18 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.GuestName)
                 .HasMaxLength(200);
 
-            builder.Property(x => x.TicketsStatus)
+            builder.Property(x => x.Status)
                 .HasConversion<int>()
-                .HasDefaultValue(TicketsStatus.Active);
+                .HasDefaultValue(TicketStatus.Issued);
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Event>().WithMany()
+            builder.HasOne(x => x.Event).WithMany(e => e.Tickets)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.Order).WithMany(o => o.Tickets)
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

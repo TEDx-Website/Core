@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Communication;
@@ -9,37 +11,39 @@ using TEDx.Domain.Training.Entities;
 namespace TEDx.Infrastructure.Persistence;
 
 public sealed class AppDbContext
-    : DbContext, IAppDbContext
+    : IdentityDbContext<User, IdentityRole<Guid>, Guid>, IAppDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
 
-    // DbSets
+    // DbSets — expression-bodied so EF backs them via Set<T>()
 
     // Identity
-    public DbSet<ApplicationUser> ApplicationUsers {  get;}
-    public DbSet<RefreshToken> RefreshTokens {  get;}
+    public DbSet<User> ApplicationUsers => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     // Eventing
-    public DbSet<Event> Events { get; }
-    public DbSet<Order> Orders { get; }
-    public DbSet<Packages> Packages { get; }
-    public DbSet<Tickets> Tickets { get; }
+    public DbSet<Event> Events => Set<Event>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<Package> Packages => Set<Package>();
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<PromoCode> PromoCodes => Set<PromoCode>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     // Training
-    public DbSet<Track> Tracks { get; }
-    public DbSet<Sessions> Sessions { get; }
-    public DbSet<TrackAssignment> TrackAssignments { get; }
-    public DbSet<Attendence> Attendances { get; }
-    public DbSet<Evaluation> Evaluations { get; }
+    public DbSet<Track> Tracks => Set<Track>();
+    public DbSet<Session> Sessions => Set<Session>();
+    public DbSet<TrackAssignment> TrackAssignments => Set<TrackAssignment>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<Evaluation> Evaluations => Set<Evaluation>();
 
     // Notifications
-    public DbSet<Notification> Notifications { get; }
-    public DbSet<NotificationRecepient> NotificationRecipients { get; }
-    public DbSet<ContactMessage> ContactMessages { get; }
-    public DbSet<OutOfBokMessages> OutboxMessages { get; }
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationRecipient> NotificationRecipients => Set<NotificationRecipient>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<OutOfBokMessages> OutboxMessages => Set<OutOfBokMessages>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

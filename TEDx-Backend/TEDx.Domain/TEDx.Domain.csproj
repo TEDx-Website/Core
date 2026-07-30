@@ -1,8 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <Folder Include="Identity\ValueObjects\" />
-    <Folder Include="Ticketing\ValueObjects\" />
-    <Folder Include="Training\ValueObjects\" />
+    <Compile Remove="Identity\ValueObjects\**" />
+    <Compile Remove="Ticketing\ValueObjects\**" />
+    <Compile Remove="Training\ValueObjects\**" />
+    <EmbeddedResource Remove="Identity\ValueObjects\**" />
+    <EmbeddedResource Remove="Ticketing\ValueObjects\**" />
+    <EmbeddedResource Remove="Training\ValueObjects\**" />
+    <None Remove="Identity\ValueObjects\**" />
+    <None Remove="Ticketing\ValueObjects\**" />
+    <None Remove="Training\ValueObjects\**" />
   </ItemGroup>
  
   <ItemGroup>

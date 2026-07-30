@@ -8,9 +8,9 @@ using TEDx.Domain.Training.Entities;
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
     public sealed class AttendanceConfiguration
-    : IEntityTypeConfiguration<Attendence>
+    : IEntityTypeConfiguration<Attendance>
     {
-        public void Configure(EntityTypeBuilder<Attendence> builder)
+        public void Configure(EntityTypeBuilder<Attendance> builder)
         {
             builder.ToTable("Attendances");
 
@@ -23,11 +23,11 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Sessions>().WithMany()
+            builder.HasOne(x => x.Session).WithMany(s => s.Attendances)
                .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<TrackAssignmentConfiguration>().WithMany()
-               .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.TrackAssignment).WithMany(ta => ta.Attendances)
+               .HasForeignKey(x => x.EnrollmentId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

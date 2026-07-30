@@ -48,6 +48,16 @@ namespace TEDx.Infrastructure.Persistence.Interceptors
             var now = _clock.UtcNow;
             var userId = _currentUser.UserId;
 
+            foreach (var entry in context.ChangeTracker.Entries<ISoftDelete>())
+            {
+                if (entry.State == EntityState.Deleted)
+                {
+                    entry.State = EntityState.Modified;
+                    entry.Entity.IsDeleted = true;
+                    entry.Entity.DeletedAtUtc = now;
+                }
+            }
+
             foreach (var entry in context.ChangeTracker.Entries<IAuditable>())
             {
                 if (entry.State == EntityState.Added)

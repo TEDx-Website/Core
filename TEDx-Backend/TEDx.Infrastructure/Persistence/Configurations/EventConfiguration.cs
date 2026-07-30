@@ -44,7 +44,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TicketPrice)
                 .HasPrecision(18, 2);
 
-            builder.Property(x => x.eventStatus)
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
                 .IsRequired();
 
             builder.Property(x => x.ImageUrl)
@@ -54,23 +55,6 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .IsRowVersion();
 
             builder.HasQueryFilter(x => !x.IsDeleted);
-
-            builder.HasMany<Order>()
-                .WithOne().HasForeignKey(x => x.EventId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Tickets>()
-            .WithOne().HasForeignKey(x => x.EventId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<PromoCodes>()
-            .WithOne().HasForeignKey(x => x.EventId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Packages>()
-               .WithOne().HasForeignKey(x => x.EventId)
-               .OnDelete(DeleteBehavior.Restrict);
-
         }
 
       

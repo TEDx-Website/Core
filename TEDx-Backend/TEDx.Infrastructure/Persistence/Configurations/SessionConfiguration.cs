@@ -9,9 +9,9 @@ using TEDx.Domain.Training.Enums;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class SessionConfiguration : IEntityTypeConfiguration<Sessions>
+    public sealed class SessionConfiguration : IEntityTypeConfiguration<Session>
     {
-        public void Configure(EntityTypeBuilder<Sessions> builder)
+        public void Configure(EntityTypeBuilder<Session> builder)
         {
             builder.ToTable("Sessions");
 
@@ -21,7 +21,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasMaxLength(200)
                 .IsRequired();
 
-            builder.Property(x => x.TitlleAr)
+            builder.Property(x => x.TitleAr)
                 .HasMaxLength(200)
                 .IsRequired();
 
@@ -32,21 +32,15 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasMaxLength(300)
                 .IsRequired();
 
-            //builder.Property(x => x.SessionStatus)
-            //    .HasConversion<int>()
-            //    .HasDefaultValue(SessionStatus.);
+            builder.Property(x => x.Status)
+                .HasConversion<int>()
+                .HasDefaultValue(SessionStatus.Scheduled);
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
 
-            builder.HasOne<Track>().WithMany()
+            builder.HasOne(x => x.Track).WithMany(t => t.Sessions)
                 .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Attendence>().WithOne()
-              .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany<Evaluation>().WithOne()
-              .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

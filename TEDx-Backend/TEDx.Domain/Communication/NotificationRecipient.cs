@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TEDx.Domain.Communication
 {
-    public class NotificationRecepient
+    public class NotificationRecipient
     {
         public Guid Id { get; private set; }
 
@@ -17,6 +17,6 @@ namespace TEDx.Domain.Communication
         public DateTime? ReadAtUtc { get; set; }
 
         public DateTime CreatedAtUtc { get;  set; }
-        public Notification Notification { get;  set; }
+        public Notification Notification { get;  set; } = null!;
     }
 }

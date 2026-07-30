@@ -24,11 +24,12 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
-            builder.HasOne<Sessions>().WithMany()
+
+            builder.HasOne(x => x.Session).WithMany(s => s.Evaluations)
                .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne<TrackAssignmentConfiguration>().WithMany()
-               .HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(x => x.TrackAssignment).WithMany(ta => ta.Evaluations)
+               .HasForeignKey(x => x.EnrollmentId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

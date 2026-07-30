@@ -30,8 +30,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.CheckedInTicketsRetained)
                 .IsRequired();
 
-            builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(x => x.Order).WithMany(o => o.RetryRefunds)
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

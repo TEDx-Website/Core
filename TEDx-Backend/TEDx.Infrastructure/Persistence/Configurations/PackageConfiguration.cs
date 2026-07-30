@@ -7,9 +7,9 @@ using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class PackageConfiguration : IEntityTypeConfiguration<Packages>
+    public sealed class PackageConfiguration : IEntityTypeConfiguration<Package>
     {
-        public void Configure(EntityTypeBuilder<Packages> builder)
+        public void Configure(EntityTypeBuilder<Package> builder)
         {
             builder.ToTable("Packages");
 
@@ -37,10 +37,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
-            builder.HasOne<Event>().WithMany()
+            builder.HasOne(x => x.Event).WithMany(e => e.Packages)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasMany<Order>().WithOne()
-                .HasForeignKey(x => x.PackageId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -8,9 +8,9 @@ using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payement>
+    public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     {
-        public void Configure(EntityTypeBuilder<Payement> builder)
+        public void Configure(EntityTypeBuilder<Payment> builder)
         {
             builder.ToTable("Payments");
 
@@ -34,9 +34,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.IdempotencyKey)
                 .IsUnique();
 
-            builder.Property(x => x.PayementStatus)
+            builder.Property(x => x.PaymentStatus)
                 .HasConversion<int>()
-                .HasDefaultValue(PayementStatus.pending);
+                .HasDefaultValue(PaymentStatus.Initiated);
 
             builder.Property(x => x.Amount)
                 .HasPrecision(18, 2)
@@ -49,8 +49,8 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RawPayloadJson)
                 .HasColumnType("nvarchar(max)");
 
-            builder.HasOne<Order>().WithMany()
-                .HasForeignKey(x => x.OrderId);
+            builder.HasOne(x => x.Order).WithMany(o => o.Payments)
+                .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

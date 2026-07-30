@@ -1,22 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class RefundEntry : IRefreshTokenAudit
+    public class RefundEntry : AuditableEntity
     {
         public Guid Id { get; set; }
-        public Guid OrderId {  get; set; } // nn uq
-        public string Reason { get; set; }//nnn
-        public int VoidedTicketsCount { get; set; }//nnn
-        public int CheckedInTicketsRetained { get; set; }//nn
-        public int SeatsReleased { get; set; }//nn
-        public string RefundedBy { get; set; }//nn
-
-        public DateTime CreatedAtUtc { get; set; }//nn
-        public Order Order { get; set; }
-
+        public Guid OrderId { get; set; }
+        public string Reason { get; set; } = null!;
+        public int VoidedTicketsCount { get; set; }
+        public int CheckedInTicketsRetained { get; set; }
+        public int SeatsReleased { get; set; }
+        public string RefundedBy { get; set; } = null!;
+        public Order Order { get; set; } = null!;
     }
 }
