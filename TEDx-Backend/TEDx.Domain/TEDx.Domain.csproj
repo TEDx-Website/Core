@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
- 
   <ItemGroup>
     <Folder Include="Identity\ValueObjects\" />
     <Folder Include="Ticketing\ValueObjects\" />

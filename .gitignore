@@ -90,6 +90,7 @@ nCrunchTemp_*
 appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
+!appsettings.example.json
 
 ## OS
 Thumbs.db
@@ -99,7 +100,4 @@ Desktop.ini
 
 ## Project-specific
 docs/tedx-er-diagram.html
-docs/architecture-explorer
-docs/Plan
-docs/foundation
-docs/Reviews
+docs/Others

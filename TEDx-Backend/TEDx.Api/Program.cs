@@ -10,6 +10,8 @@ builder.Host.AddTedxSerilog();
 
 builder.Services.AddApplicationServices();
 
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
 builder.Services.AddControllers();
 
 // Register custom API behavior for validation error responses
