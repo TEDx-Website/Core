@@ -9,6 +9,7 @@ public static class OptionsServiceExtensions
     public static IServiceCollection AddTedxOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddValidatedOptions<PaymobOptions, PaymobOptionsValidator>(configuration, PaymobOptions.SectionName);
+        services.AddValidatedOptions<SmtpOptions, SmtpOptionsValidator>(configuration, PaymobOptions.SectionName);
 
         return services;
     }
