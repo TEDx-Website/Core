@@ -20,6 +20,6 @@ namespace TEDx.Domain.Communication
         public Guid SentBy { get; private set; }
 
         public DateTime CreatedAtUtc { get; private set; }
-        public List<NotificationRecepient> NotificationRecepients { get; set; }
+        public List<NotificationRecipient>? NotificationRecipients { get; set; }
     }
 }

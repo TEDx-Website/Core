@@ -18,19 +18,21 @@ public interface IAppDbContext
     // Eventing
     DbSet<Event> Events { get; }
     DbSet<Order> Orders { get; }
-    DbSet<Packages> Packages { get; }
-    DbSet<Tickets> Tickets { get; }
+    DbSet<Package> Packages { get; }
+    DbSet<Ticket> Tickets { get; }
+    DbSet<PromoCode> PromoCodes { get; }
+    DbSet<Payment> Payments { get; }
 
     // Training
     DbSet<Track> Tracks { get; }
-    DbSet<Sessions> Sessions { get; }
+    DbSet<Session> Sessions { get; }
     DbSet<TrackAssignment> TrackAssignments { get; }
-    DbSet<Attendence> Attendances { get; }
+    DbSet<Attendance> Attendances { get; }
     DbSet<Evaluation> Evaluations { get; }
 
     // Notifications
     DbSet<Notification> Notifications { get; }
-    DbSet<NotificationRecepient> NotificationRecipients { get; }
+    DbSet<NotificationRecipient> NotificationRecipients { get; }
     DbSet<ContactMessage> ContactMessages { get; }
     DbSet<OutOfBokMessages> OutboxMessages { get; }
 

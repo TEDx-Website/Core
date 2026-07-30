@@ -18,17 +18,17 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
-            builder.Property(x => x.PromoRedemptionStatus)
+            builder.Property(x => x.Status)
                 .HasConversion<int>()
                 .HasDefaultValue(PromoRedemptionStatus.Claimed);
 
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.PromoCodes).WithMany(pc => pc.PromoRedemptions)
+            builder.HasOne(x => x.PromoCode).WithMany(pc => pc.PromoRedemptions)
                 .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Order).WithMany(o => o.promoRedemptions)
+            builder.HasOne(x => x.Order).WithMany(o => o.PromoRedemptions)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
 
         }

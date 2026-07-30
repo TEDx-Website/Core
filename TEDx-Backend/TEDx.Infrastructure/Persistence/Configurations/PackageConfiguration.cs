@@ -7,9 +7,9 @@ using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class PackageConfiguration : IEntityTypeConfiguration<Packages>
+    public sealed class PackageConfiguration : IEntityTypeConfiguration<Package>
     {
-        public void Configure(EntityTypeBuilder<Packages> builder)
+        public void Configure(EntityTypeBuilder<Package> builder)
         {
             builder.ToTable("Packages");
 

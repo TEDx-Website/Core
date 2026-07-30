@@ -9,9 +9,9 @@ using TEDx.Domain.Identity.Entities;
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
     public sealed class NotificationRecipientConfiguration
-     : IEntityTypeConfiguration<NotificationRecepient>
+     : IEntityTypeConfiguration<NotificationRecipient>
     {
-        public void Configure(EntityTypeBuilder<NotificationRecepient> builder)
+        public void Configure(EntityTypeBuilder<NotificationRecipient> builder)
         {
             builder.ToTable("NotificationRecipients");
 
@@ -23,7 +23,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne<User>().WithMany()
                .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Notification).WithMany(n => n.NotificationRecepients)
+            builder.HasOne(x => x.Notification).WithMany(n => n.NotificationRecipients)
               .HasForeignKey(x => x.NotificationId).OnDelete(DeleteBehavior.Restrict);
 
         }

@@ -11,34 +11,34 @@ namespace TEDx.Domain.Ticketing.Entities
     public class Order : AuditableEntity, IConcurrent
     {
         public Guid Id { get; set; }
-        public string? OrderReference { get; set; }// UQ NN 200
-        public Guid AccountId { get; set; } // NN User1 --> M Orderw
-        public Guid EventId { get; set; } // NN Event1 --> M ORders
-        public Guid? PackageId { get; set; }// Order M --> Package 1 (nullable: individual-ticket orders have no package)
+        public string? OrderReference { get; set; }
+        public Guid AccountId { get; set; }
+        public Guid EventId { get; set; }
+        public Guid? PackageId { get; set; }
         public OrderUnitType UnitType { get; set; }
-        public string? UnitNameSnapshot { get; set; }// 200 NN
-        public int Quantity { get; set; } // NN Check
-        public decimal UnitPriceSnapshot { get; set; } // 18,2
-        public decimal SubTotalSnapshot { get; set; } // 18,2
-        public decimal DiscountSnapshot { get; set; } // 18,2
-        public decimal TotalSnapshot { get; set; } // 18,2
-        public Guid? PromoCodeId { get; set; } // nullable: an order without a promo has no code
-        public string? PromoCodeSnapshot { get; set; }// 40
-        public OrderStatus Status { get; private set; } // df NN — changes only via transition methods
+        public string? UnitNameSnapshot { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPriceSnapshot { get; set; }
+        public decimal SubTotalSnapshot { get; set; }
+        public decimal DiscountSnapshot { get; set; }
+        public decimal TotalSnapshot { get; set; }
+        public Guid? PromoCodeId { get; set; }
+        public string? PromoCodeSnapshot { get; set; }
+        public OrderStatus Status { get; private set; }
         public DateTime HoldExpiresAtUtc { get; set; }
         public DateTime PaidAtUtc { get; private set; }
         public DateTime CancelledAtUtc { get; private set; }
         public DateTime ExpiredAtUtc { get; private set; }
-        public string? PaymobOrder { get; set; } // 70
-        public byte[] RowVersion { get; set; } = null!;//nn
+        public string? PaymobOrder { get; set; }
+        public byte[] RowVersion { get; set; } = null!;
         // nav prop (intra-context only)
         public Event Event { get; set; } = null!;
-        public List<Payement>? Payements { get; set; }
-        public List<Tickets>? Tickets { get; set; }
+        public List<Payment>? Payments { get; set; }
+        public List<Ticket>? Tickets { get; set; }
         public List<RefundEntry>? RetryRefunds { get; set; }
-        public List<PromoRedemption>? promoRedemptions { get; set; }
-        public Packages? Package { get; set; }
-        public PromoCodes? PromoCode { get; set; }
+        public List<PromoRedemption>? PromoRedemptions { get; set; }
+        public Package? Package { get; set; }
+        public PromoCode? PromoCode { get; set; }
 
         // --- State machine (D:Q55) ---
 

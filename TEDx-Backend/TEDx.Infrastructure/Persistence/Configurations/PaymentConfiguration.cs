@@ -8,9 +8,9 @@ using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payement>
+    public sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
     {
-        public void Configure(EntityTypeBuilder<Payement> builder)
+        public void Configure(EntityTypeBuilder<Payment> builder)
         {
             builder.ToTable("Payments");
 
@@ -49,7 +49,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.RawPayloadJson)
                 .HasColumnType("nvarchar(max)");
 
-            builder.HasOne(x => x.Order).WithMany(o => o.Payements)
+            builder.HasOne(x => x.Order).WithMany(o => o.Payments)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
         }
     }

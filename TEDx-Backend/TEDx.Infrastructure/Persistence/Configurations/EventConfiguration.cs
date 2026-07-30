@@ -44,7 +44,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TicketPrice)
                 .HasPrecision(18, 2);
 
-            builder.Property(x => x.eventStatus)
+            builder.Property(x => x.Status)
                 .HasConversion<int>()
                 .IsRequired();
 

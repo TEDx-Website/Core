@@ -8,9 +8,9 @@ using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCodes>
+    public sealed class PromoCodeConfiguration : IEntityTypeConfiguration<PromoCode>
     {
-        public void Configure(EntityTypeBuilder<PromoCodes> builder)
+        public void Configure(EntityTypeBuilder<PromoCode> builder)
         {
             builder.ToTable("PromoCodes");
 

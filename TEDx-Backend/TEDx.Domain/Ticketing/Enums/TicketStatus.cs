@@ -1,6 +1,6 @@
 namespace TEDx.Domain.Ticketing.Enums
 {
-    public enum TicketsStatus
+    public enum TicketStatus
     {
         Issued = 0,
         CheckedIn = 1,

@@ -31,7 +31,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.DescriptionAr)
                 .HasColumnType("nvarchar(max)");
 
-            builder.Property(x => x.Schedle)
+            builder.Property(x => x.Schedule)
                 .HasMaxLength(500);
 
             builder.Property(x => x.IsActive)

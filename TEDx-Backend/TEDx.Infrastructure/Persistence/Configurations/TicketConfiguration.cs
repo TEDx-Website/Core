@@ -8,9 +8,9 @@ using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class TicketConfiguration : IEntityTypeConfiguration<Tickets>
+    public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
     {
-        public void Configure(EntityTypeBuilder<Tickets> builder)
+        public void Configure(EntityTypeBuilder<Ticket> builder)
         {
             builder.ToTable("Tickets");
 
@@ -33,9 +33,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.GuestName)
                 .HasMaxLength(200);
 
-            builder.Property(x => x.TicketsStatus)
+            builder.Property(x => x.Status)
                 .HasConversion<int>()
-                .HasDefaultValue(TicketsStatus.Issued);
+                .HasDefaultValue(TicketStatus.Issued);
 
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();

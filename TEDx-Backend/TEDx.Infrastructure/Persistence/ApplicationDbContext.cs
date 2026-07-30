@@ -27,19 +27,21 @@ public sealed class AppDbContext
     // Eventing
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Order> Orders => Set<Order>();
-    public DbSet<Packages> Packages => Set<Packages>();
-    public DbSet<Tickets> Tickets => Set<Tickets>();
+    public DbSet<Package> Packages => Set<Package>();
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<PromoCode> PromoCodes => Set<PromoCode>();
+    public DbSet<Payment> Payments => Set<Payment>();
 
     // Training
     public DbSet<Track> Tracks => Set<Track>();
-    public DbSet<Sessions> Sessions => Set<Sessions>();
+    public DbSet<Session> Sessions => Set<Session>();
     public DbSet<TrackAssignment> TrackAssignments => Set<TrackAssignment>();
-    public DbSet<Attendence> Attendances => Set<Attendence>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Evaluation> Evaluations => Set<Evaluation>();
 
     // Notifications
     public DbSet<Notification> Notifications => Set<Notification>();
-    public DbSet<NotificationRecepient> NotificationRecipients => Set<NotificationRecepient>();
+    public DbSet<NotificationRecipient> NotificationRecipients => Set<NotificationRecipient>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<OutOfBokMessages> OutboxMessages => Set<OutOfBokMessages>();
 
