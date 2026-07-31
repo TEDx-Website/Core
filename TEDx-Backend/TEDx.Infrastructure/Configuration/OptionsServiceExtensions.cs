@@ -10,6 +10,7 @@ public static class OptionsServiceExtensions
     {
         services.AddValidatedOptions<PaymobOptions, PaymobOptionsValidator>(configuration, PaymobOptions.SectionName);
         services.AddValidatedOptions<SmtpOptions, SmtpOptionsValidator>(configuration, SmtpOptions.SectionName);
+        services.AddValidatedOptions<CloudinaryOptions, CloudinaryOptionsValidator>(configuration, CloudinaryOptions.SectionName);
 
         return services;
     }

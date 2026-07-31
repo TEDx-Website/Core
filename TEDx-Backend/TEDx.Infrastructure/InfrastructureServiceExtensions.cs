@@ -8,6 +8,7 @@ using TEDx.Infrastructure.Common;
 using TEDx.Infrastructure.Configuration;
 using TEDx.Infrastructure.Email;
 using TEDx.Infrastructure.Identity;
+using TEDx.Infrastructure.Media;
 using TEDx.Infrastructure.Payments;
 using TEDx.Infrastructure.Persistence;
 using TEDx.Infrastructure.Persistence.Interceptors;
@@ -45,6 +46,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<IPaymobClient, PaymobClient>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
 
         return services;
     }
