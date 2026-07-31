@@ -18,6 +18,6 @@ The following documents in the `docs/` folder are up-to-date and can be fully re
 - [API Contract](docs/07-ApiContract.md)
 - [SRS](docs/02-SRS.md)
 
-### Entity-Relationship Diagram
+### ER Diagram
 You can also view the interactive ER Diagram here:
 🔗 **[TEDx ER Diagram](https://tedx-er-diagram.vercel.app/)**
