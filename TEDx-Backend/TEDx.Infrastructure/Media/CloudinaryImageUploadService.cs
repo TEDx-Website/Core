@@ -6,16 +6,6 @@ using TEDx.Infrastructure.Configuration;
 
 namespace TEDx.Infrastructure.Media;
 
-/// <summary>
-/// Cloudinary-backed implementation of <see cref="IImageUploadService"/>.
-/// Validates the incoming stream before hitting the Cloudinary SDK, then
-/// returns the secure URL of the stored asset.
-/// </summary>
-/// <remarks>
-/// This is a scaffold — full integration (error mapping, retry, public-ID
-/// strategy) will be completed as part of the profile-picture upload flow
-/// (USER-03 / Edit Profile feature).
-/// </remarks>
 internal sealed class CloudinaryImageUploadService : IImageUploadService
 {
     private readonly Cloudinary _cloudinary;
@@ -32,8 +22,6 @@ internal sealed class CloudinaryImageUploadService : IImageUploadService
 
         _cloudinary = new Cloudinary(account) { Api = { Secure = true } };
     }
-
-    /// <inheritdoc/>
     public async Task<string> UploadAsync(
         Stream stream,
         string fileName,
@@ -45,7 +33,6 @@ internal sealed class CloudinaryImageUploadService : IImageUploadService
         {
             File = new FileDescription(fileName, stream),
             Folder = _options.UploadFolder,
-            // Overwrite = false  — let Cloudinary generate a unique public ID
             UniqueFilename = true,
             UseFilename = false,
         };
@@ -58,10 +45,6 @@ internal sealed class CloudinaryImageUploadService : IImageUploadService
 
         return result.SecureUrl.AbsoluteUri;
     }
-
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
 
     private void ValidateFile(Stream stream, string fileName)
     {
