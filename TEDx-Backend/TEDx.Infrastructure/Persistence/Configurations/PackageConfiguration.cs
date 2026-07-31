@@ -39,6 +39,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .IsRowVersion();
             builder.HasOne(x => x.Event).WithMany(e => e.Packages)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
+
+            // Matching filter: keeps Packages invisible when their Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Event.IsDeleted);
         }
     }
 }

@@ -31,6 +31,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne(x => x.Order).WithMany(o => o.PromoRedemptions)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
 
+            // Matching filter: keeps PromoRedemptions invisible when their Order's Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Order.Event.IsDeleted);
+
         }
     }
 }

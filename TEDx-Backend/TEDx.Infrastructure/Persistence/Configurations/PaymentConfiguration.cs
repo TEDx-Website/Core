@@ -51,6 +51,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasOne(x => x.Order).WithMany(o => o.Payments)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+            // Matching filter: keeps Payments invisible when their Order's Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Order.Event.IsDeleted);
         }
     }
 }

@@ -30,7 +30,9 @@ public static class InfrastructureServiceExtensions
 
         services.AddDbContext<AppDbContext>((sp, options) =>
             options
-                .UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .UseSqlServer(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name))
                 .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());

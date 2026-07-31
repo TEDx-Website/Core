@@ -80,6 +80,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasOne(x => x.PromoCode).WithMany(pc => pc.Orders)
                 .HasForeignKey(x => x.PromoCodeId).OnDelete(DeleteBehavior.Restrict);
+
+            // Matching filter: keeps Orders invisible when their Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Event.IsDeleted);
         }
     }
 }
