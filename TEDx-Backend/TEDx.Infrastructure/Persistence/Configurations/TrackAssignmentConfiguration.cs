@@ -28,7 +28,7 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(x => x.Track).WithMany()
+            builder.HasOne(x => x.Track).WithMany(t => t.TrackAssignments)
                .HasForeignKey(x => x.TrackId).OnDelete(DeleteBehavior.Restrict);
 
         }

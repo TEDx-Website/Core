@@ -37,20 +37,27 @@ public sealed class AdminSeeder
 
     private AdminSeederOptions ResolveOptions()
     {
-        var email = _configuration[AdminSeederOptions.EmailKey];
+        var email = _configuration[AdminSeederOptions.EmailKey]
+                    ?? _configuration["Admin:Email"];
         if (string.IsNullOrWhiteSpace(email))
         {
             throw new InvalidOperationException(
-                $"Admin seeding requires configuration key '{AdminSeederOptions.EmailKey}'. " +
+                $"Admin seeding requires configuration key '{AdminSeederOptions.EmailKey}' or 'Admin:Email'. " +
                 "Set it in configuration before startup.");
         }
 
         var password = Environment.GetEnvironmentVariable(AdminSeederOptions.PasswordEnvVar);
         if (string.IsNullOrWhiteSpace(password))
         {
+            password = _configuration[AdminSeederOptions.PasswordEnvVar]
+                       ?? _configuration["Admin:Password"];
+        }
+
+        if (string.IsNullOrWhiteSpace(password))
+        {
             throw new InvalidOperationException(
-                $"Admin seeding requires environment variable '{AdminSeederOptions.PasswordEnvVar}'. " +
-                "Set it before startup; the admin password must never be hardcoded.");
+                $"Admin seeding requires environment variable '{AdminSeederOptions.PasswordEnvVar}' " +
+                "or configuration key 'ADMIN_PASSWORD' / 'Admin:Password'. Set it before startup.");
         }
 
         return new AdminSeederOptions(email.Trim(), password);

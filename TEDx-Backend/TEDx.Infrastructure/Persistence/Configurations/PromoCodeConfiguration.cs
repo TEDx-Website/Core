@@ -44,6 +44,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasOne(x => x.Event).WithMany(e => e.PromoCodes)
                 .HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Restrict);
 
+            // Matching filter: keeps PromoCodes invisible when their Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Event.IsDeleted);
+
         }
     }
 }

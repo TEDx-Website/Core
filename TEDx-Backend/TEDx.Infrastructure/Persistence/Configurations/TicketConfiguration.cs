@@ -45,6 +45,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasOne(x => x.Order).WithMany(o => o.Tickets)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+            // Matching filter: keeps Tickets invisible when their Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Event.IsDeleted);
         }
     }
 }

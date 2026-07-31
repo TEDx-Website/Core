@@ -31,6 +31,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasOne(x => x.ApplicationUser).WithMany(u => u.refreshTokens)
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Cascade);
+
+            // Matching filter: keeps RefreshTokens invisible when their User is soft-deleted.
+            builder.HasQueryFilter(x => !x.ApplicationUser.IsDeleted);
         }
     }
 }

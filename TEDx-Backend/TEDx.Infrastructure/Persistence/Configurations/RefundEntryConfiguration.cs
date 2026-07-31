@@ -32,6 +32,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasOne(x => x.Order).WithMany(o => o.RetryRefunds)
                 .HasForeignKey(x => x.OrderId).OnDelete(DeleteBehavior.Restrict);
+
+            // Matching filter: keeps RefundEntry invisible when their Order's Event is soft-deleted.
+            builder.HasQueryFilter(x => !x.Order.Event.IsDeleted);
         }
     }
 }
