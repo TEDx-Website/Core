@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Ticketing.Payments;
 using TEDx.Domain.Identity.Entities;
+using TEDx.Infrastructure.BackgroundJobs;
 using TEDx.Infrastructure.Common;
 using TEDx.Infrastructure.Configuration;
 using TEDx.Infrastructure.Email;
@@ -48,6 +49,10 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
 
+        // Background workers (D:Q34)
+        services.AddHostedService<OutboxAndHoldExpirySweeper>();
+
         return services;
     }
 }
+
