@@ -55,13 +55,16 @@ public static class ApiBehaviorExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
+
+        var methos = configuration.GetSection("Cors:AllowedMethods").Get<string[]>();
+        var headers = configuration.GetSection("Cors:AllowedHeaders").Get<string[]>();
         services.AddCors(options =>
         {
             options.AddPolicy("DefaultCorsPolicy", policy =>
             {
                 policy
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
+                    .WithMethods(methos!)
+                    .WithHeaders(headers!)
                     .WithOrigins(
                         configuration.GetSection("Cors:AllowedOrigins")
                                      .Get<string[]>()!);
