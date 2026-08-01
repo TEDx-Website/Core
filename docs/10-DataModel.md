@@ -75,8 +75,8 @@ Inherits the full `IdentityUser<Guid>` column set. The table below lists **every
 | `Id` | `uniqueidentifier` PK | | Identity | **The account id every other context references by value.** |
 | `UserName`, `NormalizedUserName` | `nvarchar(256)` | | Identity | **set equal to `Email`** — login is by email, but Identity requires a username; `NormalizedUserName` **unique** |
 | `Email`, `NormalizedEmail` | `nvarchar(256)` | | Identity | `NormalizedEmail` **unique** |
-| `EmailConfirmed` | `bit` | | Identity | |
-| `PasswordHash`, `SecurityStamp`, `ConcurrencyStamp` | `nvarchar(max)` | | Identity | crypto; `SecurityStamp` backs password-reset tokens (§1.2); `ConcurrencyStamp` is the optimistic token |
+| `EmailConfirmed` | `bit` | | Identity | **Active (D:Q57)** — `false` on registration; login is refused until `true` (FR-AUTH-13). Set by `/auth/confirm-email`. The rollout migration backfills **`true` for every row that already exists**, including the seeded Admin, so enforcement is forward-only and no current user is locked out (FR-AUTH-16). |
+| `PasswordHash`, `SecurityStamp`, `ConcurrencyStamp` | `nvarchar(max)` | | Identity | crypto; `SecurityStamp` backs password-reset **and email-confirmation** tokens (§1.2); `ConcurrencyStamp` is the optimistic token |
 | `PhoneNumber` | `nvarchar(32)` | ✔ | Identity | the API's `phone` (FR-USER-01/02) — reuses Identity's built-in column, not a custom one |
 | `PhoneNumberConfirmed`, `TwoFactorEnabled` | `bit` | | Identity | present on the base type; unused features, left at defaults |
 | `LockoutEnd` | `datetimeoffset` | ✔ | Identity | |
