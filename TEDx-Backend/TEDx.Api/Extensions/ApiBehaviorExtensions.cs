@@ -51,4 +51,26 @@ public static class ApiBehaviorExtensions
 
         return char.ToLowerInvariant(field[0]) + field[1..];
     }
+    public static IServiceCollection AddApiBehavior(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+
+        var methos = configuration.GetSection("Cors:AllowedMethods").Get<string[]>();
+        var headers = configuration.GetSection("Cors:AllowedHeaders").Get<string[]>();
+        services.AddCors(options =>
+        {
+            options.AddPolicy("DefaultCorsPolicy", policy =>
+            {
+                policy
+                    .WithMethods(methos!)
+                    .WithHeaders(headers!)
+                    .WithOrigins(
+                        configuration.GetSection("Cors:AllowedOrigins")
+                                     .Get<string[]>()!);
+            });
+        });
+
+        return services;
+    }
 }

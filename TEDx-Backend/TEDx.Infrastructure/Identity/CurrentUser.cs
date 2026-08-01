@@ -4,7 +4,7 @@ using TEDx.Application.Common.Interfaces;
 
 namespace TEDx.Infrastructure.Identity
 {
-    internal sealed class CurrentUser : ICurrentUser
+    public sealed class CurrentUser : ICurrentUser
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
