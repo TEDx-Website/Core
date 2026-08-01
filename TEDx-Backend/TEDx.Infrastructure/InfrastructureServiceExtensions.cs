@@ -14,10 +14,13 @@ using TEDx.Infrastructure.Payments;
 using TEDx.Infrastructure.Persistence;
 using TEDx.Infrastructure.Persistence.Interceptors;
 using TEDx.Infrastructure.Persistence.Seeding;
+
 namespace Microsoft.Extensions.DependencyInjection;
 
 public static class InfrastructureServiceExtensions
 {
+    private const string EmailConfirmationProvider = "email_confirmation";
+
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -30,27 +33,59 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<AuditInterceptor>();
 
-        services.AddDbContext<AppDbContext>((sp, options) =>
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
             options
                 .UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name))
+                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name))
                 .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
 
-        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
+        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddIdentityCore<User>()
-            .AddRoles<IdentityRole<Guid>>()
-            .AddEntityFrameworkStores<AppDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<AdminSeeder>();
 
         services.AddScoped<IPaymobClient, PaymobClient>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
+        services.AddDataProtection();
 
-        // Background workers (D:Q34)
         services.AddHostedService<OutboxAndHoldExpirySweeper>();
+
+        var policy = configuration.GetSection(IdentityPolicyOptions.SectionName)
+                                  .Get<IdentityPolicyOptions>() ?? new IdentityPolicyOptions();
+
+
+        services.AddIdentityCore<User>(options =>
+        {
+            options.Password.RequiredLength = policy.PasswordMinLength;
+            options.Password.RequireUppercase = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireDigit = true;
+            options.Password.RequireNonAlphanumeric = false;
+
+
+            options.Lockout.MaxFailedAccessAttempts = policy.MaxFailedAttempts;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(policy.LockoutMinutes);
+            options.Lockout.AllowedForNewUsers = true;
+
+            options.User.RequireUniqueEmail = true;
+
+            options.Tokens.EmailConfirmationTokenProvider = EmailConfirmationProvider;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders()
+        .AddTokenProvider<DataProtectorTokenProvider<User>>(EmailConfirmationProvider);
+
+        services.Configure<DataProtectionTokenProviderOptions>(o =>
+            o.TokenLifespan = TimeSpan.FromHours(policy.ResetTokenHours));
+
+        services.Configure<DataProtectionTokenProviderOptions>(
+            EmailConfirmationProvider,
+            o => o.TokenLifespan = TimeSpan.FromHours(policy.ConfirmTokenHours));
 
         return services;
     }

@@ -10,7 +10,7 @@ namespace TEDx.Domain.Identity.Entities
     {
         public string? FirstName { get; set; } // 100
         public string? LastName { get; set; }// 100
-        public string? BIO { get; set; }// 1000
+        public string? Bio { get; set; }// 1000
         public string? ProfilePictureUrl { get; set; }// 500
         public GlobalRole Role { get; set; }// NN Default = attendee
         public bool IsActive { get; set; }// 1
@@ -20,6 +20,6 @@ namespace TEDx.Domain.Identity.Entities
         public string? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; } // nn dft
         public DateTime? DeletedAtUtc { get; set; }
-        public List<RefreshToken> refreshTokens {  get; set; }
+        public List<RefreshToken> RefreshTokens {  get; set; }
     }
 }

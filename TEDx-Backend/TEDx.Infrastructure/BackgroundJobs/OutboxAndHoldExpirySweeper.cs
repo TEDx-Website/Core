@@ -67,7 +67,7 @@ public sealed class OutboxAndHoldExpirySweeper : BackgroundService
         _logger.LogInformation("Sweeper tick started.");
 
         await using var scope = _scopeFactory.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var clock = scope.ServiceProvider.GetRequiredService<IClock>();
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
@@ -116,7 +116,7 @@ public sealed class OutboxAndHoldExpirySweeper : BackgroundService
     /// status code is not composable SQL, and EF would wrap it in an outer <c>SELECT</c>.
     /// </summary>
     /// <returns><c>true</c> when the lock was granted (return code 0 or 1); <c>false</c> otherwise.</returns>
-    private async Task<bool> TryAcquireAppLockAsync(AppDbContext dbContext, CancellationToken ct)
+    private async Task<bool> TryAcquireAppLockAsync(ApplicationDbContext dbContext, CancellationToken ct)
     {
         using var command = dbContext.Database.GetDbConnection().CreateCommand();
         command.CommandType = CommandType.StoredProcedure;

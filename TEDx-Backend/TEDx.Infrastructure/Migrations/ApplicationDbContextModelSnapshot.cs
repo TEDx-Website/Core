@@ -10,8 +10,8 @@ using TEDx.Infrastructure.Persistence;
 
 namespace TEDx.Infrastructure.Migrations
 {
-    [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -21,58 +21,6 @@ namespace TEDx.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
@@ -117,21 +65,6 @@ namespace TEDx.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -247,7 +180,7 @@ namespace TEDx.Infrastructure.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAtUtc")
+                    b.Property<DateTime?>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsRead")
@@ -316,21 +249,21 @@ namespace TEDx.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CreatedBtIp")
+                    b.Property<string>("CreatedByIp")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
 
-                    b.Property<DateTime>("ExpiredAtUTC")
+                    b.Property<DateTime>("ExpiresAtUTC")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("ReasonRevoked")
                         .HasColumnType("int");
 
-                    b.Property<string>("ReplaacedByTokenHash")
+                    b.Property<string>("ReplacedByTokenHash")
                         .HasMaxLength(88)
                         .HasColumnType("nvarchar(88)");
 
-                    b.Property<DateTime>("RevokedAtUtc")
+                    b.Property<DateTime?>("RevokedAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("TokenHash")
@@ -354,7 +287,7 @@ namespace TEDx.Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("BIO")
+                    b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -1248,8 +1181,8 @@ namespace TEDx.Infrastructure.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("AssignedBy")
-                        .HasColumnType("datetime2");
+                    b.Property<Guid>("AssignedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
@@ -1260,8 +1193,8 @@ namespace TEDx.Infrastructure.Migrations
                     b.Property<DateTime>("EndAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("EndedBy")
-                        .HasColumnType("datetime2");
+                    b.Property<Guid>("EndedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -1293,15 +1226,6 @@ namespace TEDx.Infrastructure.Migrations
                     b.ToTable("TrackAssignments", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("TEDx.Domain.Identity.Entities.User", null)
@@ -1313,21 +1237,6 @@ namespace TEDx.Infrastructure.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("TEDx.Domain.Identity.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("TEDx.Domain.Identity.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -1372,7 +1281,7 @@ namespace TEDx.Infrastructure.Migrations
             modelBuilder.Entity("TEDx.Domain.Identity.Entities.RefreshToken", b =>
                 {
                     b.HasOne("TEDx.Domain.Identity.Entities.User", "ApplicationUser")
-                        .WithMany("refreshTokens")
+                        .WithMany("RefreshTokens")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1572,7 +1481,7 @@ namespace TEDx.Infrastructure.Migrations
 
             modelBuilder.Entity("TEDx.Domain.Identity.Entities.User", b =>
                 {
-                    b.Navigation("refreshTokens");
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Event", b =>
