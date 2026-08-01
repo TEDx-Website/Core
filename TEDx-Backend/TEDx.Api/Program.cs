@@ -21,6 +21,11 @@ builder.Services.AddCustomApiBehavior();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Register the antiforgery service with a custom header name
+//builder.Services.AddAntiforgery(options =>
+//{
+//    options.HeaderName = "X-CSRF-TOKEN";
+//});
 
 var app = builder.Build();
 
@@ -38,6 +43,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseRouting();
+
+app.UseCors("DefaultCorsPolicy");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
