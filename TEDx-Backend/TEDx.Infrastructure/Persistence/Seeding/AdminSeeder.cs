@@ -8,8 +8,6 @@ namespace TEDx.Infrastructure.Persistence.Seeding;
 
 public sealed class AdminSeeder
 {
-    public const string AdminRoleName = "Admin";
-
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AdminSeeder> _logger;
@@ -65,7 +63,6 @@ public sealed class AdminSeeder
         var existing = await _userManager.FindByEmailAsync(options.Email);
         if (existing is not null)
         {
-            await EnsureInAdminRoleAsync(existing);
             _logger.LogInformation("Admin account already present; skipping creation.");
             return;
         }
@@ -88,23 +85,8 @@ public sealed class AdminSeeder
                 $"Failed to create admin account: {DescribeErrors(created)}");
         }
 
-        await EnsureInAdminRoleAsync(admin);
+        // Admin is the GlobalRole column only — never an Identity role (D:Q36, D:Q46).
         _logger.LogInformation("Seeded admin account {Email}.", options.Email);
-    }
-
-    private async Task EnsureInAdminRoleAsync(User user)
-    {
-        if (await _userManager.IsInRoleAsync(user, AdminRoleName))
-        {
-            return;
-        }
-
-        var result = await _userManager.AddToRoleAsync(user, AdminRoleName);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException(
-                $"Failed to add admin to '{AdminRoleName}' role: {DescribeErrors(result)}");
-        }
     }
 
     private static string DescribeErrors(IdentityResult result) =>

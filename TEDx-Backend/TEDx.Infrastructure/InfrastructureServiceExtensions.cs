@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Ticketing.Payments;
@@ -38,13 +39,14 @@ public static class InfrastructureServiceExtensions
                 .UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name))
-                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
+                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>())
+                // The Identity claim/login/token entities are deliberately ignored
+                // (see ApplicationDbContext.OnModelCreating) — the warning is expected.
+                .ConfigureWarnings(w =>
+                    w.Ignore(CoreEventId.MappedEntityTypeIgnoredWarning)));
 
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-        services.AddIdentityCore<User>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
 
         services.AddScoped<AdminSeeder>();
 
@@ -57,7 +59,6 @@ public static class InfrastructureServiceExtensions
 
         var policy = configuration.GetSection(IdentityPolicyOptions.SectionName)
                                   .Get<IdentityPolicyOptions>() ?? new IdentityPolicyOptions();
-
 
         services.AddIdentityCore<User>(options =>
         {
@@ -78,14 +79,13 @@ public static class InfrastructureServiceExtensions
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders()
-        .AddTokenProvider<DataProtectorTokenProvider<User>>(EmailConfirmationProvider);
+        .AddTokenProvider<EmailConfirmationTokenProvider>(EmailConfirmationProvider);
 
         services.Configure<DataProtectionTokenProviderOptions>(o =>
             o.TokenLifespan = TimeSpan.FromHours(policy.ResetTokenHours));
 
-        services.Configure<DataProtectionTokenProviderOptions>(
-            EmailConfirmationProvider,
-            o => o.TokenLifespan = TimeSpan.FromHours(policy.ConfirmTokenHours));
+        services.Configure<EmailConfirmationTokenProviderOptions>(o =>
+            o.TokenLifespan = TimeSpan.FromHours(policy.ConfirmTokenHours));
 
         return services;
     }

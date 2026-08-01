@@ -46,6 +46,10 @@ public sealed class ApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Ignore<IdentityUserClaim<Guid>>();
+        modelBuilder.Ignore<IdentityUserLogin<Guid>>();
+        modelBuilder.Ignore<IdentityUserToken<Guid>>();
+
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(ApplicationDbContext).Assembly);
     }

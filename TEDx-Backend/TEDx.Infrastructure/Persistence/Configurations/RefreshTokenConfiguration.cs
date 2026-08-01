@@ -17,11 +17,12 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TokenHash)
                 .HasMaxLength(88)
                 .IsRequired();
+            builder.HasIndex(x => x.TokenHash).IsUnique();
 
             builder.Property(x => x.AccountId)
                 .IsRequired();
 
-            builder.Property(x => x.ExpiresAtUTC)
+            builder.Property(x => x.ExpiresAtUtc)
                 .IsRequired();
 
             builder.Property(x => x.ReplacedByTokenHash)

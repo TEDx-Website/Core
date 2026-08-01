@@ -14,9 +14,9 @@ namespace TEDx.Domain.Training.Entities
         public Guid TrackId { get; set; }
         public TrackRole TrackRole { get; set; }
         public DateTime StartAtUtc { get; set; }
-        public DateTime EndAtUtc { get; set; }
+        public DateTime? EndAtUtc { get; set; }
         public Guid AssignedBy { get; set; }
-        public Guid EndedBy { get; set; }
+        public Guid? EndedBy { get; set; }
         public byte[] RowVersion { get; set; } = null!;
         public Track Track { get; set; } = null!;
         public List<Attendance>? Attendances { get; set; }

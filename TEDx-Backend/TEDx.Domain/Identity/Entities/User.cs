@@ -20,6 +20,6 @@ namespace TEDx.Domain.Identity.Entities
         public string? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; } // nn dft
         public DateTime? DeletedAtUtc { get; set; }
-        public List<RefreshToken> RefreshTokens {  get; set; }
+        public List<RefreshToken> RefreshTokens {  get; set; } = [];
     }
 }
