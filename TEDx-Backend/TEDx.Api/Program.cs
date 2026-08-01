@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
-app.UseCors(builder.Configuration.);
+app.UseCors("DefaultCorsPolicy");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
