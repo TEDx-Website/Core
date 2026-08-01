@@ -67,6 +67,11 @@ Each story follows the canonical form:
 - **Traces:** AUTH-07 · FR-AUTH-06, NFR-SEC-03 · Flow (cross-cutting)
 - **Notes:** Authorization combines the **global role** (from the token) with **per-track assignments** (resolved per request). A Board's powers apply only to the single track they supervise; cross-track access returns **403** even when the caller is a Member of another track (Persona: Yousef).
 
+### US-AUTH-08
+*As a **Visitor**, I want to confirm my email address from a link sent on registration — and ask for a fresh link if I lost it — so that my account is provably mine before I use it.*
+- **Traces:** AUTH-08 · FR-AUTH-12, FR-AUTH-13, FR-AUTH-14, FR-AUTH-15, FR-AUTH-16 · Flow §1.1
+- **Notes:** Registration creates the account **unconfirmed** and emails a token valid **24 hours** (longer than the 1-hour reset token, because a confirmation mail is routinely opened the next day; D:Q57). Login is refused while unconfirmed with `EMAIL_NOT_CONFIRMED` (**403**), checked **after** the password is verified so an unconfirmed address is never disclosed to someone who does not know the password. Expired/tampered tokens return `CONFIRM_TOKEN_INVALID` (**400**); a repeat click on a still-valid link succeeds **idempotently** (Identity does not rotate the `SecurityStamp` on confirm, so confirmation tokens — unlike reset tokens — are not single-use, and a resend *adds* a link rather than revoking the old one). The resend endpoint answers **identically** whether the address is unknown, already confirmed, or genuinely pending (no enumeration), and is rate limited with the recovery endpoints (API §0.7). Accounts created before this feature shipped — including the seeded Admin — are migrated to confirmed; enforcement is **forward-only** (FR-AUTH-16).
+
 ---
 
 ## 2. User & Profile Management (PRD §6.2 · SRS §3.2 · Flow §10)
