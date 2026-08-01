@@ -7,19 +7,18 @@ using TEDx.Domain.Cross_Cutting;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Training.Entities;
-
 namespace TEDx.Infrastructure.Persistence;
 
-public sealed class AppDbContext
-    : IdentityDbContext<User, IdentityRole<Guid>, Guid>, IAppDbContext
+public sealed class ApplicationDbContext
+    : IdentityUserContext<User,Guid>, IAppDbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
     // DbSets — expression-bodied so EF backs them via Set<T>()
-
+    
     // Identity
     public DbSet<User> ApplicationUsers => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
@@ -31,14 +30,12 @@ public sealed class AppDbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<PromoCode> PromoCodes => Set<PromoCode>();
     public DbSet<Payment> Payments => Set<Payment>();
-
     // Training
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<TrackAssignment> TrackAssignments => Set<TrackAssignment>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Evaluation> Evaluations => Set<Evaluation>();
-
     // Notifications
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationRecipient> NotificationRecipients => Set<NotificationRecipient>();
@@ -50,6 +47,6 @@ public sealed class AppDbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(
-            typeof(AppDbContext).Assembly);
+            typeof(ApplicationDbContext).Assembly);
     }
 }

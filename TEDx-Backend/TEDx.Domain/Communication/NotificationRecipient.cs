@@ -16,7 +16,7 @@ namespace TEDx.Domain.Communication
 
         public DateTime? ReadAtUtc { get; set; }
 
-        public DateTime CreatedAtUtc { get;  set; }
+        public DateTime? CreatedAtUtc { get;  set; }
         public Notification Notification { get;  set; } = null!;
     }
 }

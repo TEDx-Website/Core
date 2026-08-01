@@ -11,18 +11,15 @@ public sealed class AdminSeeder
     public const string AdminRoleName = "Admin";
 
     private readonly UserManager<User> _userManager;
-    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AdminSeeder> _logger;
 
     public AdminSeeder(
         UserManager<User> userManager,
-        RoleManager<IdentityRole<Guid>> roleManager,
         IConfiguration configuration,
         ILogger<AdminSeeder> logger)
     {
         _userManager = userManager;
-        _roleManager = roleManager;
         _configuration = configuration;
         _logger = logger;
     }
@@ -31,7 +28,6 @@ public sealed class AdminSeeder
     {
         var options = ResolveOptions();
 
-        await EnsureAdminRoleAsync();
         await EnsureAdminUserAsync(options);
     }
 
@@ -63,22 +59,6 @@ public sealed class AdminSeeder
         return new AdminSeederOptions(email.Trim(), password);
     }
 
-    private async Task EnsureAdminRoleAsync()
-    {
-        if (await _roleManager.RoleExistsAsync(AdminRoleName))
-        {
-            return;
-        }
-
-        var result = await _roleManager.CreateAsync(new IdentityRole<Guid>(AdminRoleName));
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException(
-                $"Failed to create '{AdminRoleName}' role: {DescribeErrors(result)}");
-        }
-
-        _logger.LogInformation("Created identity role {RoleName}.", AdminRoleName);
-    }
 
     private async Task EnsureAdminUserAsync(AdminSeederOptions options)
     {

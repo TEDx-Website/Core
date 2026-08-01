@@ -6,25 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TEDx.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AspNetRoles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "ContactMessages",
                 columns: table => new
@@ -123,7 +109,7 @@ namespace TEDx.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BIO = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProfilePictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Role = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
@@ -151,27 +137,6 @@ namespace TEDx.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -336,30 +301,6 @@ namespace TEDx.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUserRoles",
-                columns: table => new
-                {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
-                    table.ForeignKey(
-                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_AspNetUserRoles_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
@@ -386,10 +327,10 @@ namespace TEDx.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TokenHash = table.Column<string>(type: "nvarchar(88)", maxLength: 88, nullable: false),
-                    ExpiredAtUTC = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBtIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
-                    RevokedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReplaacedByTokenHash = table.Column<string>(type: "nvarchar(88)", maxLength: 88, nullable: true),
+                    ExpiresAtUTC = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedByIp = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
+                    RevokedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacedByTokenHash = table.Column<string>(type: "nvarchar(88)", maxLength: 88, nullable: true),
                     ReasonRevoked = table.Column<int>(type: "int", nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -414,8 +355,8 @@ namespace TEDx.Infrastructure.Migrations
                     TrackRole = table.Column<int>(type: "int", nullable: false),
                     StartAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AssignedBy = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndedBy = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    AssignedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EndedBy = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -507,7 +448,7 @@ namespace TEDx.Infrastructure.Migrations
                     AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     ReadAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -722,18 +663,6 @@ namespace TEDx.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetRoleClaims_RoleId",
-                table: "AspNetRoleClaims",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "RoleNameIndex",
-                table: "AspNetRoles",
-                column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
                 table: "AspNetUserClaims",
                 column: "UserId");
@@ -742,11 +671,6 @@ namespace TEDx.Infrastructure.Migrations
                 name: "IX_AspNetUserLogins_UserId",
                 table: "AspNetUserLogins",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUserRoles_RoleId",
-                table: "AspNetUserRoles",
-                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Attendances_EnrollmentId",
@@ -923,16 +847,10 @@ namespace TEDx.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
-
-            migrationBuilder.DropTable(
                 name: "AspNetUserClaims");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserLogins");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
@@ -966,9 +884,6 @@ namespace TEDx.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tickets");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Sessions");
