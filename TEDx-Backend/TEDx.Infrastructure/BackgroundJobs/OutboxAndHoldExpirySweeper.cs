@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Common.Interfaces;
+using TEDx.Domain.Identity.Enums;
 using TEDx.Infrastructure.Configuration;
 using TEDx.Infrastructure.Persistence;
 
@@ -103,11 +104,47 @@ public sealed class OutboxAndHoldExpirySweeper : BackgroundService
             "Outbox drain placeholder — 0 messages would be processed at {UtcNow}.",
             utcNow);
 
+        // ── (c) Refresh-token expiry + retention ─────────────────────────────
+        await SweepRefreshTokensAsync(dbContext, utcNow, ct);
+
         await dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
         sw.Stop();
         _logger.LogInformation("Sweeper tick completed in {ElapsedMs}ms.", sw.ElapsedMilliseconds);
+    }
+
+    /// <summary>
+    /// Closes out lapsed refresh tokens with <c>ReasonRevoked = Expired</c> (SM 8) and drops rows
+    /// past the retention window, which would otherwise grow by one per refresh per user forever.
+    /// </summary>
+    private async Task SweepRefreshTokensAsync(ApplicationDbContext dbContext, DateTime utcNow, CancellationToken ct)
+    {
+        var cutoff = utcNow.AddDays(-_options.RefreshTokenRetentionDays);
+
+        // Purge first: deleting rows that were already loaded and modified below would make
+        // SaveChanges update zero rows and throw.
+        var purged = await dbContext.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.ExpiresAtUtc < cutoff)
+            .ExecuteDeleteAsync(ct);
+
+        if (purged > 0)
+            _logger.LogInformation("Purged {Count} refresh token(s) older than {Cutoff:O}.", purged, cutoff);
+
+        var lapsed = await dbContext.RefreshTokens
+            .IgnoreQueryFilters()
+            .Where(t => t.RevokedAtUtc == null && t.ExpiresAtUtc <= utcNow)
+            .ToListAsync(ct);
+
+        foreach (var token in lapsed)
+        {
+            token.RevokedAtUtc = utcNow;
+            token.ReasonRevoked = ReasonRevoked.Expired;
+        }
+
+        if (lapsed.Count > 0)
+            _logger.LogInformation("Marked {Count} refresh token(s) as Expired.", lapsed.Count);
     }
 
     /// <summary>
