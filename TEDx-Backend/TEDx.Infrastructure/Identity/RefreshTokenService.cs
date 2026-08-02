@@ -8,15 +8,10 @@ using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
 using TEDx.Infrastructure.Configuration;
 using TEDx.Application.Common.Errors;
-namespace TEDx.Infrastructure.Identity
 using Errors = TEDx.Application.Common.Errors.Errors_Identity;
-
 namespace TEDx.Infrastructure.Identity;
-
 internal sealed class RefreshTokenService : IRefreshTokenService
 {
-    internal sealed class RefreshTokenService : IRefreshTokenService
-    {
         private const int MaxFamilyWalk = 1000;
 
         private readonly IAppDbContext _db;
@@ -55,14 +50,14 @@ internal sealed class RefreshTokenService : IRefreshTokenService
             var presented = await FindByRawAsync(presentedRawToken, cancellationToken);
 
             if (presented is null)
-                return Result<RefreshTokenRotated>.Failure(Errors_Identity.TrackForbidden);
+                return Result<RefreshTokenRotated>.Failure(Errors.TokenInvalid);
 
             // Revoked is checked BEFORE expiry: a stolen token that has since lapsed is still a
             // break-in signal, and answering TOKEN_INVALID would bury it as a routine timeout.
             if (presented.RevokedAtUtc is not null)
             {
                 await RevokeFamilyAsync(presented, presentedFromIp, cancellationToken);
-                return Result<RefreshTokenRotated>.Failure(Errors_Identity.TokenReused);
+                return Result<RefreshTokenRotated>.Failure(Errors.TokenReused);
             }
 
             var now = _clock.UtcNow;
@@ -73,7 +68,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
                 presented.ReasonRevoked = ReasonRevoked.Expired;
                 await _db.SaveChangesAsync(cancellationToken);
 
-                return Result<RefreshTokenRotated>.Failure(Errors_Identity.TokenInvalid);
+                return Result<RefreshTokenRotated>.Failure(Errors.TokenInvalid);
             }
 
             var replacement = AddToken(presented.AccountId, presentedFromIp);
@@ -199,6 +194,5 @@ internal sealed class RefreshTokenService : IRefreshTokenService
             return _db.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == hash, cancellationToken);
         }
     }
-}
 
 
