@@ -4,9 +4,9 @@ using System.Text;
 
 namespace TEDx.Application.Identity.DTOs.Login
 {
-    public sealed class LoginResponse
+    public class AuthResponse
     {
-        public LoginResponse(string accessToken, int accessTokenExpiresIn, string refreshToken, int refreshTokenExpiresIn, UserSummary user)
+        public AuthResponse(string accessToken, int accessTokenExpiresIn, string refreshToken, int refreshTokenExpiresIn, UserSummary user)
         {
             AccessToken = accessToken;
             AccessTokenExpiresIn = accessTokenExpiresIn;

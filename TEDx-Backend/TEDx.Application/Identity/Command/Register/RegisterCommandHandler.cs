@@ -15,24 +15,24 @@ using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
 namespace TEDx.Application.Identity.Command.Register
 {
-    internal sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
+    public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IEmailSender _emailSender;
-        private readonly FrontendOptions _frontend;
+        //private readonly FrontendOptions _frontend;
         private readonly IClock _clock;
         private readonly ILogger<RegisterCommandHandler> _logger;
 
         public RegisterCommandHandler(
             UserManager<User> userManager,
             IEmailSender emailSender,
-            IOptions<FrontendOptions> frontend,
+            //IOptions<FrontendOptions> frontend,
             IClock clock,
             ILogger<RegisterCommandHandler> logger)
         {
             _userManager = userManager;
             _emailSender = emailSender;
-            _frontend = frontend.Value;
+           // _frontend = frontend.Value;
             _clock = clock;
             _logger = logger;
         }
@@ -88,11 +88,11 @@ namespace TEDx.Application.Identity.Command.Register
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-                var link = $"{_frontend.BaseUrl}/confirm-email" +
-                           $"?userId={Uri.EscapeDataString(user.Id.ToString())}" +
-                           $"&token={Uri.EscapeDataString(token)}";
+                //var link = $"{_frontend.BaseUrl}/confirm-email" +
+                //           $"?userId={Uri.EscapeDataString(user.Id.ToString())}" +
+                //           $"&token={Uri.EscapeDataString(token)}";
 
-                await _emailSender.SendPasswordResetEmailAsync(user.Email!, link, ct);
+               // await _emailSender.SendPasswordResetEmailAsync(user.Email!, link, ct);
             }
             catch (Exception ex)
             {
