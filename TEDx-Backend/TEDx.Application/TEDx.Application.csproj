@@ -11,10 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Identity\DTOs\" />
-    <Folder Include="Identity\Command\" />
+    <Folder Include="Identity\Command\Login\" />
+    <Folder Include="Identity\DTOs\Login\" />
     <Folder Include="Identity\Queries\" />
-    <Folder Include="Identity\Validators\" />
     <Folder Include="Ticketing\Command\" />
     <Folder Include="Ticketing\DTOs\" />
     <Folder Include="Ticketing\Queries\" />
