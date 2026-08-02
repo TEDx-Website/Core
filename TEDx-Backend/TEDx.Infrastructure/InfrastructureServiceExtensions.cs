@@ -30,6 +30,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<ITrackAccessReader, TrackAccessReader>();
         services.AddSingleton<IClock, SystemClock>();
 
         services.AddScoped<AuditInterceptor>();
