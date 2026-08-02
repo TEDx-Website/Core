@@ -1,8 +1,8 @@
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Common;
+namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors
+public static partial class Errors_Identity
 {
     public static readonly Error Unauthenticated =
         Error.Unauthorized("UNAUTHENTICATED", "Authentication is required.");

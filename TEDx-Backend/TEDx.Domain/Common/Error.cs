@@ -70,4 +70,9 @@ public readonly record struct Error
         string description = "No error.",
         IReadOnlyDictionary<string, object?>? metaData = null)
         => new(code, description, ErrorType.None, metaData: metaData);
+
+    public static Error Failure(string code = nameof(Failure),
+    string description = "Failure error.",
+    IReadOnlyDictionary<string, object?>? metaData = null)
+    => new(code, description, ErrorType.Failure, metaData: metaData);
 }

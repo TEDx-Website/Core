@@ -46,7 +46,7 @@ namespace TEDx.Infrastructure.Persistence.Interceptors
                 return;
 
             var now = _clock.UtcNow;
-            var userId = _currentUser.UserId;
+            var userId = _currentUser.UserId?.ToString(); // convert Guid? -> string?
 
             foreach (var entry in context.ChangeTracker.Entries<ISoftDelete>())
             {

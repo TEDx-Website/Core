@@ -16,6 +16,7 @@ public static class ApplicationServiceExtensions
         // Pipeline order: Logging → Validation → [Authorization in EP-1.2.1] → Handler
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
 
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
 

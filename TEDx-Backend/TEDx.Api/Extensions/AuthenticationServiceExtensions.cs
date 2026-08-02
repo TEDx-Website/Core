@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TEDx.Api.Mapping;
-using TEDx.Application.Common;
+using TEDx.Application.Common.Errors;
 using TEDx.Domain.Common;
 using TEDx.Infrastructure.Configuration;
 
@@ -87,11 +87,11 @@ public static class AuthenticationServiceExtensions
             ? "Bearer"
             : "Bearer error=\"invalid_token\"";
 
-        return WriteEnvelopeAsync(context.HttpContext, Errors.Unauthenticated);
+        return WriteEnvelopeAsync(context.HttpContext, Errors_Identity.Unauthenticated);
     }
 
     private static Task OnForbidden(ForbiddenContext context)
-        => WriteEnvelopeAsync(context.HttpContext, Errors.Forbidden);
+        => WriteEnvelopeAsync(context.HttpContext, Errors_Identity.Forbidden);
 
     private static Task WriteEnvelopeAsync(HttpContext context, Error error)
     {

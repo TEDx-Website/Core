@@ -1,8 +1,8 @@
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Common;
+namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors
+public static partial class Errors_Ticketing
 {
     public static readonly Error EventNotPublished =
     Error.Business(
