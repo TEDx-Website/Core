@@ -7,6 +7,7 @@ using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
 using TEDx.Infrastructure.Configuration;
+using Errors = TEDx.Application.Common.Errors.Errors_Identity;
 
 namespace TEDx.Infrastructure.Identity;
 

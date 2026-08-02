@@ -12,11 +12,6 @@ public static partial class Errors_Identity
             "FORBIDDEN",
             "You do not have permission to perform this action.");
 
-    public static readonly Error TrackForbidden =
-        Error.Forbidden(
-            "TRACK_FORBIDDEN",
-            "You do not have permission for this track.");
-
     public static readonly Error EmailTaken =
         Error.Conflict(
             "EMAIL_TAKEN",

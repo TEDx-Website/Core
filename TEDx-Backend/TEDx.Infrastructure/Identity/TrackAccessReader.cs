@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Training.Enums;
@@ -21,16 +18,26 @@ namespace TEDx.Infrastructure.Identity
         {
             var now = _clock.UtcNow;
 
-            var assignment = await _db.TrackAssignments
+            var isAccountUsable = await _db.ApplicationUsers
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == accountId && u.IsActive, ct);
+
+            if (!isAccountUsable)
+                return null;
+
+            var roles = await _db.TrackAssignments
                 .AsNoTracking()
                 .Where(a => a.AccountId == accountId
                          && a.TrackId == trackId
                          && a.StartAtUtc <= now
                          && (a.EndAtUtc == null || a.EndAtUtc > now))
-                .Select(a => new { a.TrackRole })
-                .FirstOrDefaultAsync(ct);
+                .Select(a => a.TrackRole)
+                .ToListAsync(ct);
 
-            return assignment?.TrackRole;
+            if (roles.Count == 0)
+                return null;
+
+            return roles.Contains(TrackRole.Board) ? TrackRole.Board : roles[0];
         }
     }
 }

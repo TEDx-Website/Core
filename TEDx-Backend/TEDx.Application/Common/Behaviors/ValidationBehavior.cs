@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
-using TEDx.Domain.Common;
 using TEDx.Application.Common.Errors;
+using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Behaviors;
 
@@ -23,19 +23,17 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
         if (failures.Count == 0)
             return await next();
 
+        // Validation is the first gating behavior in the pipeline (SD §5.3): when a request
+        // can be short-circuited, a malformed request must fail shape validation before the
+        // authorization check runs. Responses that cannot carry a failure (non-Result<T>,
+        // non-Error) proceed to the handler unchanged.
+        if (!FailureResponseFactory.CanCreate<TResponse>())
+            return await next();
+
         var errors = failures
             .Select(f => Error.Validation(Errors_Common.ValidationError.Code, f.ErrorMessage, f.PropertyName))
             .ToList();
 
-        var responseType = typeof(TResponse);
-        if (!responseType.IsGenericType || responseType.GetGenericTypeDefinition() != typeof(Result<>))
-            return await next();
-
-        var failure = typeof(Result<>)
-            .MakeGenericType(responseType.GetGenericArguments()[0])
-            .GetMethod("Failure")!
-            .Invoke(null, [errors]);
-
-        return (TResponse)failure!;
+        return FailureResponseFactory.Create<TResponse>(errors);
     }
 }

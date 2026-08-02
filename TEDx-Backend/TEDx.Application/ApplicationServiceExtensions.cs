@@ -13,7 +13,7 @@ public static class ApplicationServiceExtensions
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 
-        // Pipeline order: Logging → Validation → [Authorization in EP-1.2.1] → Handler
+        // Pipeline order: Logging → Validation → Authorization → Handler.
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
