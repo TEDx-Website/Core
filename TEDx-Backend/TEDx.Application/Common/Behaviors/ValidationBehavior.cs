@@ -23,10 +23,6 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
         if (failures.Count == 0)
             return await next();
 
-        // Validation is the first gating behavior in the pipeline (SD §5.3): when a request
-        // can be short-circuited, a malformed request must fail shape validation before the
-        // authorization check runs. Responses that cannot carry a failure (non-Result<T>,
-        // non-Error) proceed to the handler unchanged.
         if (!FailureResponseFactory.CanCreate<TResponse>())
             return await next();
 
