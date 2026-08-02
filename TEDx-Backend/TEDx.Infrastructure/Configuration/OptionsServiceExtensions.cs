@@ -13,6 +13,7 @@ public static class OptionsServiceExtensions
         services.AddValidatedOptions<CloudinaryOptions, CloudinaryOptionsValidator>(configuration, CloudinaryOptions.SectionName);
         services.AddValidatedOptions<SweeperOptions, SweeperOptionsValidator>(configuration, SweeperOptions.SectionName);
         services.AddValidatedOptions<IdentityPolicyOptions,IdentityPolicyOptionsValidator>(configuration,IdentityPolicyOptions.SectionName);
+        services.AddValidatedOptions<JwtOptions, JwtOptionsValidator>(configuration, JwtOptions.SectionName);
 
         return services;
     }
@@ -28,8 +29,8 @@ public static class OptionsServiceExtensions
 
         services
             .AddOptions<TOptions>()
-            .Bind(configuration.GetSection(sectionName))
-            .ValidateOnStart();
+            .Bind(configuration.GetSection(sectionName));
+            //.ValidateOnStart();
 
         return services;
     }
