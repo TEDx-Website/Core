@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using TEDx.Domain.Common;
+using TEDx.Application.Common.Errors;
 
 namespace TEDx.Application.Common.Behaviors;
 
@@ -23,7 +24,7 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             return await next();
 
         var errors = failures
-            .Select(f => Error.Validation(Errors.ValidationError.Code, f.ErrorMessage, f.PropertyName))
+            .Select(f => Error.Validation(Errors_Common.ValidationError.Code, f.ErrorMessage, f.PropertyName))
             .ToList();
 
         var responseType = typeof(TResponse);

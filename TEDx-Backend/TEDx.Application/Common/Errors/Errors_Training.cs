@@ -1,8 +1,8 @@
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Common;
+namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors
+public static partial class Errors_Training
 {
     public static readonly Error TrackNameTaken =
     Error.Conflict(
@@ -33,5 +33,11 @@ public static partial class Errors
         Error.Validation(
             "INVALID_SCORE",
             "The evaluation score is out of range.");
+
+    public static readonly Error TrackForbidden =
+        Error.Forbidden(
+            "TRACK_FORBIDDEN",
+            "Access to the track is forbidden.");
+
 
 }

@@ -1,7 +1,7 @@
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Common;
-public static partial class Errors
+namespace TEDx.Application.Common.Errors;
+public static partial class Errors_Common
 {
     public static readonly Error ValidationError =
      Error.Validation(
