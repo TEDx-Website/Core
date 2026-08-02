@@ -20,6 +20,11 @@ public interface IRefreshTokenService
         string? presentedFromIp,
         CancellationToken cancellationToken = default);
 
+    Task<bool> RevokeForAccountAsync(
+        Guid accountId,
+        string presentedRawToken,
+        CancellationToken cancellationToken = default);
+
     Task<int> RevokeAllAsync(
         Guid accountId,
         ReasonRevoked reason,
