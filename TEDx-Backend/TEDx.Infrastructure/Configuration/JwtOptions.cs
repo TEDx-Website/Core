@@ -23,6 +23,9 @@ namespace TEDx.Infrastructure.Configuration
 
         [Range(1, 1440)]
         public int AccessTokenMinutes { get; init; } = 15;
+
+        [Range(1, 90)]
+        public int RefreshTokenDays { get; init; } = 7;
     }
 
     public sealed class JwtOptionsValidator : IValidateOptions<JwtOptions>
@@ -49,6 +52,9 @@ namespace TEDx.Infrastructure.Configuration
 
             if (options.AccessTokenMinutes is < 1 or > 1440)
                 failures.Add($"{JwtOptions.SectionName}:{nameof(JwtOptions.AccessTokenMinutes)} must be between 1 and 1440.");
+
+            if (options.RefreshTokenDays is < 1 or > 90)
+                failures.Add($"{JwtOptions.SectionName}:{nameof(JwtOptions.RefreshTokenDays)} must be between 1 and 90.");
 
             return failures.Count > 0
                 ? ValidateOptionsResult.Fail(failures)

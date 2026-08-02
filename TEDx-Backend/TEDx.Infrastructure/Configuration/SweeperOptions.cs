@@ -8,6 +8,8 @@ public sealed class SweeperOptions
 
     public int IntervalSeconds { get; init; } = 30;
     public int LockTimeoutMs { get; init; } = 5000;
+
+    public int RefreshTokenRetentionDays { get; init; } = 30;
 }
 
 public sealed class SweeperOptionsValidator : IValidateOptions<SweeperOptions>
@@ -21,6 +23,9 @@ public sealed class SweeperOptionsValidator : IValidateOptions<SweeperOptions>
 
         if (options.LockTimeoutMs < 0)
             failures.Add($"{SweeperOptions.SectionName}:{nameof(SweeperOptions.LockTimeoutMs)} must be non-negative.");
+
+        if (options.RefreshTokenRetentionDays < 1)
+            failures.Add($"{SweeperOptions.SectionName}:{nameof(SweeperOptions.RefreshTokenRetentionDays)} must be at least 1 day.");
 
         return failures.Count > 0
             ? ValidateOptionsResult.Fail(failures)
