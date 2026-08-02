@@ -199,5 +199,6 @@ internal sealed class RefreshTokenService : IRefreshTokenService
             return _db.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == hash, cancellationToken);
         }
     }
-
 }
+
+

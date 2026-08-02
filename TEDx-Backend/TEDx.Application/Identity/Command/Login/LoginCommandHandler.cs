@@ -22,9 +22,13 @@ namespace TEDx.Application.Identity.Command.Login
         private readonly IClock _clock;
         private readonly ILogger<LoginCommandHandler> _logger;
 
-        public LoginCommandHandler()
+        public LoginCommandHandler(UserManager<User> userManager, IJwtTokenService tokenService, IRefreshTokenService refreshTokens, IClock clock, ILogger<LoginCommandHandler> logger)
         {
-            
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _refreshTokens = refreshTokens;
+            _clock = clock;
+            _logger = logger;
         }
         public async Task<Result<AuthResponse>> Handle(
             LoginCommand request, CancellationToken ct)
