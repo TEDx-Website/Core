@@ -9,6 +9,11 @@ using TEDx.Domain.Identity.Enums;
 using TEDx.Infrastructure.Configuration;
 using TEDx.Application.Common.Errors;
 namespace TEDx.Infrastructure.Identity
+using Errors = TEDx.Application.Common.Errors.Errors_Identity;
+
+namespace TEDx.Infrastructure.Identity;
+
+internal sealed class RefreshTokenService : IRefreshTokenService
 {
     internal sealed class RefreshTokenService : IRefreshTokenService
     {
