@@ -1,3 +1,5 @@
+using MediatR;
+using TEDx.Application.Common.Errors;
 using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
 
@@ -19,6 +21,26 @@ public interface IUserAccountService
     Task<PasswordCheckResult> CheckPasswordAsync(
         User user,
         string password,
+        CancellationToken cancellationToken = default);
+
+    Task<User?> FindByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task<string> GeneratePasswordResetTokenAsync(
+        User user,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<Unit>> ResetPasswordAsync(
+        User user,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<Unit>> ChangePasswordAsync(
+        User user,
+        string currentPassword,
+        string newPassword,
         CancellationToken cancellationToken = default);
 }
 

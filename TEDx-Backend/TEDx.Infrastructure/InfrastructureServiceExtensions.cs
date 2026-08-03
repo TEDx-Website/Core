@@ -57,6 +57,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
         services.AddScoped<IUserAccountService, UserAccountService>();
+        services.AddSingleton<IPasswordResetLinkBuilder, PasswordResetLinkBuilder>();
         services.AddDataProtection();
 
         services.AddHostedService<OutboxAndHoldExpirySweeper>();
