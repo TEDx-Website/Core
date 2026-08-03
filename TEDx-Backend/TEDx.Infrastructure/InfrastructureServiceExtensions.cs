@@ -56,6 +56,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<IUserAccountService, UserAccountService>();
         services.AddDataProtection();
 
         services.AddHostedService<OutboxAndHoldExpirySweeper>();

@@ -28,9 +28,14 @@ public static partial class Errors_Identity
             "The current password is incorrect.");
 
     public static readonly Error AccountDeactivated =
-        Error.Unauthorized(
+        Error.Forbidden(
             "ACCOUNT_DEACTIVATED",
-            "This account has been deactivated.");
+            "This account has been deactivated. Please contact an organizer.");
+
+    public static readonly Error EmailNotConfirmed =
+        Error.Forbidden(
+            "EMAIL_NOT_CONFIRMED",
+            "Please confirm your email address before signing in.");
 
     public static readonly Error WeakPassword =
         Error.Validation(
