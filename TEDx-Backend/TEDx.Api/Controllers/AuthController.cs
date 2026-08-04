@@ -4,10 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
+using TEDx.Application.Identity.Commands.ForgotPassword;
 using TEDx.Application.Identity.Commands.Login;
 using TEDx.Application.Identity.Commands.Logout;
 using TEDx.Application.Identity.Commands.RefreshToken;
 using TEDx.Application.Identity.Commands.Register;
+using TEDx.Application.Identity.Commands.ResetPassword;
 using TEDx.Application.Identity.Common;
 
 namespace TEDx.Api.Controllers
@@ -69,6 +71,31 @@ namespace TEDx.Api.Controllers
         {
             var result = await sender.Send(command ?? new LogoutCommand(null), cancellationToken);
             return HandleNoContent(result);
+        }
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult> ForgotPassword(
+            [FromBody] ForgotPasswordCommand command,
+            CancellationToken cancellationToken)
+        {
+            var result = await sender.Send(command, cancellationToken);
+            return HandleNullData(result);
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult> ResetPassword(
+            [FromBody] ResetPasswordCommand command,
+            CancellationToken cancellationToken)
+        {
+            var result = await sender.Send(command, cancellationToken);
+            return HandleNullData(result);
         }
     }
 }

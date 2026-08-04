@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using TEDx.Application.Common.Interfaces;
@@ -108,5 +109,78 @@ internal sealed class UserAccountService : IUserAccountService
         return await _userManager.IsLockedOutAsync(user)
             ? PasswordCheckResult.LockedOut
             : PasswordCheckResult.Failed;
+    }
+
+    public Task<User?> FindByIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        return _userManager.FindByIdAsync(userId.ToString());
+    }
+
+    public Task<string> GeneratePasswordResetTokenAsync(
+        User user,
+        CancellationToken cancellationToken = default)
+    {
+        return _userManager.GeneratePasswordResetTokenAsync(user);
+    }
+
+    public async Task<Result<Unit>> ResetPasswordAsync(
+        User user,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        if (result.Succeeded)
+            return Result<Unit>.Success(Unit.Value);
+
+        if (result.Errors.Any(e => e.Code == "InvalidToken"))
+        {
+            _logger.LogInformation(
+                "Rejected a password reset for {UserId}: the token was invalid, expired, or already used.",
+                user.Id);
+
+            return Result<Unit>.Failure(Errors.ResetTokenInvalid);
+        }
+
+        return Result<Unit>.Failure(ToPasswordValidationErrors(result, user.Id));
+    }
+
+    public async Task<Result<Unit>> ChangePasswordAsync(
+        User user,
+        string currentPassword,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (result.Succeeded)
+            return Result<Unit>.Success(Unit.Value);
+
+        if (result.Errors.Any(e => e.Code == "PasswordMismatch"))
+        {
+            _logger.LogInformation(
+                "Rejected a password change for {UserId}: the current password did not match.",
+                user.Id);
+
+            return Result<Unit>.Failure(Errors.CurrentPasswordIncorrect);
+        }
+
+        return Result<Unit>.Failure(ToPasswordValidationErrors(result, user.Id));
+    }
+
+    private IReadOnlyList<Error> ToPasswordValidationErrors(IdentityResult result, Guid userId)
+    {
+        _logger.LogWarning(
+            "Identity rejected a password that passed validation for {UserId}: {Codes}",
+            userId,
+            string.Join(",", result.Errors.Select(e => e.Code)));
+
+        return result.Errors
+            .Select(e => Error.Validation(
+                Errors_Common.ValidationError.Code,
+                e.Description,
+                field: "newPassword"))
+            .ToList();
     }
 }

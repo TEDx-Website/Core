@@ -15,6 +15,7 @@ public static class OptionsServiceExtensions
         services.AddValidatedOptions<IdentityPolicyOptions,IdentityPolicyOptionsValidator>(configuration,IdentityPolicyOptions.SectionName);
         services.AddValidatedOptions<JwtOptions, JwtOptionsValidator>(configuration, JwtOptions.SectionName);
         services.AddValidatedOptions<RateLimitingOptions, RateLimitingOptionsValidator>(configuration, RateLimitingOptions.SectionName);
+        services.AddValidatedOptions<FrontendOptions, FrontendOptionsValidator>(configuration, FrontendOptions.SectionName);
 
         return services;
     }
