@@ -23,7 +23,7 @@ public static partial class Errors_Identity
             "Invalid email or password.");
 
     public static readonly Error CurrentPasswordIncorrect =
-        Error.Business(
+        Error.BadRequest(
             "CURRENT_PASSWORD_INCORRECT",
             "The current password is incorrect.");
 
