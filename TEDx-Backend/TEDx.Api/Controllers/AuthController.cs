@@ -1,7 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
+using TEDx.Api.RateLimiting;
 using TEDx.Application.Identity.Commands.Login;
 using TEDx.Application.Identity.Commands.Logout;
 using TEDx.Application.Identity.Commands.RefreshToken;
@@ -15,9 +17,11 @@ namespace TEDx.Api.Controllers
     {
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<RegisterResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Register(
             [FromBody] RegisterCommand command,
             CancellationToken cancellationToken)
@@ -28,9 +32,11 @@ namespace TEDx.Api.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<AuthTokensResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Login(
             [FromBody] LoginCommand command,
             CancellationToken cancellationToken)
@@ -41,8 +47,10 @@ namespace TEDx.Api.Controllers
 
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<AuthTokensResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Refresh(
             [FromBody] RefreshTokenCommand command,
             CancellationToken cancellationToken)
