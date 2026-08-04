@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TEDx.Application.Common.Exceptions;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Common;
 
@@ -7,7 +8,7 @@ namespace TEDx.Application.Identity.Commands.ForgotPassword;
 
 public sealed class ForgotPasswordCommandHandler(
     IUserAccountService accounts,
-    IPasswordResetLinkBuilder linkBuilder,
+    IAuthLinkBuilder linkBuilder,
     IEmailSender emailSender,
     ILogger<ForgotPasswordCommandHandler> logger)
     : IRequestHandler<ForgotPasswordCommand, Result<Unit>>
@@ -39,14 +40,24 @@ public sealed class ForgotPasswordCommandHandler(
 
         var token = await accounts.GeneratePasswordResetTokenAsync(user, cancellationToken);
 
-        var resetLink = linkBuilder.Build(user.Email ?? email, token);
+        var resetLink = linkBuilder.BuildPasswordReset(user.Email ?? email, token);
 
-        await emailSender.SendPasswordResetEmailAsync(
-            user.Email ?? email,
-            resetLink,
-            cancellationToken);
+        try
+        {
+            await emailSender.SendPasswordResetEmailAsync(
+                user.Email ?? email,
+                resetLink,
+                cancellationToken);
 
-        logger.LogInformation("Password reset email dispatched for account {UserId}.", user.Id);
+            logger.LogInformation("Password reset email dispatched for account {UserId}.", user.Id);
+        }
+        catch (EmailDeliveryException ex)
+        {
+            logger.LogError(
+                ex,
+                "Could not send the password reset email for account {UserId}.",
+                user.Id);
+        }
 
         return Result<Unit>.Success(Unit.Value);
     }

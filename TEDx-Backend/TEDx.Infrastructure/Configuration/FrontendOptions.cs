@@ -14,6 +14,8 @@ namespace TEDx.Infrastructure.Configuration
         public string BaseUrl { get; init; } = default!;
 
         public string ResetPasswordPath { get; init; } = "/reset-password";
+
+        public string ConfirmEmailPath { get; init; } = "/confirm-email";
     }
 
     public sealed class FrontendOptionsValidator : IValidateOptions<FrontendOptions>
@@ -37,6 +39,12 @@ namespace TEDx.Infrastructure.Configuration
             {
                 failures.Add(
                     $"{FrontendOptions.SectionName}:{nameof(FrontendOptions.ResetPasswordPath)} is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(options.ConfirmEmailPath))
+            {
+                failures.Add(
+                    $"{FrontendOptions.SectionName}:{nameof(FrontendOptions.ConfirmEmailPath)} is required.");
             }
 
             return failures.Count > 0

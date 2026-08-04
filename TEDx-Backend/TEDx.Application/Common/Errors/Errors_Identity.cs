@@ -57,6 +57,11 @@ public static partial class Errors_Identity
             "RESET_TOKEN_INVALID",
             "The password-reset token is invalid or expired.");
 
+    public static readonly Error ConfirmTokenInvalid =
+        Error.BadRequest(
+            "CONFIRM_TOKEN_INVALID",
+            "The email-confirmation token is invalid or expired.");
+
     public static readonly Error UserNotFound =
         Error.NotFound(
             "USER_NOT_FOUND",
