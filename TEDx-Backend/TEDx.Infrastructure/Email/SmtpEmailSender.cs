@@ -53,7 +53,8 @@ internal sealed class SmtpEmailSender : IEmailSender
         try
         {
             var message = new MimeMessage();
-            message.From.Add(MailboxAddress.Parse(_options.FromAddress));
+
+            message.From.Add(new MailboxAddress(_options.FromName, _options.FromAddress));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = body.Subject;
             message.Body = new BodyBuilder
