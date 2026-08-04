@@ -42,6 +42,15 @@ public interface IUserAccountService
         string currentPassword,
         string newPassword,
         CancellationToken cancellationToken = default);
+
+    Task<string> GenerateEmailConfirmationTokenAsync(
+        User user,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<Unit>> ConfirmEmailAsync(
+        User user,
+        string token,
+        CancellationToken cancellationToken = default);
 }
 
 public enum PasswordCheckResult

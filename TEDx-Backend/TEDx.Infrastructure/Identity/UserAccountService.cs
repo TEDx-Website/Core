@@ -14,6 +14,8 @@ internal sealed class UserAccountService : IUserAccountService
 {
     private const string DuplicateEmailCode = "DuplicateEmail";
     private const string DuplicateUserNameCode = "DuplicateUserName";
+    private const string InvalidTokenCode = "InvalidToken";
+    private const string PasswordMismatchCode = "PasswordMismatch";
 
     private readonly UserManager<User> _userManager;
     private readonly IClock _clock;
@@ -135,7 +137,7 @@ internal sealed class UserAccountService : IUserAccountService
         if (result.Succeeded)
             return Result<Unit>.Success(Unit.Value);
 
-        if (result.Errors.Any(e => e.Code == "InvalidToken"))
+        if (result.Errors.Any(e => e.Code == InvalidTokenCode))
         {
             _logger.LogInformation(
                 "Rejected a password reset for {UserId}: the token was invalid, expired, or already used.",
@@ -157,7 +159,7 @@ internal sealed class UserAccountService : IUserAccountService
         if (result.Succeeded)
             return Result<Unit>.Success(Unit.Value);
 
-        if (result.Errors.Any(e => e.Code == "PasswordMismatch"))
+        if (result.Errors.Any(e => e.Code == PasswordMismatchCode))
         {
             _logger.LogInformation(
                 "Rejected a password change for {UserId}: the current password did not match.",
@@ -167,6 +169,39 @@ internal sealed class UserAccountService : IUserAccountService
         }
 
         return Result<Unit>.Failure(ToPasswordValidationErrors(result, user.Id));
+    }
+
+    public Task<string> GenerateEmailConfirmationTokenAsync(
+        User user,
+        CancellationToken cancellationToken = default)
+    {
+        return _userManager.GenerateEmailConfirmationTokenAsync(user);
+    }
+
+    public async Task<Result<Unit>> ConfirmEmailAsync(
+        User user,
+        string token,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (result.Succeeded)
+            return Result<Unit>.Success(Unit.Value);
+
+        if (result.Errors.Any(e => e.Code == InvalidTokenCode))
+        {
+            _logger.LogInformation(
+                "Rejected an email confirmation for {UserId}: the token was invalid, expired, or already used.",
+                user.Id);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Identity rejected an email confirmation for {UserId}: {Codes}",
+                user.Id,
+                string.Join(",", result.Errors.Select(e => e.Code)));
+        }
+
+        return Result<Unit>.Failure(Errors.ConfirmTokenInvalid);
     }
 
     private IReadOnlyList<Error> ToPasswordValidationErrors(IdentityResult result, Guid userId)
