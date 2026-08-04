@@ -18,6 +18,20 @@ namespace TEDx.Api.Controllers
                 Problem);
         }
 
+        protected ActionResult HandleNoContent<T>(Result<T> result)
+        {
+            return result.Match(
+                _ => NoContentEnvelope(),
+                Problem);
+        }
+
+        protected ActionResult HandleNullData<T>(Result<T> result)
+        {
+            return result.Match(
+                _ => Ok(ApiResponse<object?>.SuccessResult(null)),
+                Problem);
+        }
+
         protected ActionResult Problem(IReadOnlyList<Error> errors)
         {
             var mapped = ErrorResultMapper.Map(errors, GetTraceId());

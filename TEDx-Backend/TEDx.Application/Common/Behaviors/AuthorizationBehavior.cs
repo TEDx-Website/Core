@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Common.Interfaces.Authorization;
-using TEDx.Domain.Training.Enums;
 using TEDx.Domain.Common;
-using TEDx.Application.Common.Errors;
-using System.Reflection;
+using TEDx.Domain.Training.Enums;
 
 namespace TEDx.Application.Common.Behaviors
 {
@@ -75,37 +71,6 @@ namespace TEDx.Application.Common.Behaviors
         }
 
         private static TResponse Failure(Error error) =>
-            ResultFactory.FailureOf<TResponse>(error);
-    }
-
-    public static class ResultFactory
-    {
-        public static TResponse FailureOf<TResponse>(Error error)
-        {
-            var type = typeof(TResponse);
-
-            // Result بسيط
-            if (type == typeof(Error))
-                return (TResponse)(object)error;
-
-            // Result<T>
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Result<>))
-            {
-                var valueType = type.GetGenericArguments()[0];
-
-                var method = typeof(Error)
-                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .First(m => m.Name == nameof(Error.Failure)
-                             && m.IsGenericMethod
-                             && m.GetParameters().Length == 1)
-                    .MakeGenericMethod(valueType);
-
-                return (TResponse)method.Invoke(null, new object[] { error })!;
-            }
-
-            throw new InvalidOperationException(
-                $"AuthorizationBehavior cannot build a failure for {type.Name}. " +
-                $"All authorized requests must return Result or Result<T>.");
-        }
+            FailureResponseFactory.Create<TResponse>(error);
     }
 }

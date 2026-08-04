@@ -7,6 +7,7 @@ using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
 using TEDx.Infrastructure.Configuration;
+using Errors = TEDx.Application.Common.Errors.Errors_Identity;
 
 namespace TEDx.Infrastructure.Identity;
 
@@ -99,6 +100,34 @@ internal sealed class RefreshTokenService : IRefreshTokenService
         await RevokeFamilyAsync(presented, presentedFromIp, cancellationToken);
 
         return Result<Guid>.Failure(Errors.TokenReused);
+    }
+
+    public async Task<bool> RevokeForAccountAsync(
+        Guid accountId,
+        string presentedRawToken,
+        CancellationToken cancellationToken = default)
+    {
+        var presented = await FindByRawAsync(presentedRawToken, cancellationToken);
+
+        if (presented is null || presented.AccountId != accountId || presented.RevokedAtUtc is not null)
+        {
+            _logger.LogInformation(
+                "Logout revoked no token for account {AccountId} (absent, foreign, or already revoked).",
+                accountId);
+
+            return false;
+        }
+
+        presented.RevokedAtUtc = _clock.UtcNow;
+        presented.ReasonRevoked = ReasonRevoked.Logout;
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Refresh token revoked on logout for account {AccountId}.",
+            accountId);
+
+        return true;
     }
 
     public async Task<int> RevokeAllAsync(

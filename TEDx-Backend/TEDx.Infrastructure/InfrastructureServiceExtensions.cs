@@ -30,6 +30,7 @@ public static class InfrastructureServiceExtensions
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
+        services.AddScoped<ITrackAccessReader, TrackAccessReader>();
         services.AddSingleton<IClock, SystemClock>();
 
         services.AddScoped<AuditInterceptor>();
@@ -55,6 +56,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<IUserAccountService, UserAccountService>();
+        services.AddSingleton<IAuthLinkBuilder, AuthLinkBuilder>();
         services.AddDataProtection();
 
         services.AddHostedService<OutboxAndHoldExpirySweeper>();

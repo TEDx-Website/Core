@@ -21,6 +21,7 @@ namespace TEDx.Infrastructure.Configuration
         [Required]
         [EmailAddress]
         public string FromAddress { get; init; } = default!;
+        public string FromName { get; init; } = string.Empty;
     }
 
     public sealed class SmtpOptionsValidator : IValidateOptions<SmtpOptions>

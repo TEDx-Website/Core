@@ -1,9 +1,11 @@
 # TEDxAlkawmia — Acceptance Criteria
 
-> **Version:** 1.2
-> **Date:** 2026-07-24
+> **Version:** 1.3
+> **Date:** 2026-08-03
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md)
 > **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+>
+> **v1.3 (2026-08-03):** AC-AUTH-04 logout aligns with the API contract v1.4 change log: response is **204 No Content** (not 200), and the scenario is now testable against the implemented contract. Refresh remains 401 TOKEN_REUSED / 401 TOKEN_INVALID per AC-AUTH-03.
 >
 > **v1.2 (2026-07-24):** AC-EVT-05 transition table gains **Archived→Cancelled (D:Q56)** and an explicit "Draft→Cancelled rejected (use soft-delete)" row; a new scenario covers Archived-with-sold-tickets cancellation; AC-EVT-06 widens to "Published or Archived" (identical ripple). Provenance refreshed to Q1–Q56.
 >
@@ -136,7 +138,7 @@ Scenario: Refresh tokens are stored hashed
 Scenario: Logout revokes the presented refresh token
   Given a logged-in user with a valid refresh token
   When she logs out
-  Then the response is 200
+  Then the response is 204 No Content
   And that refresh token can no longer be exchanged
   And a subsequent exchange returns 401 error.code "TOKEN_INVALID"
 ```

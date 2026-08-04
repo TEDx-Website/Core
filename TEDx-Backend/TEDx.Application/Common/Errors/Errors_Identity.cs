@@ -12,11 +12,6 @@ public static partial class Errors_Identity
             "FORBIDDEN",
             "You do not have permission to perform this action.");
 
-    public static readonly Error TrackForbidden =
-        Error.Forbidden(
-            "TRACK_FORBIDDEN",
-            "You do not have permission for this track.");
-
     public static readonly Error EmailTaken =
         Error.Conflict(
             "EMAIL_TAKEN",
@@ -28,14 +23,19 @@ public static partial class Errors_Identity
             "Invalid email or password.");
 
     public static readonly Error CurrentPasswordIncorrect =
-        Error.Business(
+        Error.BadRequest(
             "CURRENT_PASSWORD_INCORRECT",
             "The current password is incorrect.");
 
     public static readonly Error AccountDeactivated =
-        Error.Unauthorized(
+        Error.Forbidden(
             "ACCOUNT_DEACTIVATED",
-            "This account has been deactivated.");
+            "This account has been deactivated. Please contact an organizer.");
+
+    public static readonly Error EmailNotConfirmed =
+        Error.Forbidden(
+            "EMAIL_NOT_CONFIRMED",
+            "Please confirm your email address before signing in.");
 
     public static readonly Error WeakPassword =
         Error.Validation(
@@ -56,6 +56,11 @@ public static partial class Errors_Identity
         Error.BadRequest(
             "RESET_TOKEN_INVALID",
             "The password-reset token is invalid or expired.");
+
+    public static readonly Error ConfirmTokenInvalid =
+        Error.BadRequest(
+            "CONFIRM_TOKEN_INVALID",
+            "The email-confirmation token is invalid or expired.");
 
     public static readonly Error UserNotFound =
         Error.NotFound(
