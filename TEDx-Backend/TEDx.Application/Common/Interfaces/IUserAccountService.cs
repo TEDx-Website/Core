@@ -51,6 +51,11 @@ public interface IUserAccountService
         User user,
         string token,
         CancellationToken cancellationToken = default);
+
+    Task<Result<Unit>> UpdateProfilePictureAsync(
+        User user,
+        string profilePictureUrl,
+        CancellationToken cancellationToken = default);
 }
 
 public enum PasswordCheckResult

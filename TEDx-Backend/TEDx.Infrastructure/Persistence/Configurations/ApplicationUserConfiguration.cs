@@ -64,6 +64,9 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.IsActive)
                .HasDefaultValue(true).IsRequired();
 
+            builder.Property(x => x.ProfilePictureUrl)
+                .HasMaxLength(500);
+
             builder.HasQueryFilter(x => !x.IsDeleted);
         }
 
