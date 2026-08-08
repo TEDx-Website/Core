@@ -1,9 +1,11 @@
 # TEDxAlkawmia — API Contract
 
-> **Version:** 1.4
-> **Date:** 2026-08-01
+> **Version:** 1.5
+> **Date:** 2026-08-05
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md)
 > **Decisions:** grilling sessions 2026-07-20 to 2026-07-31 — **Q1–Q57** (requirements Q1–Q28 + architecture Q29–Q55 + Q56 + Q57), cited as **(D:Qn)**.
+>
+> **v1.5 (2026-08-05) — OPEN-S2 rulings (S2/S3 unblock).** Four spec contradictions surfaced while planning Sprint 2, now closed. **OPEN-S2-1:** §6 `POST /events/{id}/status` separates the endpoint's **accepted targets** (`Draft|Published|Archived`) from the **domain state machine** (which includes the two `→Cancelled` edges); `Cancelled` at `/status` is **422 `VALIDATION_ERROR`** and is served only by `/cancel`, matching US-ADM-EVT-03. **OPEN-S2-2:** the unpublish block is `HAS_ORDERS_CANNOT_UNPUBLISH` and the soft-delete block is `EVENT_HAS_ORDERS` — one code, one situation (audit-Issue-10); [06 AC-EVT-05](./06-AcceptanceCriteria.md) amended to match. **OPEN-S2-3:** `summary` is **removed** from the §5 public list row — it had no column in [DataModel §2.1](./10-DataModel.md); the card client-truncates `descriptionEn`/`descriptionAr`, which the row now carries. **OPEN-S2-4:** `priceFrom` is **still emitted** but equals `ticketPrice` in MVP, since packages are R2 (v1.1) and there is nothing to take a minimum against; the field stays so the FE contract survives their arrival. Related: **OPEN-S2-5** deleted the unreachable `NO_PACKAGES` error from `Errors_Ticketing` (no contract change — §6 already documented that no such block exists).
 >
 > **v1.4 (2026-08-01) — EP-AUTH frontend sign-off pass.** No behaviour changes; §1 and §2 are now complete enough for the SPA to be built against without reading the backend. Every §1/§2 endpoint had its request/response shape reconciled against the implementation docs, which closed six real gaps: `POST /auth/register` publishes `firstName`/`lastName` in the 201 body and `confirmPassword` in the request; `WEAK_PASSWORD` (422) is attached to register, reset-password, and change-password instead of sitting unreferenced in §0.9; `POST /auth/logout` documents that **every** outcome is `204` (optional/unknown/foreign token) and that the access token survives; `POST /auth/reset-password` and `POST /me/change-password` document the server-side `confirmPassword` check and the full refresh-token revocation that logs the caller out; `POST /auth/confirm-email` returns a real body (`email`, `emailConfirmed`), not `data:null`; `POST /me/profile-picture` promotes `INVALID_FILE_TYPE`/`FILE_TOO_LARGE` to **top-level codes** (D-2) and registers them in §0.9; `GET /me` documents why `assignments` is two nullable scalars and where the FE gets `enrollmentId`; `PUT /me` documents **replace-not-patch** semantics and field lengths.
 >
@@ -336,14 +338,16 @@ Create an Attendee account. **Public.**
 **Public.** Paginated list of Published events.
 - **Query:** `page`, `pageSize`, `sort` (whitelist: `startsAtUtc`, `titleEn`), `when` (`upcoming|past`, default `upcoming`).
 ```jsonc
-// 200 → data: [ { "id", "titleEn", "titleAr", "summary",
+// 200 → data: [ { "id", "titleEn", "titleAr",
+//   "descriptionEn", "descriptionAr",
 //   "startsAtUtc": "2026-08-01T18:30:00Z", "endsAtUtc": "2026-08-01T21:00:00Z",
 //   "location", "imageUrl", "capacity", "remainingSeats", "status": "Published",
 //   "ticketPrice": { "amount": 200.00, "currency": "EGP" },
-//   "priceFrom": { "amount": 100.00, "currency": "EGP" } } ], meta: {...}
+//   "priceFrom": { "amount": 200.00, "currency": "EGP" } } ], meta: {...}
 ```
+- **No `summary` field (OPEN-S2-3):** the row carries the full `descriptionEn`/`descriptionAr` and the card **client-truncates** them. There is no `Summary` column in [DataModel §2.1](./10-DataModel.md), and adding one would be a schema change with no story behind it.
 - `remainingSeats` is **computed live** = `capacity − (paid + unexpired-held seats)` (D:Q3, FR-EVT-07); never cached for booking decisions (NFR-PERF-05).
-- `ticketPrice` is the event's **individual-ticket face price** (Model B); `priceFrom` = `min(ticketPrice, active package unit prices)` — the cheapest way to attend.
+- `ticketPrice` is the event's **individual-ticket face price** (Model B); `priceFrom` = `min(ticketPrice, active package unit prices)` — the cheapest way to attend. **In MVP `priceFrom == ticketPrice`** (OPEN-S2-4): packages are R2 (v1.1), so there is nothing to take a minimum against. The field is still **emitted** so the FE contract does not change when packages arrive.
 - `upcoming|past` is derived from `startsAtUtc` relative to now (D:Q23).
 
 ### GET `/api/v1/events/{id}`
@@ -417,11 +421,12 @@ Create an Attendee account. **Public.**
 ### POST `/api/v1/admin/events/{id}/status`
 **Admin.** State transition (D:Q23).
 ```jsonc
-{ "status": "Published" }   // legal targets validated by the state machine
+{ "status": "Draft" | "Published" | "Archived" }   // Cancelled is not accepted here
 ```
-- **State machine (D:Q23, D:Q56):** Draft⇄Published *(only while zero orders)*; Published→Archived; **Published→Cancelled**; **Archived→Cancelled (D:Q56)**; Archived→Published. **Draft→Cancelled is blocked** (dispose a zero-order Draft via soft-delete, D:Q22). **Cancelled is terminal.**
-- **No package precondition (Model B):** an event with **zero packages is publishable** — individual tickets are sold at `ticketPrice`. (There is no `NO_PACKAGES` block.)
-- **Errors:** 409 `ILLEGAL_STATUS_TRANSITION`; 409 `HAS_ORDERS_CANNOT_UNPUBLISH` (Published→Draft with existing orders).
+- **Accepted targets (OPEN-S2-1):** `Draft`, `Published`, `Archived` **only**. `Cancelled` is reachable **exclusively** through `POST /{id}/cancel`, which performs the void/refund/release ripple this endpoint does not (US-ADM-EVT-03). `"status": "Cancelled"` here → **422** `VALIDATION_ERROR`.
+- **Domain state machine (D:Q23, D:Q56)** — the legal *state* pairs, which are a superset of this endpoint's accepted targets: Draft⇄Published *(only while zero orders)*; Published→Archived; **Published→Cancelled**; **Archived→Cancelled (D:Q56)**; Archived→Published. **Draft→Cancelled is blocked** (dispose a zero-order Draft via soft-delete, D:Q22). **Cancelled is terminal.** The two `→Cancelled` edges are served by `/cancel`, not by this endpoint.
+- **No package precondition (Model B):** an event with **zero packages is publishable** — individual tickets are sold at `ticketPrice`. There is no `NO_PACKAGES` block, and no such code exists in the catalog (OPEN-S2-5).
+- **Errors:** 409 `ILLEGAL_STATUS_TRANSITION`; 409 `HAS_ORDERS_CANNOT_UNPUBLISH` (Published→Draft with existing orders — the soft-delete block uses `EVENT_HAS_ORDERS`, OPEN-S2-2); 422 `VALIDATION_ERROR` (`Cancelled` requested here).
 
 ### POST `/api/v1/admin/events/{id}/cancel`
 **Admin.** Cancel a **Published or Archived** event with side effects (D:Q22, D:Q56).

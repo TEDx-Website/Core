@@ -1,10 +1,13 @@
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace TEDx.Api.Extensions;
 
 public static class SwaggerServiceExtensions
 {
     private const string BearerScheme = "Bearer";
+
+    private const string DarkThemePath = "/swagger-ui/tedx-dark.css";
 
     public static IServiceCollection AddTedxSwagger(this IServiceCollection services)
     {
@@ -34,5 +37,16 @@ public static class SwaggerServiceExtensions
         });
 
         return services;
+    }
+
+    public static void ConfigureTedxSwaggerUI(this SwaggerUIOptions options)
+    {
+        options.DocumentTitle = "TEDx API";
+        options.InjectStylesheet(DarkThemePath);
+
+        options.DocExpansion(DocExpansion.List);
+        options.DefaultModelsExpandDepth(0);
+        options.EnableDeepLinking();
+        options.DisplayRequestDuration();
     }
 }
