@@ -86,4 +86,9 @@ public static partial class Errors_Identity
         Error.Conflict(
             "ALREADY_MEMBER_ELSEWHERE",
             "This user is already a Member of another track.");
+
+    public static readonly Error ProfileUpdateFailed =
+        Error.Unexpected(
+            "PROFILE_UPDATE_FAILED",
+            "The profile could not be updated. Please try again.");
 }

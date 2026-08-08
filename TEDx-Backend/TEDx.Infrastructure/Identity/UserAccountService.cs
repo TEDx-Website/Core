@@ -204,6 +204,30 @@ internal sealed class UserAccountService : IUserAccountService
         return Result<Unit>.Failure(Errors.ConfirmTokenInvalid);
     }
 
+    public async Task<Result<Unit>> UpdateProfilePictureAsync(
+        User user,
+        string profilePictureUrl,
+        CancellationToken cancellationToken = default)
+    {
+        user.ProfilePictureUrl = profilePictureUrl;
+
+        var result = await _userManager.UpdateAsync(user);
+        if (result.Succeeded)
+        {
+            _logger.LogInformation(
+                "Profile picture updated for account {UserId}.", user.Id);
+
+            return Result<Unit>.Success(Unit.Value);
+        }
+
+        _logger.LogError(
+            "Identity rejected a profile-picture update for {UserId}: {Codes}",
+            user.Id,
+            string.Join(",", result.Errors.Select(e => e.Code)));
+
+        return Result<Unit>.Failure(Errors.ProfileUpdateFailed);
+    }
+
     private IReadOnlyList<Error> ToPasswordValidationErrors(IdentityResult result, Guid userId)
     {
         _logger.LogWarning(

@@ -4,6 +4,7 @@ public static class RateLimitPolicies
 {
     public const string Auth = "auth";
     public const string AuthMail = "auth-mail";
+    public const string Upload = "upload";
 
-    public static readonly IReadOnlyList<string> All = [Auth, AuthMail];
+    public static readonly IReadOnlyList<string> All = [Auth, AuthMail, Upload];
 }
