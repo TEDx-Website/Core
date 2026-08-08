@@ -6,8 +6,8 @@ namespace TEDx.Application.Identity.DTOs
 {
     public class TrackAssignmentDTO
     {
-        public Guid MemberOfTrackId { get; set; }
-        public Guid BoardOfTrackId { get; set; }
+        public Guid? MemberOfTrackId { get; set; }
+        public Guid? BoardOfTrackId { get; set; }
 
     }
 }

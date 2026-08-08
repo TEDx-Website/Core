@@ -16,6 +16,6 @@ namespace TEDx.Application.Identity.DTOs
         public string Bio { get; set; }
         public string ProfilePictureUrl { get; set; }
         public GlobalRole Role { get; set; }
-        public List<TrackAssignmentDTO> Assignments { get; set; }
+        public TrackAssignmentDTO Assignments { get; set; } = new();
     }
 }

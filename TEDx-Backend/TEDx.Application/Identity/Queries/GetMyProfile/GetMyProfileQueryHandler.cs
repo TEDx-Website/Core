@@ -8,6 +8,7 @@ using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Identity.Commands.ChangePassword;
 using TEDx.Application.Identity.DTOs;
+using TEDx.Application.Identity.Service;
 using TEDx.Domain.Common;
 using TEDx.Domain.Training.Enums;
 
@@ -19,44 +20,31 @@ namespace TEDx.Application.Identity.Queries.GetMyProfile
         private readonly ICurrentUser currentUser;
         private readonly IClock clock;
         private readonly ILogger<GetMyProfileQueryHandler> logger;
+        private readonly IMyProfileService myProfileService;
 
-        public GetMyProfileQueryHandler(IAppDbContext _appDbContext, ICurrentUser user, IClock _clock, ILogger<GetMyProfileQueryHandler> _logger)
+        public GetMyProfileQueryHandler(IAppDbContext _appDbContext, ICurrentUser user, IClock _clock, ILogger<GetMyProfileQueryHandler> _logger, IMyProfileService _myProfileService)
         {
             appDbContext = _appDbContext;
             currentUser = user;
             clock = _clock;
             logger = _logger;
+            myProfileService = _myProfileService;
         }
         public async Task<Result<MyProfileDTO>> Handle(GetMyProfileQuery request, CancellationToken ct)
         {
-            var UserId = currentUser.UserId;
-            var User = await appDbContext.ApplicationUsers.Where(x => x.Id == UserId).FirstOrDefaultAsync();
-            if(User == null)
+            var userId = currentUser.UserId;
+            if (userId == null || userId == Guid.Empty)
             {
                 return Result<MyProfileDTO>.Failure(Errors_Identity.UserNotFound);
             }
-            var assignments = await appDbContext.TrackAssignments.Where(a => a.AccountId == UserId
-                                                                        && a.StartAtUtc <= clock.UtcNow && a.EndAtUtc >= clock.UtcNow)
-                                                                .Select(a => new TrackAssignmentDTO
-                                                                {
-                                                                    BoardOfTrackId = a.TrackRole == TrackRole.Board ? a.TrackId : Guid.Empty,
-                                                                    MemberOfTrackId = a.TrackRole == TrackRole.Member ? a.TrackId : Guid.Empty
-                                                                }).ToListAsync(ct);
 
-            var response = new MyProfileDTO
+            var profile = await myProfileService.GetMyProfileAsync(userId.Value, ct);
+
+            if (profile is null)
             {
-                Id = User.Id,
-                FirstName = User.FirstName,
-                LastName = User.LastName,
-                Email = User.Email,
-                Phone = User.PhoneNumber,
-                Bio = User.Bio,
-                ProfilePictureUrl = User.ProfilePictureUrl,
-                Role = User.Role,
-                Assignments = assignments
-            };
-
-            return Result<MyProfileDTO>.Success(response);
+                return Result<MyProfileDTO>.Failure(Errors_Identity.UserNotFound);
+            }
+            return Result<MyProfileDTO>.Success(profile);
         }
     }
 }

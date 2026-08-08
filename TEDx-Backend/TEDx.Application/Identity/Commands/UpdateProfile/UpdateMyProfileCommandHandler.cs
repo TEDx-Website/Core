@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
+using TEDx.Application.Identity.DTOs;
 using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
-using MediatR;
-using TEDx.Application.Identity.DTOs;
-using TEDx.Application.Common.Errors;
+using TEDx.Domain.Training.Enums;
+using TEDx.Application.Identity.Service;
+
 
 namespace TEDx.Application.Identity.Commands.UpdateProfile
 {
@@ -16,17 +19,20 @@ namespace TEDx.Application.Identity.Commands.UpdateProfile
     {
         private readonly IAppDbContext _context;
         private readonly ICurrentUser _user;
+        private readonly IMyProfileService _myProfileService;
 
-        public UpdateMyProfileCommandHandler(IAppDbContext context, ICurrentUser user)
+        public UpdateMyProfileCommandHandler(IAppDbContext context, ICurrentUser user, IMyProfileService myProfileService)
         {
             _context = context;
             _user = user;
+            _myProfileService = myProfileService;
         }
         public async Task<Result<MyProfileDTO>> Handle(UpdateMyProfileCommand request, CancellationToken cancellationToken)
         {
             var UserId = _user.UserId;
-            var User = await _context.ApplicationUsers.Where(u => u.Id == UserId).FirstOrDefaultAsync();
 
+            var User = await _context.ApplicationUsers
+                .FirstOrDefaultAsync(x => x.Id == UserId, cancellationToken);
             if (User == null)
             {
                 return Result<MyProfileDTO>.Failure(Errors_Identity.UserNotFound);
@@ -38,18 +44,16 @@ namespace TEDx.Application.Identity.Commands.UpdateProfile
             User.Bio = request.Bio;
 
             await _context.SaveChangesAsync(cancellationToken);
+            var profile = await _myProfileService.GetMyProfileAsync(UserId.Value, cancellationToken);
 
-            var profileDto = new MyProfileDTO
+            if (profile is null)
             {
-                Id = User.Id,
-                FirstName = User.FirstName,
-                LastName = User.LastName,
-                Email = User.Email ,
-                Bio = User.Bio,
-                Phone = User.PhoneNumber,
-            };
+                return Result<MyProfileDTO>.Failure(
+                    Errors_Identity.UserNotFound);
+            }
 
-            return Result<MyProfileDTO>.Success(profileDto);
+            return Result<MyProfileDTO>.Success(profile);
         }
     }
+    
 }

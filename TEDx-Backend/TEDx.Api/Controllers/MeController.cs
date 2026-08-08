@@ -14,7 +14,7 @@ namespace TEDx.Api.Controllers
     [Authorize]
     public sealed class MeController(ISender sender) : BaseApiController
     {
-        [HttpPost("change-password")]
+        [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
@@ -33,7 +33,7 @@ namespace TEDx.Api.Controllers
                 );
         }
 
-        [HttpGet("My-Profile")]
+        [HttpGet]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
@@ -51,8 +51,7 @@ namespace TEDx.Api.Controllers
                 );
         }
 
-
-        [HttpPut("Update-Profile")]
+        [HttpPut]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
