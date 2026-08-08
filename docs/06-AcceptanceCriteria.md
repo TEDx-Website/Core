@@ -1,9 +1,11 @@
 # TEDxAlkawmia — Acceptance Criteria
 
-> **Version:** 1.3
-> **Date:** 2026-08-03
+> **Version:** 1.4
+> **Date:** 2026-08-05
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md)
 > **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+>
+> **v1.4 (2026-08-05) — OPEN-S2 rulings.** **OPEN-S2-2:** AC-EVT-05's unpublish-with-orders scenario now asserts **`HAS_ORDERS_CANNOT_UNPUBLISH`** instead of `EVENT_HAS_ORDERS`, which it shared with AC-EVT-07's soft-delete block in violation of one-code-↔-one-status (audit-Issue-10); AC-EVT-07 is unchanged and keeps `EVENT_HAS_ORDERS`. **OPEN-S2-1:** a new AC-EVT-05 scenario pins that `Cancelled` is **rejected 422** at `POST /{id}/status` and reachable only via `/cancel`. No behaviour is added — both changes make the document agree with [07 §6](./07-ApiContract.md), which was already correct.
 >
 > **v1.3 (2026-08-03):** AC-AUTH-04 logout aligns with the API contract v1.4 change log: response is **204 No Content** (not 200), and the scenario is now testable against the implemented contract. Refresh remains 401 TOKEN_REUSED / 401 TOKEN_INVALID per AC-AUTH-03.
 >
@@ -729,9 +731,17 @@ Scenario: Unpublish to Draft only while zero orders (D:Q23)
 Scenario: Unpublish blocked once orders exist (D:Q23)
   Given a Published event with at least one order
   When an Admin attempts to move it to Draft
-  Then the response is 409 error.code "EVENT_HAS_ORDERS"
+  Then the response is 409 error.code "HAS_ORDERS_CANNOT_UNPUBLISH"
   And the Admin is directed to Cancel instead
+
+Scenario: Cancelled is not reachable through the status endpoint (OPEN-S2-1)
+  Given a Published event
+  When an Admin posts status "Cancelled" to the status endpoint
+  Then the response is 422 error.code "VALIDATION_ERROR"
+  And the Admin is directed to the dedicated cancel endpoint
 ```
+
+> **Error-code split (OPEN-S2-2).** `HAS_ORDERS_CANNOT_UNPUBLISH` belongs to the **unpublish** block above; `EVENT_HAS_ORDERS` belongs to the **soft-delete** block in AC-EVT-07. Both codes exist in `Errors_Ticketing`, and the one-code-↔-one-status rule (audit-Issue-10) requires each to name exactly one situation. This scenario previously asserted `EVENT_HAS_ORDERS`, contradicting [07 §6](./07-ApiContract.md).
 
 ## AC-EVT-06 — Cancel an event (D:Q22)
 > **Covers:** US-ADM-EVT-04

@@ -16,7 +16,6 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
 
-
 // Register custom API behavior for validation error responses
 builder.Services.AddCustomApiBehavior();
 
@@ -55,8 +54,9 @@ app.UseMiddleware<CorrelationIdMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseStaticFiles();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => options.ConfigureTedxSwaggerUI());
 }
 
 app.UseRouting();
