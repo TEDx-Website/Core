@@ -75,3 +75,4 @@ public static class ErrorResultMapper
         return char.ToLowerInvariant(field[0]) + field[1..];
     }
 }
+
