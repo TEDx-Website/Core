@@ -1,7 +1,9 @@
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Ticketing.Payments;
 using TEDx.Domain.Identity.Entities;
@@ -53,6 +55,19 @@ public static class InfrastructureServiceExtensions
 
         services.AddScoped<IPaymobClient, PaymobClient>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+
+        services.AddSingleton(sp =>
+        {
+            var cloudinary = sp.GetRequiredService<IOptions<CloudinaryOptions>>().Value;
+
+            var account = new Account(
+                cloudinary.CloudName,
+                cloudinary.ApiKey,
+                cloudinary.ApiSecret);
+
+            return new Cloudinary(account) { Api = { Secure = true } };
+        });
+
         services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
