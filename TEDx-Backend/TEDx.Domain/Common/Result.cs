@@ -3,6 +3,7 @@ namespace TEDx.Domain.Common
     public sealed class Result<TValue>
     {
         private readonly TValue? _value;
+
         private readonly IReadOnlyList<Error> _errors;
         public bool IsSuccess { get; }
         public bool IsError => !IsSuccess;

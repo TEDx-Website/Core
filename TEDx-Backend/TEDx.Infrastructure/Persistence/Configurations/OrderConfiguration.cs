@@ -18,10 +18,13 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.AccountId)
                .IsRequired();
+
             builder.Property(x => x.EventId)
                .IsRequired();
+
             builder.Property(x => x.OrderReference)
                .IsRequired();
+
             builder.Property(x => x.UnitType)
                .IsRequired();
 
@@ -68,6 +71,18 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasDefaultValue(OrderStatus.PendingPayment);
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
+
+            builder.HasIndex(o => new
+            {
+                o.EventId,
+                o.Status
+            })
+            .HasDatabaseName("IX_Order_Event_Status");
+
+
+            builder.HasIndex(o => o.HoldExpiresAtUtc)
+                    .HasDatabaseName("IX_Order_HoldExpiry")
+                    .HasFilter("[Status] = 0");
 
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);

@@ -31,7 +31,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleResult(result, CreatedEnvelope);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("login")]
@@ -46,7 +50,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleResult(result, OkEnvelope);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("refresh")]
@@ -60,7 +68,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleResult(result, OkEnvelope);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("logout")]
@@ -72,7 +84,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command ?? new LogoutCommand(null), cancellationToken);
-            return HandleNoContent(result);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("forgot-password")]
@@ -86,7 +102,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleNullData(result);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("reset-password")]
@@ -101,7 +121,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleNullData(result);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("confirm-email")]
@@ -116,7 +140,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleNullData(result);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
 
         [HttpPost("resend-confirmation")]
@@ -130,7 +158,11 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleNullData(result);
+            return result.Match
+                (
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+                );
         }
     }
 }

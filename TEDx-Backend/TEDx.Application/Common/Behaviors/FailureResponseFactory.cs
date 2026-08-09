@@ -3,7 +3,7 @@ using System.Reflection;
 using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Behaviors;
-
+// This class is responsible for creating failure responses for requests that are routed through the validation/authorization behaviors.
 internal static class FailureResponseFactory
 {
     private static readonly ConcurrentDictionary<Type, MethodInfo?> FailureMethods = new();
