@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\TEDx.Domain\TEDx.Domain.csproj" />
   </ItemGroup>
@@ -15,7 +15,6 @@
     <Folder Include="Identity\Validators\" />
     <Folder Include="Ticketing\Command\" />
     <Folder Include="Ticketing\DTOs\" />
-    <Folder Include="Ticketing\Queries\" />
     <Folder Include="Ticketing\Validators\" />
     <Folder Include="Training\Command\" />
     <Folder Include="Training\DTOs\" />
