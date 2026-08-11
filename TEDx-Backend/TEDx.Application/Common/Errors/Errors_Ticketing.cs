@@ -9,11 +9,6 @@ public static partial class Errors_Ticketing
         "EVENT_NOT_PUBLISHED",
         "The event is not published.");
 
-    public static readonly Error EventNotFound =
-    Error.Business(
-        "EVENT_NOT_FOUND",
-        "The event was not found.");
-
     public static readonly Error EventHasOrders =
         Error.Conflict(
             "EVENT_HAS_ORDERS",

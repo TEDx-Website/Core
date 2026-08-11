@@ -26,17 +26,13 @@ namespace TEDx.Application.Ticketing.Command.DeleteEvent
             var entity = await _appDbContext.Events.FirstOrDefaultAsync(e => e.Id == request.EventId, cancellationToken);
             if (entity == null)
             {
-                return Result<Unit>.Failure(Errors_Ticketing.EventNotFound);
+                return Result<Unit>.Failure(Errors_Common.NotFound);
             }
             var HasOrders = await _appDbContext.Orders.AnyAsync(o => o.EventId == request.EventId, cancellationToken);
 
             if (HasOrders)
             {
                 return Result<Unit>.Failure(Errors_Ticketing.EventHasOrders);
-            }
-            if(entity.Status == EventStatus.Published)
-            {
-                return Result<Unit>.Failure(Errors_Ticketing.HasOrdersCannotUnpublish);
             }
             entity.IsDeleted = true;
             entity.DeletedAtUtc = _clock.UtcNow;
