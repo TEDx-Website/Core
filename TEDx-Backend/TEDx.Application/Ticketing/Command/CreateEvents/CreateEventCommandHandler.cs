@@ -28,7 +28,7 @@ namespace TEDx.Application.Ticketing.Command.CreateEvents
             venue: request.Location,
             capacity: request.Capacity,
             ticketPrice: request.TicketPrice.Amount,
-            maxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder ?? 0,
+            maxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder,
             imageUrl: request.ImageUrl);
 
             await _appDbContext.Events.AddAsync(eventEntity, cancellationToken);

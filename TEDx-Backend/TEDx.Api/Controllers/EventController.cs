@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
-using TEDx.Application.Identity.Commands.ChangePassword;
 using TEDx.Application.Ticketing.Command.CreateEvents;
-
 namespace TEDx.Api.Controllers
 {
     [Route("api/v1/admin/events")]
@@ -15,11 +13,12 @@ namespace TEDx.Api.Controllers
     public class EventController(ISender sender) : BaseApiController
     {
 
-        [Authorize("Admin")]
+        [Authorize]
         [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]

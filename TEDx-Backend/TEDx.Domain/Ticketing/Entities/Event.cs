@@ -72,7 +72,7 @@ namespace TEDx.Domain.Ticketing.Entities
             string venue,
             int capacity,
             decimal ticketPrice,
-            int maxIndividualQtyPerOrder,
+            int? maxIndividualQtyPerOrder,
             string? imageUrl)
         {
             return new Event

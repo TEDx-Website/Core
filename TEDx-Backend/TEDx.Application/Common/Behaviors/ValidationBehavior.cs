@@ -27,9 +27,20 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             return await next();
 
         var errors = failures
-            .Select(f => Error.Validation(Errors_Common.ValidationError.Code, f.ErrorMessage, f.PropertyName))
+            .Select(f => Error.Validation(
+                IsCustomCode(f.ErrorCode)
+                    ? f.ErrorCode
+                    : Errors_Common.ValidationError.Code,
+                f.ErrorMessage,
+                f.PropertyName))
             .ToList();
 
         return FailureResponseFactory.Create<TResponse>(errors);
     }
+
+    // FluentValidation defaults ErrorCode to the validator's type name
+    // ("NotEmptyValidator"); anything else was set with WithErrorCode.
+    private static bool IsCustomCode(string? code)
+        => !string.IsNullOrWhiteSpace(code)
+           && !code.EndsWith("Validator", StringComparison.Ordinal);
 }
