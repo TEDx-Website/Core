@@ -20,7 +20,7 @@ namespace TEDx.Domain.Ticketing.Entities
         public DateTime EndAtUtc { get; set; }
         public int Capacity { get; set; }
         public decimal TicketPrice { get; set; }
-        public int MaxIndividualQtyPerOrder { get; set; }
+        public int? MaxIndividualQtyPerOrder { get; set; }
         public EventStatus Status { get; private set; }
         public string? ImageUrl { get; set; }
         public bool IsDeleted { get; set; }
@@ -61,5 +61,37 @@ namespace TEDx.Domain.Ticketing.Entities
 
             Status = EventStatus.Archived;
         }
+
+        public static Event Create(
+            string titleEn,
+            string titleAr,
+            string descriptionEn,
+            string descriptionAr,
+            DateTime startAtUtc,
+            DateTime endAtUtc,
+            string venue,
+            int capacity,
+            decimal ticketPrice,
+            int? maxIndividualQtyPerOrder,
+            string? imageUrl)
+        {
+            return new Event
+            {
+                Id = Guid.NewGuid(),
+                TitleEn = titleEn,
+                TitleAr = titleAr,
+                DescriptionEn = descriptionEn,
+                DescriptionAr = descriptionAr,
+                StartAtUtc = startAtUtc,
+                EndAtUtc = endAtUtc,
+                Venue = venue,
+                Capacity = capacity,
+                TicketPrice = ticketPrice,
+                MaxIndividualQtyPerOrder = maxIndividualQtyPerOrder,
+                ImageUrl = imageUrl,
+                Status = EventStatus.Draft
+            };
+        }
     }
+
 }
