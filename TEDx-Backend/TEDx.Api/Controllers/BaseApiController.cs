@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.Mapping;
+using TEDx.Application.Common.Pagination;
 using TEDx.Domain.Common;
 
 namespace TEDx.Api.Controllers
@@ -32,6 +33,13 @@ namespace TEDx.Api.Controllers
                 Problem);
         }
 
+        protected ActionResult HandlePagedResult<T>(Result<PagedResult<T>> result)
+        {
+            return result.Match(
+                OkPagedEnvelope,
+                Problem);
+        }
+
         protected ActionResult Problem(IReadOnlyList<Error> errors)
         {
             var mapped = ErrorResultMapper.Map(errors, GetTraceId());
@@ -41,6 +49,19 @@ namespace TEDx.Api.Controllers
         protected ActionResult OkEnvelope<T>(T data)
         {
             return Ok(ApiResponse<T>.SuccessResult(data));
+        }
+
+        protected ActionResult OkPagedEnvelope<T>(PagedResult<T> paged)
+        {
+            return Ok(ApiResponse<IReadOnlyList<T>>.SuccessResult(
+                paged.Items,
+                new PaginationMeta
+                {
+                    Page = paged.Page,
+                    PageSize = paged.PageSize,
+                    TotalItems = paged.TotalItems,
+                    TotalPages = paged.TotalPages
+                }));
         }
 
         protected ActionResult CreatedEnvelope<T>(T data)
