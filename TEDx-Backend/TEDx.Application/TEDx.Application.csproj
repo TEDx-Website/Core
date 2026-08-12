@@ -15,7 +15,6 @@
     <Folder Include="Identity\Validators\" />
     <Folder Include="Ticketing\DTOs\" />
     <Folder Include="Ticketing\Queries\" />
-    <Folder Include="Ticketing\Command\" />
     <Folder Include="Ticketing\Validators\" />
     <Folder Include="Training\Command\" />
     <Folder Include="Training\DTOs\" />
