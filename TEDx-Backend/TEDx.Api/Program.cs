@@ -8,9 +8,6 @@ using TEDx.Application;
 using TEDx.Infrastructure.Persistence.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
-Console.WriteLine(
-    $"ADMIN PASSWORD EXISTS: {!string.IsNullOrWhiteSpace(
-        builder.Configuration["Admin:Password"])}");
 
 builder.Host.AddTedxSerilog();
 

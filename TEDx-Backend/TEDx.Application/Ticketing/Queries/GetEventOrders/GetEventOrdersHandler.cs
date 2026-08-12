@@ -24,8 +24,9 @@ public sealed class GetEventOrdersQueryHandler(
         var eventExists = await context.Events
             .AsNoTracking()
             .AnyAsync(
-                e => e.Id == request.EventId && !e.IsDeleted,
+                e => e.Id == request.EventId,
                 cancellationToken);
+
 
         if (!eventExists)
         {
@@ -47,14 +48,21 @@ public sealed class GetEventOrdersQueryHandler(
         // 4. Total count before pagination
         var totalCount = await query.CountAsync(cancellationToken);
 
+        var page = PageRequest.From(request.Page, request.PageSize);
+
         var orders = await query
            .OrderByDescending(o => o.CreatedAtUtc)
-           .Skip((request.Page - 1) * request.PageSize)
-           .Take(request.PageSize)
-           .Select(o => new EventOrderDto(o.Id,o.AccountId , o.Status.ToString(), o.Quantity, new MoneyDto(o.TotalSnapshot,"EGP"), o.CreatedAtUtc, o.Status == OrderStatus.PendingPayment ? o.HoldExpiresAtUtc : null))
+           .Skip(page.Skip)
+           .Take(page.Take)
+           .Select(o => new EventOrderDto(
+               o.Id,
+               o.AccountId ,
+               o.Status.ToString(),
+               o.Quantity,
+               new MoneyDto(o.TotalSnapshot,"EGP"),
+               o.CreatedAtUtc,
+               o.Status == OrderStatus.PendingPayment ? o.HoldExpiresAtUtc : null))
            .ToListAsync(cancellationToken);
-
-        var page = PageRequest.From(request.Page, request.PageSize);
 
         return Result<PagedResult<EventOrderDto>>.Success(
             PagedResult<EventOrderDto>.Create(orders, page, totalCount));

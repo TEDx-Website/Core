@@ -37,7 +37,6 @@ namespace TEDx.Api.Controllers
 
             return HandlePagedResult(result);
         }
-        [Authorize]
         [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -57,7 +56,6 @@ namespace TEDx.Api.Controllers
                 onFailure: errors => Problem(errors)
                 );
         }
-        [Authorize]
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -77,7 +75,6 @@ namespace TEDx.Api.Controllers
                 onFailure: errors => Problem(errors)
             );
         }
-        [Authorize]
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]

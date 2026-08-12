@@ -8,8 +8,8 @@ namespace TEDx.Application.Ticketing.Queries.GetEventOrders
 {
     public sealed record GetEventOrdersQuery(
     Guid EventId,
-    int Page = 1,
-    int PageSize = 20,
+    int? Page ,
+    int? PageSize,
     OrderStatus? Status = null
 ) : IRequest<Result<PagedResult<EventOrderDto>>>, IRequireAdmin;
 }
