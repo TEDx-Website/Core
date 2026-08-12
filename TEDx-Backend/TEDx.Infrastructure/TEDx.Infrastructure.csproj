@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <UserSecretsId>6ba8209e-8eac-4e03-b801-19b8cbd94574</UserSecretsId>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TEDx.Application\TEDx.Application.csproj" />
     <ProjectReference Include="..\TEDx.Domain\TEDx.Domain.csproj" />

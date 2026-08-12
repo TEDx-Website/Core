@@ -5,7 +5,8 @@ using System.Text;
 namespace TEDx.Application.Ticketing.DTOs
 {
     public sealed record EventOrderDto(
-        BuyerDTO Buyer,
+        Guid Id,
+        Guid BuyerId,
         string Status,
         int Quantity,
         MoneyDto Total,

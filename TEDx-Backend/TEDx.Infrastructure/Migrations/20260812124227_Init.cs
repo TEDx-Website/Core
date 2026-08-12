@@ -45,7 +45,7 @@ namespace TEDx.Infrastructure.Migrations
                     EndAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
                     TicketPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    MaxIndividualQtyPerOrder = table.Column<int>(type: "int", nullable: false),
+                    MaxIndividualQtyPerOrder = table.Column<int>(type: "int", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
                     ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -110,7 +110,7 @@ namespace TEDx.Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ProfilePictureUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProfilePictureUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Role = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -637,14 +637,14 @@ namespace TEDx.Infrastructure.Migrations
                 column: "TrackId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Order_Event_Status",
+                table: "Orders",
+                columns: new[] { "EventId", "Status" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_AccountId",
                 table: "Orders",
                 column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Orders_EventId",
-                table: "Orders",
-                column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_OrderReference",
