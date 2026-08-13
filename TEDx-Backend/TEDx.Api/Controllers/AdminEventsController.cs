@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
 using TEDx.Api.Requests.Events;
+using TEDx.Application.Common.Errors;
 using TEDx.Application.Ticketing.Command.CreateEvents;
 using TEDx.Application.Ticketing.Command.DeleteEvent;
 using TEDx.Application.Ticketing.Command.UpdateEvent;
@@ -81,7 +82,7 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpPut("{eventId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<UpdateEventDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
@@ -93,24 +94,43 @@ namespace TEDx.Api.Controllers
             [FromBody] UpdateEventRequest request,
             CancellationToken cancellationToken)
         {
+            if (!TryDecodeRowVersion(request.RowVersion, out var rowVersion))
+                return Problem(new[] { Errors_Common.InvalidRowVersion });
+
             var command = new UpdateEventCommand(
                 EventId: eventId,
-                TitleEn: request.TitleEN,
+                TitleEn: request.TitleEn,
                 TitleAr: request.TitleAr,
-                DescriptionEn: request.DescriptionEN,
+                DescriptionEn: request.DescriptionEn,
                 DescriptionAr: request.DescriptionAr,
-                Venue: request.Venue,
                 StartsAtUtc: request.StartsAtUtc,
                 EndsAtUtc: request.EndsAtUtc,
+                Location: request.Location,
                 Capacity: request.Capacity,
                 TicketPrice: request.TicketPrice,
                 MaxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder,
-                RowVersion: Convert.FromBase64String(request.RowVersion)
+                RowVersion: rowVersion
             );
 
             var result = await sender.Send(command, cancellationToken);
 
-            return HandleNoContent<Unit>(result);
+            return HandleResult(result, data => OkEnvelope(data));
+        }
+
+        private static bool TryDecodeRowVersion(string? value, out byte[] rowVersion)
+        {
+            rowVersion = [];
+
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            var buffer = new byte[((value.Length * 3) + 3) / 4];
+
+            if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten == 0)
+                return false;
+
+            rowVersion = buffer[..bytesWritten];
+            return true;
         }
     }
 }

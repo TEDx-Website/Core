@@ -1,4 +1,3 @@
-using System;
 using MediatR;
 using TEDx.Application.Common.Interfaces.Authorization;
 using TEDx.Application.Ticketing.DTOs;
@@ -12,12 +11,12 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
         string TitleAr,
         string DescriptionEn,
         string DescriptionAr,
-        string Venue,
         DateTime StartsAtUtc,
         DateTime EndsAtUtc,
+        string Location,
         int Capacity,
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
         byte[] RowVersion
-    ) : IRequest<Unit>, IRequireAdmin;
+    ) : IRequest<Result<UpdateEventDTO>>, IRequireAdmin;
 }

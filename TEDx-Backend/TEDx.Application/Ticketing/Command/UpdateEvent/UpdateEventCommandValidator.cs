@@ -4,6 +4,10 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
 {
     public sealed class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
     {
+        private const int TitleMaxLength = 200;
+        private const int DescriptionMaxLength = 3000;
+        private const int LocationMaxLength = 300;
+
         public UpdateEventCommandValidator()
         {
             RuleFor(x => x.EventId)
@@ -11,21 +15,23 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
 
             RuleFor(x => x.TitleEn)
                 .NotEmpty().WithMessage("English title is required.")
-                .MaximumLength(200).WithMessage("English title must not exceed 200 characters.");
+                .MaximumLength(TitleMaxLength).WithMessage($"English title must not exceed {TitleMaxLength} characters.");
 
             RuleFor(x => x.TitleAr)
                 .NotEmpty().WithMessage("Arabic title is required.")
-                .MaximumLength(200).WithMessage("Arabic title must not exceed 200 characters.");
+                .MaximumLength(TitleMaxLength).WithMessage($"Arabic title must not exceed {TitleMaxLength} characters.");
 
             RuleFor(x => x.DescriptionEn)
-                .NotEmpty().WithMessage("English description is required.");
+                .NotEmpty().WithMessage("English description is required.")
+                .MaximumLength(DescriptionMaxLength).WithMessage($"English description must not exceed {DescriptionMaxLength} characters.");
 
             RuleFor(x => x.DescriptionAr)
-                .NotEmpty().WithMessage("Arabic description is required.");
+                .NotEmpty().WithMessage("Arabic description is required.")
+                .MaximumLength(DescriptionMaxLength).WithMessage($"Arabic description must not exceed {DescriptionMaxLength} characters.");
 
-            RuleFor(x => x.Venue)
-                .NotEmpty().WithMessage("Venue is required.")
-                .MaximumLength(300).WithMessage("Venue must not exceed 300 characters.");
+            RuleFor(x => x.Location)
+                .NotEmpty().WithMessage("Location is required.")
+                .MaximumLength(LocationMaxLength).WithMessage($"Location must not exceed {LocationMaxLength} characters.");
 
             RuleFor(x => x.StartsAtUtc)
                 .LessThan(x => x.EndsAtUtc).WithMessage("Start date must be before end date.");
@@ -54,8 +60,7 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
                 .WithErrorCode("INVALID_MAX_QTY");
 
             RuleFor(x => x.RowVersion)
-                .NotNull().WithMessage("RowVersion is required for concurrency control.")
-                .NotEmpty().WithMessage("RowVersion must not be empty.");
+                .NotEmpty().WithMessage("RowVersion is required for concurrency control.");
         }
     }
 }

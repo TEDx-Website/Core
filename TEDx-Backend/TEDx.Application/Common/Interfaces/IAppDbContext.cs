@@ -1,5 +1,6 @@
 using System.Security.Principal;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TEDx.Domain.Communication;
 using TEDx.Domain.Cross_Cutting;
 using TEDx.Domain.Ticketing.Entities;
@@ -37,4 +38,6 @@ public interface IAppDbContext
     DbSet<OutOfBokMessages> OutboxMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
 }

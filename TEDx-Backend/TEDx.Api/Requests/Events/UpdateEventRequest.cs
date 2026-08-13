@@ -1,16 +1,15 @@
-using System;
 using TEDx.Application.Ticketing.DTOs;
 
 namespace TEDx.Api.Requests.Events
 {
     public sealed record UpdateEventRequest(
-        string TitleEN,
+        string TitleEn,
         string TitleAr,
-        string DescriptionEN,
+        string DescriptionEn,
         string DescriptionAr,
-        string Venue,
         DateTime StartsAtUtc,
         DateTime EndsAtUtc,
+        string Location,
         int Capacity,
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
