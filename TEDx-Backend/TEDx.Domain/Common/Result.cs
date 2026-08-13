@@ -15,7 +15,14 @@ namespace TEDx.Domain.Common
 
         private Result(TValue value)
         {
-            _value = value ?? throw new ArgumentNullException(nameof(value));
+            // Reject null only when TValue cannot represent null by design.
+            // Nullable value types (e.g. EventStatus?) may legitimately succeed with null,
+            // meaning "no value / not provided". Reference-type nulls are still rejected
+            // because a successful Result should always carry a meaningful value.
+            if (value is null && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) is null)
+                throw new ArgumentNullException(nameof(value));
+
+            _value = value;
             _errors = [];
             IsSuccess = true;
         }

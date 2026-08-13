@@ -24,46 +24,64 @@ public sealed class AdminSeeder
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        var options = ResolveOptions();
+        var admins = ResolveOptions();
 
-        await EnsureAdminUserAsync(options);
+        foreach (var options in admins)
+            await EnsureAdminUserAsync(options);
     }
 
-    private AdminSeederOptions ResolveOptions()
+    private List<AdminSeederOptions> ResolveOptions()
     {
+        // New format: "Admins": [ { "Email": "...", "Password": "..." }, ... ]
+        var section = _configuration.GetSection("Admins");
+        if (section.Exists())
+        {
+            var list = section.Get<List<AdminSeederOptions>>();
+            if (list is { Count: > 0 })
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var entry = list[i];
+                    if (string.IsNullOrWhiteSpace(entry.Email))
+                        throw new InvalidOperationException(
+                            $"Admins[{i}].Email is missing in configuration.");
+
+                    if (string.IsNullOrWhiteSpace(entry.Password))
+                        throw new InvalidOperationException(
+                            $"Admins[{i}].Password is missing. Set it via user secrets (Admins:{i}:Password) or environment variables.");
+                }
+
+                return list;
+            }
+        }
+
+        // Legacy fallback: ADMIN_EMAIL / ADMIN_PASSWORD
         var email = _configuration[AdminSeederOptions.EmailKey]
                     ?? _configuration["Admin:Email"];
+
         if (string.IsNullOrWhiteSpace(email))
-        {
             throw new InvalidOperationException(
-                $"Admin seeding requires configuration key '{AdminSeederOptions.EmailKey}' or 'Admin:Email'. " +
-                "Set it in configuration before startup.");
-        }
+                $"No admin accounts found. Either add an 'Admins' array to configuration, " +
+                $"or set the legacy '{AdminSeederOptions.EmailKey}' / 'Admin:Email' key.");
 
-        var password = Environment.GetEnvironmentVariable(AdminSeederOptions.PasswordEnvVar);
-        if (string.IsNullOrWhiteSpace(password))
-        {
-            password = _configuration[AdminSeederOptions.PasswordEnvVar]
+        var password = Environment.GetEnvironmentVariable(AdminSeederOptions.PasswordEnvVar)
+                       ?? _configuration[AdminSeederOptions.PasswordEnvVar]
                        ?? _configuration["Admin:Password"];
-        }
 
         if (string.IsNullOrWhiteSpace(password))
-        {
             throw new InvalidOperationException(
                 $"Admin seeding requires environment variable '{AdminSeederOptions.PasswordEnvVar}' " +
                 "or configuration key 'ADMIN_PASSWORD' / 'Admin:Password'. Set it before startup.");
-        }
 
-        return new AdminSeederOptions(email.Trim(), password);
+        return [new AdminSeederOptions(email.Trim(), password)];
     }
-
 
     private async Task EnsureAdminUserAsync(AdminSeederOptions options)
     {
         var existing = await _userManager.FindByEmailAsync(options.Email);
         if (existing is not null)
         {
-            _logger.LogInformation("Admin account already present; skipping creation.");
+            _logger.LogInformation("Admin account {Email} already present; skipping creation.", options.Email);
             return;
         }
 
@@ -82,7 +100,7 @@ public sealed class AdminSeeder
         if (!created.Succeeded)
         {
             throw new InvalidOperationException(
-                $"Failed to create admin account: {DescribeErrors(created)}");
+                $"Failed to create admin account '{options.Email}': {DescribeErrors(created)}");
         }
 
         // Admin is the GlobalRole column only — never an Identity role (D:Q36, D:Q46).
