@@ -101,6 +101,9 @@ Desktop.ini
 ## Project-specific
 docs/tedx-er-diagram.html
 docs/Others
+Dataset-Out-Of-Context
+mine
+.analysis
 docs/Learn
 TEDx-Backend/TEDx.Api/Properties/PublishProfiles/site82579-WebDeploy.pubxml
 TEDx-Backend/TEDx.Api/Properties/PublishProfiles/FolderProfile.pubxml

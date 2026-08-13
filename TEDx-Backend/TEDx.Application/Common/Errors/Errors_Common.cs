@@ -18,6 +18,11 @@ public static partial class Errors_Common
             "CONCURRENCY_CONFLICT",
             "The resource was modified by another request.");
 
+    public static readonly Error InvalidRowVersion =
+        Error.BadRequest(
+            "INVALID_ROW_VERSION",
+            "The supplied rowVersion is not a valid base64 string.");
+
     public static readonly Error RateLimited =
         Error.RateLimited(
             "RATE_LIMITED",
