@@ -512,14 +512,15 @@ namespace TEDx.Infrastructure.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("EventId");
-
                     b.HasIndex("OrderReference")
                         .IsUnique();
 
                     b.HasIndex("PackageId");
 
                     b.HasIndex("PromoCodeId");
+
+                    b.HasIndex("EventId", "Status")
+                        .HasDatabaseName("IX_Order_Event_Status");
 
                     b.ToTable("Orders", (string)null);
                 });

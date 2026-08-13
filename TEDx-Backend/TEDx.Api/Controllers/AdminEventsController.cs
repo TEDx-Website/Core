@@ -13,6 +13,8 @@ using TEDx.Application.Ticketing.Command.DeleteEvent;
 using TEDx.Application.Ticketing.Command.UpdateEvent;
 using TEDx.Application.Ticketing.DTOs;
 using TEDx.Application.Ticketing.Queries.GetAdminEvents;
+using TEDx.Application.Ticketing.Queries.GetEventOrders;
+using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Api.Controllers
 {
@@ -40,7 +42,7 @@ namespace TEDx.Api.Controllers
 
             return HandlePagedResult(result);
         }
-        [Authorize]
+        
         [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -60,7 +62,7 @@ namespace TEDx.Api.Controllers
                 onFailure: errors => Problem(errors)
                 );
         }
-
+        
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -74,6 +76,22 @@ namespace TEDx.Api.Controllers
             var result = await sender.Send(
                 new DeleteEventCommand { EventId = id },
                 cancellationToken);
+
+            return result.Match(
+                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
+                onFailure: errors => Problem(errors)
+            );
+        }
+        
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetEventOrders(
+          Guid id, [FromQuery] int page, [FromQuery] int pageSize, [FromQuery] OrderStatus? status
+           ,CancellationToken cancellationToken)
+        {
+            // Use the positional constructor
+            var query = new GetEventOrdersQuery(id, page, pageSize, status);
+            var result = await sender.Send(query, cancellationToken);
 
             return result.Match(
                 onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),

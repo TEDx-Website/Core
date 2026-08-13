@@ -12,8 +12,8 @@ using TEDx.Infrastructure.Persistence;
 namespace TEDx.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260811122845_ForMaxIndividualQtyPerOrder")]
-    partial class ForMaxIndividualQtyPerOrder
+    [Migration("20260812124227_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -515,14 +515,15 @@ namespace TEDx.Infrastructure.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("EventId");
-
                     b.HasIndex("OrderReference")
                         .IsUnique();
 
                     b.HasIndex("PackageId");
 
                     b.HasIndex("PromoCodeId");
+
+                    b.HasIndex("EventId", "Status")
+                        .HasDatabaseName("IX_Order_Event_Status");
 
                     b.ToTable("Orders", (string)null);
                 });
