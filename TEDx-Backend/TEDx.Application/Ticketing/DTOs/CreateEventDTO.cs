@@ -24,3 +24,7 @@ namespace TEDx.Application.Ticketing.DTOs
 
     }
 }
+/*
+ { "titleEn", "titleAr", "descriptionEn", "descriptionAr",
+  "startsAtUtc", "endsAtUtc", "location", "capacity",
+  "ticketPrice", "maxIndividualQtyPerOrder", "imageUrl", "rowVersion": "AAAA…" }*/

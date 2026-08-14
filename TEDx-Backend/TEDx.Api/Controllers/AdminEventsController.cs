@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
-using TEDx.Api.Requests.Events;
+using TEDx.Api..Events;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Ticketing.Command.CreateEvents;
 using TEDx.Application.Ticketing.Command.DeleteEvent;
 using TEDx.Application.Ticketing.Command.UpdateEvent;
+using TEDx.Application.Ticketing.Command.ChangeEventStatus;
 using TEDx.Application.Ticketing.DTOs;
 using TEDx.Application.Ticketing.Queries.GetAdminEvents;
 using TEDx.Application.Ticketing.Queries.GetEventOrders;
@@ -86,7 +87,7 @@ namespace TEDx.Api.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         public async Task<ActionResult> GetEventOrders(
-          Guid id, [FromQuery] int page, [FromQuery] int pageSize, [FromQuery] OrderStatus? status
+          [FromRoute] Guid id, [FromQuery] int page, [FromQuery] int pageSize, [FromQuery] OrderStatus? status
            ,CancellationToken cancellationToken)
         {
             // Use the positional constructor
@@ -135,9 +136,35 @@ namespace TEDx.Api.Controllers
             return HandleResult(result, data => OkEnvelope(data));
         }
 
+        [HttpPut("{eventId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<UpdateEventDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult> ChangeEventStatus(
+        [FromRoute] Guid eventId,
+        [FromBody] ChangeEventStatusCommand request,
+        CancellationToken cancellationToken)
+        {
+            if (!TryDecodeRowVersion(request.RowVersion, out var rowVersion))
+                return Problem(new[] { Errors_Common.InvalidRowVersion });
+
+            var command = new ChangeEventStatusCommand(
+                Id: eventId,
+                TargetStatus: request.TargetStatus,
+                RowVersion: request.RowVersion
+                );
+            var result = await sender.Send(command, cancellationToken);
+
+
+            return HandleResult(result, data => OkEnvelope(data));
+        }
         private static bool TryDecodeRowVersion(string? value, out byte[] rowVersion)
         {
-            rowVersion = [];
+            rowVersion = Array.Empty<byte>();
 
             if (string.IsNullOrWhiteSpace(value))
                 return false;
