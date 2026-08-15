@@ -8,6 +8,7 @@ using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
 using TEDx.Api.Requests.Events;
 using TEDx.Application.Common.Errors;
+using TEDx.Application.Ticketing.Command.CancelEvent;
 using TEDx.Application.Ticketing.Command.CreateEvents;
 using TEDx.Application.Ticketing.Command.DeleteEvent;
 using TEDx.Application.Ticketing.Command.UpdateEvent;
@@ -99,7 +100,7 @@ namespace TEDx.Api.Controllers
             );
         }
 
-        [HttpPut("{eventId:guid}")]
+        [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UpdateEventDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -131,6 +132,23 @@ namespace TEDx.Api.Controllers
             );
 
             var result = await sender.Send(command, cancellationToken);
+
+            return HandleResult(result, data => OkEnvelope(data));
+        }
+
+        [HttpPost("{id:guid}/cancel")]
+        [ProducesResponseType(typeof(ApiResponse<CancelEventResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
+        public async Task<ActionResult> CancelEvent(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            var command = new CancelEventCommand(id);
+
+            var result = await sender.Send(command, ct);
 
             return HandleResult(result, data => OkEnvelope(data));
         }

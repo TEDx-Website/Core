@@ -44,10 +44,10 @@ namespace TEDx.Domain.Ticketing.Entities
             Status = EventStatus.Published;
         }
 
-        /// <summary>Draft or Published → Cancelled.</summary>
+        /// <summary>Published or Archived → Cancelled. Draft → Cancelled is blocked.</summary>
         public void Cancel()
         {
-            if (Status != EventStatus.Draft && Status != EventStatus.Published)
+            if (Status != EventStatus.Published && Status != EventStatus.Archived)
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Cancelled);
 
             Status = EventStatus.Cancelled;
