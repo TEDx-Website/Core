@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using TEDx.Api.Common.Respones;
 using TEDx.Api.RateLimiting;
+using TEDx.Api.Requests.Events;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Ticketing.Command.CreateEvents;
 using TEDx.Application.Ticketing.Command.DeleteEvent;
@@ -17,6 +18,7 @@ using TEDx.Application.Ticketing.Queries.GetEventOrders;
 using TEDx.Domain.Ticketing.Enums;
 namespace TEDx.Api.Controllers
 {
+
     [Route("api/v1/admin/events")]
     [Authorize]
     public sealed class AdminEventsController(ISender sender) : BaseApiController
@@ -108,11 +110,12 @@ namespace TEDx.Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> UpdateEvent(
             [FromRoute] Guid eventId,
-            [FromBody] UpdateEventCommand request,
+            [FromBody] UpdateEventRequest request,
             CancellationToken cancellationToken)
         {
             if (!TryDecodeRowVersion(request.RowVersion, out var rowVersion))
                 return Problem(new[] { Errors_Common.InvalidRowVersion });
+
 
             var command = new UpdateEventCommand(
                 EventId: eventId,
