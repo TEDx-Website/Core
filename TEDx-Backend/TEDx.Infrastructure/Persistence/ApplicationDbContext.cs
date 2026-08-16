@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Communication;
 using TEDx.Domain.Cross_Cutting;
@@ -30,6 +31,7 @@ public sealed class ApplicationDbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<PromoCode> PromoCodes => Set<PromoCode>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<RefundEntry> RefundEntries => Set<RefundEntry>();
     // Training
     public DbSet<Track> Tracks => Set<Track>();
     public DbSet<Session> Sessions => Set<Session>();
@@ -41,6 +43,10 @@ public sealed class ApplicationDbContext
     public DbSet<NotificationRecipient> NotificationRecipients => Set<NotificationRecipient>();
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<OutOfBokMessages> OutboxMessages => Set<OutOfBokMessages>();
+
+    public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        => Database.BeginTransactionAsync(cancellationToken);
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
