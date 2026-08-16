@@ -33,33 +33,47 @@ namespace TEDx.Domain.Ticketing.Entities
         public List<PromoCode>? PromoCodes { get; set; }
         public List<Package>? Packages { get; set; }
 
-        // --- State machine (D:Q55) ---
+        // --- State machine (D:Q55, D:Q56) ---
 
-        /// <summary>Draft → Published.</summary>
         public void Publish()
         {
-            if (Status != EventStatus.Draft)
+            if (Status != EventStatus.Draft && Status != EventStatus.Archived)
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Published);
+
+            if (TicketPrice < 0)
+                throw new EventNotPublishableException("TicketPrice must be ≥ 0.");
+
+            if (Capacity <= 0)
+                throw new EventNotPublishableException("Capacity must be > 0.");
 
             Status = EventStatus.Published;
         }
 
-        /// <summary>Published or Archived → Cancelled. Draft → Cancelled is blocked.</summary>
+        public void Revert(int orderCount)
+        {
+            if (Status != EventStatus.Published)
+                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Draft);
+
+            if (orderCount > 0)
+                throw new EventHasOrdersException();
+
+            Status = EventStatus.Draft;
+        }
+
+        public void Archive()
+        {
+            if (Status != EventStatus.Published)
+                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Archived);
+
+            Status = EventStatus.Archived;
+        }
+
         public void Cancel()
         {
             if (Status != EventStatus.Published && Status != EventStatus.Archived)
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Cancelled);
 
             Status = EventStatus.Cancelled;
-        }
-
-        /// <summary>Published or Cancelled → Archived.</summary>
-        public void Archive()
-        {
-            if (Status != EventStatus.Published && Status != EventStatus.Cancelled)
-                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Archived);
-
-            Status = EventStatus.Archived;
         }
 
         public static Event Create(

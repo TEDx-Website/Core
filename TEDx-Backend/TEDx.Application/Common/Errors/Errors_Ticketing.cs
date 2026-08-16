@@ -34,11 +34,6 @@ public static partial class Errors_Ticketing
             "INVALID_TICKET_PRICE",
             "The ticket price is invalid.");
 
-    public static readonly Error NoPackages =
-        Error.Business(
-            "NO_PACKAGES",
-            "The event has no packages to publish.");
-
     public static readonly Error PackageReferencedByOrders =
         Error.Conflict(
             "PACKAGE_REFERENCED_BY_ORDERS",
