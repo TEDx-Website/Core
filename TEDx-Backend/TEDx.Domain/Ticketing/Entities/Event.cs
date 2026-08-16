@@ -41,10 +41,12 @@ namespace TEDx.Domain.Ticketing.Entities
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Published);
 
             if (TicketPrice < 0)
-                throw new EventNotPublishableException("TicketPrice must be ≥ 0.");
+                throw new EventNotPublishableException(
+                    EventPublishBlock.InvalidTicketPrice, "TicketPrice must be ≥ 0.");
 
             if (Capacity <= 0)
-                throw new EventNotPublishableException("Capacity must be > 0.");
+                throw new EventNotPublishableException(
+                    EventPublishBlock.InvalidCapacity, "Capacity must be > 0.");
 
             Status = EventStatus.Published;
         }

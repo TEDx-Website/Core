@@ -17,7 +17,7 @@ public static partial class Errors_Ticketing
     public static readonly Error HasOrdersCannotUnpublish =
         Error.Conflict(
             "HAS_ORDERS_CANNOT_UNPUBLISH",
-            "The event has orders and cannot be unpublished.");
+            "The event has orders and cannot be unpublished. Cancel the event instead.");
 
     public static readonly Error CapacityBelowSold =
         Error.Conflict(
