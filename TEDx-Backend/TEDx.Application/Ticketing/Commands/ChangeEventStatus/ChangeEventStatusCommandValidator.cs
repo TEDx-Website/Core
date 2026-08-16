@@ -1,7 +1,7 @@
 using FluentValidation;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
+namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
 {
     public sealed class ChangeEventStatusCommandValidator : AbstractValidator<ChangeEventStatusCommand>
     {

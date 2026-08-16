@@ -1,9 +1,10 @@
+using TEDx.Application.Common.Dtos;
 using MediatR;
 using TEDx.Application.Common.Interfaces.Authorization;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Ticketing.Command.UpdateEvent
+namespace TEDx.Application.Ticketing.Commands.UpdateEvent
 {
     public sealed record UpdateEventCommand(
         Guid EventId,
@@ -18,5 +19,5 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
         byte[] RowVersion
-    ) : IRequest<Result<UpdateEventDTO>>, IRequireAdmin;
+    ) : IRequest<Result<UpdateEventResponse>>, IRequireAdmin;
 }

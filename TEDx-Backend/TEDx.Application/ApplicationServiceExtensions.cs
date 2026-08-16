@@ -2,8 +2,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using TEDx.Application.Common.Behaviors;
-using TEDx.Application.Identity.Service;
-using TEDx.Application.Ticketing.Availability;
+using TEDx.Application.Identity.Services;
+using TEDx.Application.Ticketing.Services;
 
 namespace TEDx.Application;
 

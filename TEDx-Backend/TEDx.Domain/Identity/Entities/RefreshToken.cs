@@ -13,7 +13,7 @@ namespace TEDx.Domain.Identity.Entities
         public string? CreatedByIp { get; set; }
         public DateTime? RevokedAtUtc { get; set; }
         public string? ReplacedByTokenHash { get; set; }
-        public ReasonRevoked? ReasonRevoked { get; set; }
+        public RevocationReason? ReasonRevoked { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public User ApplicationUser { get; set; } = null!;
 

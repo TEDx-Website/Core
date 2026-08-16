@@ -1,6 +1,6 @@
-namespace TEDx.Api.Common.Respones
+namespace TEDx.Api.Common.Responses
 {
-    public sealed class ApiErrorResponse
+    public sealed class ApiError
     {
         /// Not Status Code Like (404, 200, ...)
         /// It's Stable machine-readable error code (Ex: `VALIDATION_ERROR` / `USER_NOT_FOUND`)

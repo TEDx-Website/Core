@@ -142,7 +142,7 @@ namespace TEDx.Infrastructure.Migrations
                     b.ToTable("NotificationRecipients", (string)null);
                 });
 
-            modelBuilder.Entity("TEDx.Domain.Cross_Cutting.OutOfBokMessages", b =>
+            modelBuilder.Entity("TEDx.Domain.Outbox.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()

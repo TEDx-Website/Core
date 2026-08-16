@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TEDx.Domain.Cross_Cutting
+namespace TEDx.Domain.Outbox
 {
-    public class OutOfBokMessages
+    public class OutboxMessage
     {
         public Guid Id { get; private set; }
 

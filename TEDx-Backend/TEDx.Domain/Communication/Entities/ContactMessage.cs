@@ -1,9 +1,10 @@
+using TEDx.Domain.Communication.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using TEDx.Domain.Common.Entities;
 
-namespace TEDx.Domain.Communication
+namespace TEDx.Domain.Communication.Entities
 {
     public class ContactMessage : AuditableEntity
     {

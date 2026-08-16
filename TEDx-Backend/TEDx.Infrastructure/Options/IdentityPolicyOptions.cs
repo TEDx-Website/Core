@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Options;
 
-namespace TEDx.Infrastructure.Configuration
+namespace TEDx.Infrastructure.Options
 {
     public sealed class IdentityPolicyOptions
     {
@@ -16,7 +16,7 @@ namespace TEDx.Infrastructure.Configuration
         public int ConfirmTokenHours { get; init; } = 24;   // D:Q57
     }
 
-    public class IdentityPolicyOptionsValidator : IValidateOptions<IdentityPolicyOptions>
+    public sealed class IdentityPolicyOptionsValidator : IValidateOptions<IdentityPolicyOptions>
     {
         public ValidateOptionsResult Validate(string? name, IdentityPolicyOptions options)
         {

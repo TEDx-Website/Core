@@ -8,15 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.Command.CancelEvent
+namespace TEDx.Application.Ticketing.Commands.CancelEvent
 {
     public sealed class CancelEventCommandHandler(
-        IAppDbContext dbContext,
+        IApplicationDbContext dbContext,
         IClock clock,
         ICurrentUser currentUser,
         ILogger<CancelEventCommandHandler> logger
@@ -40,12 +40,12 @@ namespace TEDx.Application.Ticketing.Command.CancelEvent
 
             if (eventEntity is null)
             {
-                return Result<CancelEventResponse>.Failure(Errors_Common.NotFound);
+                return Result<CancelEventResponse>.Failure(CommonErrors.NotFound);
             }
 
             if (eventEntity.Status is not (EventStatus.Published or EventStatus.Archived))
             {
-                return Result<CancelEventResponse>.Failure(Errors_Common.IllegalStatusTransition);
+                return Result<CancelEventResponse>.Failure(CommonErrors.IllegalStatusTransition);
             }
 
             var now = clock.UtcNow;
@@ -65,7 +65,7 @@ namespace TEDx.Application.Ticketing.Command.CancelEvent
             catch (DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Result<CancelEventResponse>.Failure(Errors_Common.ConcurrencyConflict);
+                return Result<CancelEventResponse>.Failure(CommonErrors.ConcurrencyConflict);
             }
 
             logger.LogInformation(
@@ -78,12 +78,12 @@ namespace TEDx.Application.Ticketing.Command.CancelEvent
                 refundEntriesRecorded);
 
             var response = new CancelEventResponse(
-                eventId: eventEntity.Id,
-                status: eventEntity.Status,
-                voidedTickets: voidedTickets,
-                checkedInTicketsRetained: checkedInTicketsRetained,
-                releasedHolds: releasedHolds,
-                refundEntriesRecorded: refundEntriesRecorded);
+                EventId: eventEntity.Id,
+                Status: eventEntity.Status,
+                VoidedTickets: voidedTickets,
+                CheckedInTicketsRetained: checkedInTicketsRetained,
+                ReleasedHolds: releasedHolds,
+                RefundEntriesRecorded: refundEntriesRecorded);
 
             return Result<CancelEventResponse>.Success(response);
         }

@@ -1,12 +1,13 @@
+using TEDx.Application.Common.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using MediatR;
 using TEDx.Application.Common.Interfaces.Authorization;
 using TEDx.Domain.Common;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 
-namespace TEDx.Application.Ticketing.Command.CreateEvents
+namespace TEDx.Application.Ticketing.Commands.CreateEvent
 {
     public sealed record CreateEventCommand(
         string TitleEn,
@@ -20,5 +21,5 @@ namespace TEDx.Application.Ticketing.Command.CreateEvents
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
         string? ImageUrl
-    ) : IRequest<Result<CreateEventDTO>>, IRequireAdmin;
+    ) : IRequest<Result<CreateEventResponse>>, IRequireAdmin;
 }

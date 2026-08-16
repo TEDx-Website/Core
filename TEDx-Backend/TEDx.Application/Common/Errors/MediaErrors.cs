@@ -2,7 +2,7 @@ using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors_Media
+public static partial class MediaErrors
 {
     // Business (not Validation) is deliberate: the API contract requires these codes
     // at the top level of the error envelope, never nested under fieldErrors.

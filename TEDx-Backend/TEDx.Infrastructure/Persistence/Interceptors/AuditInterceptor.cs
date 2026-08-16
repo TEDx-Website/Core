@@ -4,11 +4,11 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 
 namespace TEDx.Infrastructure.Persistence.Interceptors
 {
-    public class AuditInterceptor : SaveChangesInterceptor
+    public sealed class AuditInterceptor : SaveChangesInterceptor
     {
         private readonly ICurrentUser _currentUser;
         private readonly IClock _clock;
@@ -48,7 +48,7 @@ namespace TEDx.Infrastructure.Persistence.Interceptors
             var now = _clock.UtcNow;
             var userId = _currentUser.UserId?.ToString(); // convert Guid? -> string?
 
-            foreach (var entry in context.ChangeTracker.Entries<ISoftDelete>())
+            foreach (var entry in context.ChangeTracker.Entries<ISoftDeletable>())
             {
                 if (entry.State == EntityState.Deleted)
                 {

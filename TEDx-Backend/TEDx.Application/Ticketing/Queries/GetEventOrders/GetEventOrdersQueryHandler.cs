@@ -1,17 +1,18 @@
+using TEDx.Application.Common.Constants;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Pagination;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Ticketing.Enums;
-using TEDx.Application.Common.DTOs;
+using TEDx.Application.Common.Dtos;
 
 namespace TEDx.Application.Ticketing.Queries.GetEventOrders;
 
 public sealed class GetEventOrdersQueryHandler(
-    IAppDbContext context)
+    IApplicationDbContext context)
     : IRequestHandler<
         GetEventOrdersQuery,
         Result<PagedResult<EventOrderDto>>>
@@ -31,7 +32,7 @@ public sealed class GetEventOrdersQueryHandler(
         if (!eventExists)
         {
             return Result<PagedResult<EventOrderDto>>.Failure(
-                Errors_Common.NotFound);
+                CommonErrors.NotFound);
         }
 
         // 2. Build orders query
@@ -48,7 +49,7 @@ public sealed class GetEventOrdersQueryHandler(
         // 4. Total count before pagination
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var page = PageRequest.From(request.Page, request.PageSize);
+        var page = PagedRequest.From(request.Page, request.PageSize);
 
         var orders = await query
            .OrderByDescending(o => o.CreatedAtUtc)
@@ -59,7 +60,7 @@ public sealed class GetEventOrdersQueryHandler(
                o.AccountId ,
                o.Status.ToString(),
                o.Quantity,
-               new MoneyDto(o.TotalSnapshot,"EGP"),
+               new MoneyDto(o.TotalSnapshot, CurrencyCodes.Egp),
                o.CreatedAtUtc,
                o.Status == OrderStatus.PendingPayment ? o.HoldExpiresAtUtc : null))
            .ToListAsync(cancellationToken);

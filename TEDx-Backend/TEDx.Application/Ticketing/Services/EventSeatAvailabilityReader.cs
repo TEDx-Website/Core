@@ -4,14 +4,14 @@ using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.Availability;
+namespace TEDx.Application.Ticketing.Services;
 
 public sealed class EventSeatAvailabilityReader : IEventSeatAvailabilityReader
 {
-    private readonly IAppDbContext _db;
+    private readonly IApplicationDbContext _db;
     private readonly IClock _clock;
 
-    public EventSeatAvailabilityReader(IAppDbContext db, IClock clock)
+    public EventSeatAvailabilityReader(IApplicationDbContext db, IClock clock)
     {
         _db = db;
         _clock = clock;

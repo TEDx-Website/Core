@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using MediatR;
-using TEDx.Application.Identity.DTOs;
+using TEDx.Application.Common.Interfaces.Authorization;
+using TEDx.Application.Identity.Queries.GetMyProfile;
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Identity.Commands.UpdateProfile
-{
-    public class UpdateMyProfileCommand : IRequest<Result<MyProfileDTO>>
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Phone { get; set; }
-        public string Bio { get; set; }
-    }
-}
+namespace TEDx.Application.Identity.Commands.UpdateMyProfile;
+
+public sealed record UpdateMyProfileCommand(
+    string? FirstName,
+    string? LastName,
+    string? Phone,
+    string? Bio) : IRequest<Result<MyProfileResponse>>, IRequireAuthentication;

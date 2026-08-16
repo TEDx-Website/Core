@@ -1,13 +1,14 @@
+using TEDx.Application.Identity.Queries.GetMyProfile;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Application.Identity.DTOs;
+using TEDx.Application.Identity.Dtos;
 
-namespace TEDx.Application.Identity.Service
+namespace TEDx.Application.Identity.Services
 {
     public interface IMyProfileService
     {
-        Task<MyProfileDTO?> GetMyProfileAsync(
+        Task<MyProfileResponse?> GetMyProfileAsync(
             Guid userId,
             CancellationToken ct);
     }

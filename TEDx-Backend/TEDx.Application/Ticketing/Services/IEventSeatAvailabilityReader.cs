@@ -1,4 +1,4 @@
-namespace TEDx.Application.Ticketing.Availability;
+namespace TEDx.Application.Ticketing.Services;
 
 public interface IEventSeatAvailabilityReader
 {

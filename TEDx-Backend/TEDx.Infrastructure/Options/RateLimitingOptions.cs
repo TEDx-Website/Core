@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace TEDx.Infrastructure.Configuration;
+namespace TEDx.Infrastructure.Options;
 
 public sealed class RateLimitingOptions
 {
@@ -11,13 +11,6 @@ public sealed class RateLimitingOptions
     public IReadOnlyList<string> TrustedProxies { get; init; } = [];
     public IReadOnlyDictionary<string, RateLimitGroupOptions> Groups { get; init; }
         = new Dictionary<string, RateLimitGroupOptions>();
-}
-
-public sealed class RateLimitGroupOptions
-{
-    public int PermitLimit { get; init; } = 10;
-    public int WindowSeconds { get; init; } = 60;
-    public int QueueLimit { get; init; }
 }
 
 public sealed class RateLimitingOptionsValidator : IValidateOptions<RateLimitingOptions>

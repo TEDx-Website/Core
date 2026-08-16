@@ -1,6 +1,6 @@
 namespace TEDx.Domain.Identity.Enums
 {
-    public enum ReasonRevoked
+    public enum RevocationReason
     {
         Rotated = 0,
         Reuse = 1,

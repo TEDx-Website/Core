@@ -1,8 +1,9 @@
+using TEDx.Application.Common.Dtos;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.DTOs;
+namespace TEDx.Application.Ticketing.Commands.UpdateEvent;
 
-public sealed record UpdateEventDTO(
+public sealed record UpdateEventResponse(
     Guid Id,
     string TitleEn,
     string TitleAr,

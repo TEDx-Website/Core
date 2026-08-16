@@ -3,9 +3,9 @@ using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 using DomainResult = TEDx.Domain.Common.Result<string>;
-using Errors = TEDx.Application.Common.Errors.Errors_Media;
+using Errors = TEDx.Application.Common.Errors.MediaErrors;
 
 namespace TEDx.Infrastructure.Media;
 

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace TEDx.Application.Ticketing.Command.CancelEvent
+namespace TEDx.Application.Ticketing.Commands.CancelEvent
 {
     public sealed class CancelEventCommandValidator : AbstractValidator<CancelEventCommand>
     {

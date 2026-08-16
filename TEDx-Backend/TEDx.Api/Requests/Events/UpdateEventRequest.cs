@@ -1,4 +1,5 @@
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Common.Dtos;
+using TEDx.Application.Ticketing.Dtos;
 
 namespace TEDx.Api.Requests.Events
 {

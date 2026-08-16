@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Microsoft.Extensions.Options;
 
-namespace TEDx.Infrastructure.Configuration
+namespace TEDx.Infrastructure.Options
 {
     public sealed class JwtOptions
     {

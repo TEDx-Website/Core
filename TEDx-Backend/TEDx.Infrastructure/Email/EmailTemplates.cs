@@ -4,8 +4,6 @@ namespace TEDx.Infrastructure.Email;
 
 internal static class EmailTemplates
 {
-    internal sealed record EmailBody(string Subject, string Html, string PlainText);
-
     public static EmailBody EmailConfirmation(string link, int expiryHours) =>
         Build(
             subject: "Confirm your TEDx account",

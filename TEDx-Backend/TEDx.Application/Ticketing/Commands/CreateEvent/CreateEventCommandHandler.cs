@@ -1,22 +1,24 @@
+using TEDx.Application.Common.Dtos;
+using TEDx.Application.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using MediatR;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Ticketing.Entities;
 
-namespace TEDx.Application.Ticketing.Command.CreateEvents
+namespace TEDx.Application.Ticketing.Commands.CreateEvent
 {
-    public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Result<CreateEventDTO>>
+    public sealed class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, Result<CreateEventResponse>>
     {
-        private readonly IAppDbContext _appDbContext;
-        public CreateEventCommandHandler(IAppDbContext appDbContext)
+        private readonly IApplicationDbContext _appDbContext;
+        public CreateEventCommandHandler(IApplicationDbContext appDbContext)
         {
             _appDbContext = appDbContext;
         }
-        public async Task<Result<CreateEventDTO>> Handle(CreateEventCommand request, CancellationToken cancellationToken)
+        public async Task<Result<CreateEventResponse>> Handle(CreateEventCommand request, CancellationToken cancellationToken)
         {
             var eventEntity = Event.Create(
             titleEn: request.TitleEn,
@@ -33,24 +35,22 @@ namespace TEDx.Application.Ticketing.Command.CreateEvents
 
             await _appDbContext.Events.AddAsync(eventEntity, cancellationToken);
             await _appDbContext.SaveChangesAsync(cancellationToken);
-            var result = new CreateEventDTO
-            {
-                Id = eventEntity.Id,
-                TitleEn = eventEntity.TitleEn!,
-                TitleAr = eventEntity.TitleAr!,
-                DescriptionEn = eventEntity.DescriptionEn!,
-                DescriptionAr = eventEntity.DescriptionAr!,
-                StartsAtUtc = eventEntity.StartAtUtc,
-                EndsAtUtc = eventEntity.EndAtUtc,
-                Location = eventEntity.Venue!,
-                Capacity = eventEntity.Capacity,
-                TicketPrice = new MoneyDto(eventEntity.TicketPrice,"EGP"),
-                MaxIndividualQtyPerOrder = eventEntity.MaxIndividualQtyPerOrder,
-                ImageUrl = eventEntity.ImageUrl,
-                Status = eventEntity.Status,
-                RowVersion = eventEntity.RowVersion
-            };
-            return Result<CreateEventDTO>.Success(result);
+            var result = new CreateEventResponse(
+                Id: eventEntity.Id,
+                TitleEn: eventEntity.TitleEn!,
+                TitleAr: eventEntity.TitleAr!,
+                DescriptionEn: eventEntity.DescriptionEn!,
+                DescriptionAr: eventEntity.DescriptionAr!,
+                StartsAtUtc: eventEntity.StartAtUtc,
+                EndsAtUtc: eventEntity.EndAtUtc,
+                Location: eventEntity.Venue!,
+                Capacity: eventEntity.Capacity,
+                TicketPrice: new MoneyDto(eventEntity.TicketPrice, CurrencyCodes.Egp),
+                MaxIndividualQtyPerOrder: eventEntity.MaxIndividualQtyPerOrder,
+                ImageUrl: eventEntity.ImageUrl,
+                Status: eventEntity.Status,
+                RowVersion: Convert.ToBase64String(eventEntity.RowVersion));
+            return Result<CreateEventResponse>.Success(result);
         }
     }
 }

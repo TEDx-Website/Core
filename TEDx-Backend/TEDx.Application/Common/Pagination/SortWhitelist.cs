@@ -75,19 +75,19 @@ public sealed class SortWhitelist<T>
             var parts = sort.Split(SortSyntax.Separator);
             if (parts.Length > 2)
             {
-                return Errors_Common.MalformedSort(sort);
+                return CommonErrors.MalformedSort(sort);
             }
 
             field = parts[0].Trim();
             if (!_orderings.ContainsKey(field))
             {
-                return Errors_Common.UnknownSortField(field, _allowedFields);
+                return CommonErrors.UnknownSortField(field, _allowedFields);
             }
 
             var parsed = parts.Length == 2 ? ParseDirection(parts[1].Trim()) : SortDirection.Ascending;
             if (parsed is null)
             {
-                return Errors_Common.MalformedSort(sort);
+                return CommonErrors.MalformedSort(sort);
             }
 
             direction = parsed.Value;

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using MediatR;
 using TEDx.Application.Common.Interfaces.Authorization;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
+namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
 {
     public sealed record ChangeEventStatusCommand(
     Guid Id,
     EventStatus TargetStatus
-) : IRequest<Result<ChangeEventStatusDTO>>, IRequireAdmin;
+) : IRequest<Result<ChangeEventStatusResponse>>, IRequireAdmin;
 }

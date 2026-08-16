@@ -1,4 +1,4 @@
-namespace TEDx.Application.Ticketing.Availability;
+namespace TEDx.Application.Ticketing.Services;
 
 public readonly record struct EventSeatAvailability(Guid EventId, int Capacity, int ConsumedSeats)
 {

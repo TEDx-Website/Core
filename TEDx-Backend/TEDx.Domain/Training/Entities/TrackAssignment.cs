@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Training.Enums;
 
 namespace TEDx.Domain.Training.Entities
 {
-    public class TrackAssignment : AuditableEntity, IConcurrent
+    public class TrackAssignment : AuditableEntity, IHasRowVersion
     {
         public Guid Id { get; set; }
         public Guid AccountId { get; set; }

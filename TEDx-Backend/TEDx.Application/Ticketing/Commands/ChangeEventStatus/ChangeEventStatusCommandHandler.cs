@@ -5,24 +5,24 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Ticketing.Availability;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Services;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Common.Exceptions;
 using TEDx.Domain.Ticketing.Enums;
 
-namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
+namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
 {
-    public sealed class ChangeEventStatusCommandHandler : IRequestHandler<ChangeEventStatusCommand, Result<ChangeEventStatusDTO>>
+    public sealed class ChangeEventStatusCommandHandler : IRequestHandler<ChangeEventStatusCommand, Result<ChangeEventStatusResponse>>
     {
-        private readonly IAppDbContext _context;
+        private readonly IApplicationDbContext _context;
 
-        public ChangeEventStatusCommandHandler(IAppDbContext context)
+        public ChangeEventStatusCommandHandler(IApplicationDbContext context)
         {
             _context = context;
         }
 
-        public async Task<Result<ChangeEventStatusDTO>> Handle(
+        public async Task<Result<ChangeEventStatusResponse>> Handle(
             ChangeEventStatusCommand request,
             CancellationToken cancellationToken)
         {
@@ -34,8 +34,8 @@ namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (@event is null)
-                return Result<ChangeEventStatusDTO>.Failure(
-                    Errors_Common.NotFound);
+                return Result<ChangeEventStatusResponse>.Failure(
+                    CommonErrors.NotFound);
 
             try
             {
@@ -63,27 +63,27 @@ namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
                         // The validator already rejects every other target (Cancelled → 422).
                         // Reaching here means that guard was bypassed — fail loudly rather
                         // than returning 200 with the status untouched.
-                        return Result<ChangeEventStatusDTO>.Failure(
-                            Errors_Common.ValidationError);
+                        return Result<ChangeEventStatusResponse>.Failure(
+                            CommonErrors.ValidationError);
                 }
             }
             catch (EventHasOrdersException)
             {
-                return Result<ChangeEventStatusDTO>.Failure(
-                    Errors_Ticketing.HasOrdersCannotUnpublish);
+                return Result<ChangeEventStatusResponse>.Failure(
+                    TicketingErrors.HasOrdersCannotUnpublish);
             }
             catch (EventNotPublishableException ex)
             {
-                return Result<ChangeEventStatusDTO>.Failure(ex.Block switch
+                return Result<ChangeEventStatusResponse>.Failure(ex.Block switch
                 {
-                    EventPublishBlock.InvalidCapacity => Errors_Ticketing.InvalidCapacity,
-                    _ => Errors_Ticketing.InvalidTicketPrice
+                    EventPublishBlock.InvalidCapacity => TicketingErrors.InvalidCapacity,
+                    _ => TicketingErrors.InvalidTicketPrice
                 });
             }
             catch (InvalidStateTransitionException)
             {
-                return Result<ChangeEventStatusDTO>.Failure(
-                    Errors_Common.IllegalStatusTransition);
+                return Result<ChangeEventStatusResponse>.Failure(
+                    CommonErrors.IllegalStatusTransition);
             }
 
             try
@@ -94,12 +94,12 @@ namespace TEDx.Application.Ticketing.Command.ChangeEventStatus
             catch (DbUpdateConcurrencyException)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Result<ChangeEventStatusDTO>.Failure(
-                    Errors_Common.ConcurrencyConflict);
+                return Result<ChangeEventStatusResponse>.Failure(
+                    CommonErrors.ConcurrencyConflict);
             }
 
-            return Result<ChangeEventStatusDTO>.Success(
-                new ChangeEventStatusDTO(
+            return Result<ChangeEventStatusResponse>.Success(
+                new ChangeEventStatusResponse(
                     @event.Status,
                     Convert.ToBase64String(@event.RowVersion)));
         }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using FluentValidation;
 
-namespace TEDx.Application.Identity.Commands.UpdateProfile
+namespace TEDx.Application.Identity.Commands.UpdateMyProfile
 {
-    public class UpdateMyProfileCommandValidator : AbstractValidator<UpdateMyProfileCommand>
+    public sealed class UpdateMyProfileCommandValidator : AbstractValidator<UpdateMyProfileCommand>
     {
         public UpdateMyProfileCommandValidator()
         {

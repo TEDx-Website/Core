@@ -1,9 +1,9 @@
+using TEDx.Domain.Communication.Entities;
 using System.Security.Principal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
-using TEDx.Domain.Communication;
-using TEDx.Domain.Cross_Cutting;
+using TEDx.Domain.Outbox;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Training.Entities;
@@ -11,10 +11,10 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace TEDx.Application.Common.Interfaces;
 
-public interface IAppDbContext
+public interface IApplicationDbContext
 {
     // Identity
-    DbSet<User> ApplicationUsers { get; }
+    DbSet<User> Users { get; }
     DbSet<RefreshToken> RefreshTokens { get; }
 
     // Eventing
@@ -37,7 +37,7 @@ public interface IAppDbContext
     DbSet<Notification> Notifications { get; }
     DbSet<NotificationRecipient> NotificationRecipients { get; }
     DbSet<ContactMessage> ContactMessages { get; }
-    DbSet<OutOfBokMessages> OutboxMessages { get; }
+    DbSet<OutboxMessage> OutboxMessages { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

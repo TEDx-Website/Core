@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 
 namespace TEDx.Api.Extensions;
 
@@ -13,7 +13,7 @@ namespace TEDx.Api.Extensions;
 /// pipeline, and the real one (<c>GET /api/v1/me</c>) belongs to a later task. Delete this
 /// file once that endpoint exists.
 /// </remarks>
-public static class DevDiagnosticsEndpoints
+public static class DevDiagnosticsEndpointExtensions
 {
     public static WebApplication MapDevDiagnostics(this WebApplication app)
     {

@@ -2,7 +2,7 @@ using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors_Training
+public static partial class TrainingErrors
 {
     public static readonly Error TrackNameTaken =
     Error.Conflict(

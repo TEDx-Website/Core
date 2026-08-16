@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using TEDx.Api.Mapping;
 using TEDx.Application.Common.Errors;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Api.RateLimiting;
 
@@ -145,7 +145,7 @@ public static class RateLimitingServiceExtensions
         SetRetryAfter(rejected);
 
         var mapped = ErrorResultMapper.Map(
-            [Errors_Common.RateLimited],
+            [CommonErrors.RateLimited],
             context.Items["CorrelationId"] as string);
 
         return new ValueTask(

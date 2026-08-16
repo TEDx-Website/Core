@@ -1,6 +1,6 @@
-namespace TEDx.Api.Common.Respones
+namespace TEDx.Api.Common.Responses
 {
-    public sealed class PaginationMeta
+    public sealed class PagedMeta
     {
         public int Page { get; init; }
         public int PageSize { get; init; }

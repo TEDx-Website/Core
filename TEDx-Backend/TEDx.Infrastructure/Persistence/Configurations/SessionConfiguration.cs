@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TEDx.Domain.Communication;
 using TEDx.Domain.Training.Entities;
 using TEDx.Domain.Training.Enums;
 

@@ -1,13 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace TEDx.Application.Identity.Dtos;
 
-namespace TEDx.Application.Identity.DTOs
-{
-    public class TrackAssignmentDTO
-    {
-        public Guid? MemberOfTrackId { get; set; }
-        public Guid? BoardOfTrackId { get; set; }
-
-    }
-}
+public sealed record TrackAssignmentDto(
+    Guid? MemberOfTrackId,
+    Guid? BoardOfTrackId);

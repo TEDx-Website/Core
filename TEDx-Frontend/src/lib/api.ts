@@ -1,5 +1,5 @@
 // import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-// import { ApiResponse, ApiErrorResponse, AuthTokens } from '@/types/api';
+// import { ApiResponse, ApiError, AuthTokensResponse } from '@/types/api';
 
 // const getAccessToken = (): string | null => {
 //   return null;
@@ -9,7 +9,7 @@
 //   return null;
 // };
 
-// const setTokens = (tokens: AuthTokens) => {
+// const setTokens = (tokens: AuthTokensResponse) => {
 // };
 
 // export const api = axios.create({
@@ -47,7 +47,7 @@
 //           throw new Error();
 //         }
 
-//         const refreshResponse = await axios.post<ApiResponse<AuthTokens>>(
+//         const refreshResponse = await axios.post<ApiResponse<AuthTokensResponse>>(
 //           `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
 //           { refreshToken }
 //         );
@@ -67,7 +67,7 @@
 //       }
 //     }
 
-//     const backendError: ApiErrorResponse | undefined = error.response?.data?.error;
+//     const backendError: ApiError | undefined = error.response?.data?.error;
 //     return Promise.reject(backendError || error);
 //   }
 // );

@@ -3,7 +3,7 @@ using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Errors;
 
-public static partial class Errors_Common
+public static partial class CommonErrors
 {
     public const string SortParameterName = "sort";
     private const int MaxEchoedLength = 40;

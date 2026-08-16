@@ -1,6 +1,6 @@
 namespace TEDx.Application.Common.Pagination;
 
-public static class PaginationDefaults
+public static class PagedDefaults
 {
     public const int MinPage = 1;
     public const int MinPageSize = 1;

@@ -1,11 +1,12 @@
+using TEDx.Application.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using FluentValidation;
 
-namespace TEDx.Application.Ticketing.Command.CreateEvents
+namespace TEDx.Application.Ticketing.Commands.CreateEvent
 {
-    public class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
+    public sealed class CreateEventCommandValidator : AbstractValidator<CreateEventCommand>
     {
         public CreateEventCommandValidator()
         {
@@ -37,7 +38,7 @@ namespace TEDx.Application.Ticketing.Command.CreateEvents
 
             RuleFor(x => x.TicketPrice.Currency)
                 .NotEmpty()
-                .Equal("EGP");
+                .Equal(CurrencyCodes.Egp);
         }
     }
 }

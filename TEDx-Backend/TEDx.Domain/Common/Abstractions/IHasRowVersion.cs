@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TEDx.Domain.Common.DomainInterfaces
+namespace TEDx.Domain.Common.Abstractions
 {
-    public interface IConcurrent
+    public interface IHasRowVersion
     {
         byte[] RowVersion { get; set; }
     }

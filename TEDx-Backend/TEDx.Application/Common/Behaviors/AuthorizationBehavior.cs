@@ -8,7 +8,7 @@ using TEDx.Domain.Training.Enums;
 
 namespace TEDx.Application.Common.Behaviors
 {
-    public class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+    public sealed class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
     {
         private readonly ICurrentUser _currentUser;
         private readonly ITrackAccessReader _trackAccess;
@@ -36,10 +36,10 @@ namespace TEDx.Application.Common.Behaviors
             var userId = _currentUser.UserId;
 
             if (!_currentUser.IsAuthenticated || userId is null)
-                return Failure(Errors_Identity.Unauthenticated);
+                return Failure(IdentityErrors.Unauthenticated);
 
             if (request is IRequireAdmin && !_currentUser.IsAdmin)
-                return Failure(Errors_Identity.Forbidden);
+                return Failure(IdentityErrors.Forbidden);
 
             if (request is ITrackScopedRequest scoped)
             {
@@ -62,7 +62,7 @@ namespace TEDx.Application.Common.Behaviors
                             "ActualRole {Role}, Request {Request}",
                             userId, scoped.TrackId, role, typeof(TRequest).Name);
 
-                        return Failure(Errors_Training.TrackForbidden);
+                        return Failure(TrainingErrors.TrackForbidden);
                     }
                 }
             }

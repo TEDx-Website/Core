@@ -17,10 +17,10 @@ public sealed record PagedResult<T>
     public int TotalItems { get; }
     public int TotalPages { get; }
 
-    public static PagedResult<T> Create(IReadOnlyList<T> items, PageRequest page, int totalItems)
+    public static PagedResult<T> Create(IReadOnlyList<T> items, PagedRequest page, int totalItems)
         => new(items, page.Page, page.PageSize, totalItems);
 
-    public static PagedResult<T> Empty(PageRequest page)
+    public static PagedResult<T> Empty(PagedRequest page)
         => new([], page.Page, page.PageSize, 0);
 
     public PagedResult<TOut> Map<TOut>(Func<T, TOut> selector)

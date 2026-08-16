@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

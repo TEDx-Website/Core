@@ -1,11 +1,12 @@
+using TEDx.Application.Common.Constants;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using TEDx.Application.Common.DTOs;
+using TEDx.Application.Common.Dtos;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Application.Common.Pagination;
-using TEDx.Application.Ticketing.Availability;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Services;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 using TEDx.Domain.Ticketing.Entities;
 using TEDx.Domain.Ticketing.Enums;
@@ -13,21 +14,21 @@ using TEDx.Domain.Ticketing.Enums;
 namespace TEDx.Application.Ticketing.Queries.GetAdminEvents;
 
 public sealed class GetAdminEventsQueryHandler(
-    IAppDbContext db,
+    IApplicationDbContext db,
     IEventSeatAvailabilityReader seatAvailability)
-    : IRequestHandler<GetAdminEventsQuery, Result<PagedResult<AdminEventListItemDTO>>>
+    : IRequestHandler<GetAdminEventsQuery, Result<PagedResult<AdminEventListItemDto>>>
 {
     private const string StatusParameterName = "status";
-    private const string Currency = "EGP";
 
-    public async Task<Result<PagedResult<AdminEventListItemDTO>>> Handle(
+
+    public async Task<Result<PagedResult<AdminEventListItemDto>>> Handle(
         GetAdminEventsQuery request,
         CancellationToken cancellationToken)
     {
         var status = ParseStatus(request.Status);
         if (status.IsError)
         {
-            return Result<PagedResult<AdminEventListItemDTO>>.Failure(status.Errors);
+            return Result<PagedResult<AdminEventListItemDto>>.Failure(status.Errors);
         }
 
         var filtered = ApplyFilters(db.Events.AsNoTracking(), status.Value, request.Search);
@@ -35,14 +36,14 @@ public sealed class GetAdminEventsQueryHandler(
         var ordered = EventSorting.Admin.Apply(filtered, request.Sort);
         if (ordered.IsError)
         {
-            return Result<PagedResult<AdminEventListItemDTO>>.Failure(ordered.Errors);
+            return Result<PagedResult<AdminEventListItemDto>>.Failure(ordered.Errors);
         }
 
         var page = await ordered.Value.ToPagedResultAsync(
-            PageRequest.From(request.Page, request.PageSize),
+            PagedRequest.From(request.Page, request.PageSize),
             cancellationToken);
 
-        return Result<PagedResult<AdminEventListItemDTO>>.Success(
+        return Result<PagedResult<AdminEventListItemDto>>.Success(
             await ToDtoPageAsync(page, cancellationToken));
     }
 
@@ -65,7 +66,7 @@ public sealed class GetAdminEventsQueryHandler(
         }
 
         return Error.Validation(
-            Errors_Common.ValidationError.Code,
+            CommonErrors.ValidationError.Code,
             $"Value '{(token.Length <= 40 ? token : token[..40] + "…")}' is not supported for "
             + $"'{StatusParameterName}'. Allowed values: {string.Join(", ", names)}.",
             StatusParameterName);
@@ -93,7 +94,7 @@ public sealed class GetAdminEventsQueryHandler(
         return source;
     }
 
-    private async Task<PagedResult<AdminEventListItemDTO>> ToDtoPageAsync(
+    private async Task<PagedResult<AdminEventListItemDto>> ToDtoPageAsync(
         PagedResult<Event> page,
         CancellationToken cancellationToken)
     {
@@ -110,7 +111,7 @@ public sealed class GetAdminEventsQueryHandler(
         return page.Map(entity => ToDto(entity, RemainingSeatsOf(entity, availability)));
     }
 
-    private static AdminEventListItemDTO ToDto(Event entity, int remainingSeats)
+    private static AdminEventListItemDto ToDto(Event entity, int remainingSeats)
         => new(
             Id: entity.Id,
             TitleEn: entity.TitleEn,
@@ -120,7 +121,7 @@ public sealed class GetAdminEventsQueryHandler(
             Location: entity.Venue,
             Capacity: entity.Capacity,
             Status: entity.Status,
-            TicketPrice: new MoneyDTO(entity.TicketPrice, Currency),
+            TicketPrice: new MoneyDto(entity.TicketPrice, CurrencyCodes.Egp),
             RemainingSeats: remainingSeats,
             RowVersion: entity.RowVersion is null or { Length: 0 }
                 ? string.Empty

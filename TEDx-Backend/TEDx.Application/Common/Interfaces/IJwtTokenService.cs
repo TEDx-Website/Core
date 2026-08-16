@@ -6,5 +6,3 @@ public interface IJwtTokenService
 {
     AccessTokenResult CreateAccessToken(User user);
 }
-
-public sealed record AccessTokenResult(string Token, DateTime ExpiresAtUtc, int ExpiresInSeconds);

@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Common;
 
-namespace TEDx.Infrastructure.Configuration
+namespace TEDx.Infrastructure.Options
 {
     public sealed class SmtpOptions
     {

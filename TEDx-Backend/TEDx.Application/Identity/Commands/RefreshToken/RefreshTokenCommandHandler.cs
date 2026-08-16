@@ -1,9 +1,10 @@
+using TEDx.Application.Identity.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Identity.Common;
+using TEDx.Application.Identity.Commands.Login;
 using TEDx.Domain.Common;
 
 namespace TEDx.Application.Identity.Commands.RefreshToken;
@@ -11,7 +12,7 @@ namespace TEDx.Application.Identity.Commands.RefreshToken;
 public sealed class RefreshTokenCommandHandler(
     IRefreshTokenService refreshTokens,
     IJwtTokenService jwt,
-    IAppDbContext db,
+    IApplicationDbContext db,
     IClock clock,
     ILogger<RefreshTokenCommandHandler> logger)
     : IRequestHandler<RefreshTokenCommand, Result<AuthTokensResponse>>
@@ -21,7 +22,7 @@ public sealed class RefreshTokenCommandHandler(
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.TokenInvalid);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.TokenInvalid);
 
         var rotated = await refreshTokens.RotateTokenAsync(
             request.RefreshToken,
@@ -34,7 +35,7 @@ public sealed class RefreshTokenCommandHandler(
         // Deactivation blocks refresh as well as login (D:Q10). The rotation already
         // consumed the presented token, so a deactivated user cannot keep extending their
         // session; the 401 also hides that the account exists.
-        var user = await db.ApplicationUsers
+        var user = await db.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(
                 u => u.Id == rotated.Value.AccountId && u.IsActive,
@@ -46,7 +47,7 @@ public sealed class RefreshTokenCommandHandler(
                 "Refresh rejected: account {AccountId} is inactive or missing.",
                 rotated.Value.AccountId);
 
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.TokenInvalid);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.TokenInvalid);
         }
 
         var access = jwt.CreateAccessToken(user);
@@ -56,7 +57,7 @@ public sealed class RefreshTokenCommandHandler(
             access.ExpiresInSeconds,
             rotated.Value.RawToken,
             (int)(rotated.Value.ExpiresAtUtc - clock.UtcNow).TotalSeconds,
-            new AuthUserResponse(
+            new AuthUserDto(
                 user.Id,
                 user.Email ?? string.Empty,
                 user.Role.ToString(),

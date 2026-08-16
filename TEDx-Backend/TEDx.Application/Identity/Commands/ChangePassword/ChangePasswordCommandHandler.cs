@@ -19,7 +19,7 @@ public sealed class ChangePasswordCommandHandler(
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not { } accountId)
-            return Result<Unit>.Failure(Errors_Identity.Unauthenticated);
+            return Result<Unit>.Failure(IdentityErrors.Unauthenticated);
 
         var user = await accounts.FindByIdAsync(accountId, cancellationToken);
 
@@ -28,7 +28,7 @@ public sealed class ChangePasswordCommandHandler(
             logger.LogWarning(
                 "Change-password for {AccountId} could not resolve the account.", accountId);
 
-            return Result<Unit>.Failure(Errors_Identity.Unauthenticated);
+            return Result<Unit>.Failure(IdentityErrors.Unauthenticated);
         }
 
         var changed = await accounts.ChangePasswordAsync(
@@ -42,7 +42,7 @@ public sealed class ChangePasswordCommandHandler(
 
         var revoked = await refreshTokens.RevokeAllAsync(
             user.Id,
-            ReasonRevoked.Logout,
+            RevocationReason.Logout,
             cancellationToken);
 
         logger.LogInformation(

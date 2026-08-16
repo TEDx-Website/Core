@@ -1,8 +1,8 @@
 namespace TEDx.Application.Common.Pagination;
 
-public readonly record struct PageRequest
+public readonly record struct PagedRequest
 {
-    private PageRequest(int page, int pageSize)
+    private PagedRequest(int page, int pageSize)
     {
         Page = page;
         PageSize = pageSize;
@@ -13,16 +13,16 @@ public readonly record struct PageRequest
     public int Skip => (Page - 1) * PageSize;
     public int Take => PageSize;
 
-    public static PageRequest From(int? page, int? pageSize)
+    public static PagedRequest From(int? page, int? pageSize)
         => new(NormalizePage(page), NormalizePageSize(pageSize));
 
     private static int NormalizePage(int? page)
-        => page is null || page.Value < PaginationDefaults.MinPage
-            ? PaginationDefaults.MinPage
+        => page is null || page.Value < PagedDefaults.MinPage
+            ? PagedDefaults.MinPage
             : page.Value;
 
     private static int NormalizePageSize(int? pageSize)
         => pageSize is null
-            ? PaginationDefaults.DefaultPageSize
-            : Math.Clamp(pageSize.Value, PaginationDefaults.MinPageSize, PaginationDefaults.MaxPageSize);
+            ? PagedDefaults.DefaultPageSize
+            : Math.Clamp(pageSize.Value, PagedDefaults.MinPageSize, PagedDefaults.MaxPageSize);
 }

@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.RateLimiting;
 using TEDx.Application.Identity.Commands.ConfirmEmail;
 using TEDx.Application.Identity.Commands.ForgotPassword;
@@ -12,7 +12,6 @@ using TEDx.Application.Identity.Commands.RefreshToken;
 using TEDx.Application.Identity.Commands.Register;
 using TEDx.Application.Identity.Commands.ResendConfirmation;
 using TEDx.Application.Identity.Commands.ResetPassword;
-using TEDx.Application.Identity.Common;
 
 namespace TEDx.Api.Controllers
 {
@@ -23,9 +22,9 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<RegisterResponse>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Register(
             [FromBody] RegisterCommand command,
             CancellationToken cancellationToken)
@@ -38,9 +37,9 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<AuthTokensResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Login(
             [FromBody] LoginCommand command,
             CancellationToken cancellationToken)
@@ -53,8 +52,8 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<AuthTokensResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> Refresh(
             [FromBody] RefreshTokenCommand command,
             CancellationToken cancellationToken)
@@ -66,7 +65,7 @@ namespace TEDx.Api.Controllers
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult> Logout(
             [FromBody] LogoutCommand? command,
             CancellationToken cancellationToken)
@@ -79,8 +78,8 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.AuthMail)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> ForgotPassword(
             [FromBody] ForgotPasswordCommand command,
             CancellationToken cancellationToken)
@@ -93,9 +92,9 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> ResetPassword(
             [FromBody] ResetPasswordCommand command,
             CancellationToken cancellationToken)
@@ -108,9 +107,9 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> ConfirmEmail(
             [FromBody] ConfirmEmailCommand command,
             CancellationToken cancellationToken)
@@ -123,8 +122,8 @@ namespace TEDx.Api.Controllers
         [AllowAnonymous]
         [EnableRateLimiting(RateLimitPolicies.AuthMail)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> ResendConfirmation(
             [FromBody] ResendConfirmationCommand command,
             CancellationToken cancellationToken)

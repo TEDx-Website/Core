@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TEDx.Domain.Communication
+namespace TEDx.Domain.Communication.Entities
 {
     public class NotificationRecipient
     {

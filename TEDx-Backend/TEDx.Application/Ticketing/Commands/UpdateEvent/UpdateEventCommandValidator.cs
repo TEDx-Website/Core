@@ -1,6 +1,7 @@
+using TEDx.Application.Common.Constants;
 using FluentValidation;
 
-namespace TEDx.Application.Ticketing.Command.UpdateEvent
+namespace TEDx.Application.Ticketing.Commands.UpdateEvent
 {
     public sealed class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
     {
@@ -51,7 +52,7 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
 
                 RuleFor(x => x.TicketPrice.Currency)
                     .NotEmpty().WithMessage("Currency is required.")
-                    .Equal("EGP").WithMessage("Only EGP currency is supported.");
+                    .Equal(CurrencyCodes.Egp).WithMessage($"Only {CurrencyCodes.Egp} currency is supported.");
             });
 
             RuleFor(x => x.MaxIndividualQtyPerOrder)

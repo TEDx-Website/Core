@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.Extensions;
 using TEDx.Api.Middleware;
 using TEDx.Api.RateLimiting;

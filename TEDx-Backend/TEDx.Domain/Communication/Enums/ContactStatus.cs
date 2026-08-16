@@ -1,4 +1,4 @@
-namespace TEDx.Domain.Communication
+namespace TEDx.Domain.Communication.Enums
 {
     public enum ContactStatus
     {

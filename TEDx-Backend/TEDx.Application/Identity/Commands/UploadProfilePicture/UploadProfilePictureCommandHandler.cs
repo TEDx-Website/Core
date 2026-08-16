@@ -18,7 +18,7 @@ public sealed class UploadProfilePictureCommandHandler(
         CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not { } accountId)
-            return Result<ProfilePictureResponse>.Failure(Errors_Identity.Unauthenticated);
+            return Result<ProfilePictureResponse>.Failure(IdentityErrors.Unauthenticated);
 
         var user = await accounts.FindByIdAsync(accountId, cancellationToken);
 
@@ -27,7 +27,7 @@ public sealed class UploadProfilePictureCommandHandler(
             logger.LogWarning(
                 "Profile-picture upload for {AccountId} could not resolve the account.", accountId);
 
-            return Result<ProfilePictureResponse>.Failure(Errors_Identity.Unauthenticated);
+            return Result<ProfilePictureResponse>.Failure(IdentityErrors.Unauthenticated);
         }
 
         // Upload first: a failed upload must leave the existing avatar untouched.

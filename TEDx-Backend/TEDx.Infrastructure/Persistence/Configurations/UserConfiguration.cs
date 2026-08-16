@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TEDx.Domain.Communication;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
 using TEDx.Domain.Ticketing.Entities;
@@ -11,7 +10,7 @@ using TEDx.Domain.Training.Entities;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<User>
+    public sealed class UserConfiguration : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {

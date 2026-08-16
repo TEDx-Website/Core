@@ -1,25 +1,26 @@
+using TEDx.Application.Common.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Ticketing.Availability;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Services;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Domain.Common;
 
-namespace TEDx.Application.Ticketing.Command.UpdateEvent
+namespace TEDx.Application.Ticketing.Commands.UpdateEvent
 {
     public sealed class UpdateEventCommandHandler(
-        IAppDbContext dbContext,
+        IApplicationDbContext dbContext,
         IEventSeatAvailabilityReader seatAvailabilityReader)
-        : IRequestHandler<UpdateEventCommand, Result<UpdateEventDTO>>
+        : IRequestHandler<UpdateEventCommand, Result<UpdateEventResponse>>
     {
-        public async Task<Result<UpdateEventDTO>> Handle(UpdateEventCommand request, CancellationToken ct)
+        public async Task<Result<UpdateEventResponse>> Handle(UpdateEventCommand request, CancellationToken ct)
         {
             var eventEntity = await dbContext.Events
                 .FirstOrDefaultAsync(x => x.Id == request.EventId, ct);
 
             if (eventEntity is null)
-                return Result<UpdateEventDTO>.Failure(Errors_Common.NotFound);
+                return Result<UpdateEventResponse>.Failure(CommonErrors.NotFound);
 
             // Check the client's RowVersion before saving.
             // Normally, EF Core's optimistic concurrency check during SaveChanges()
@@ -40,12 +41,12 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
             // working with an outdated version of the event, reject the request even when
             // the requested values are identical to the current values.
             if (!eventEntity.RowVersion.SequenceEqual(request.RowVersion))
-                return Result<UpdateEventDTO>.Failure(Errors_Common.ConcurrencyConflict);
+                return Result<UpdateEventResponse>.Failure(CommonErrors.ConcurrencyConflict);
 
             var availability = await seatAvailabilityReader.GetAsync(request.EventId, ct);
 
             if (availability is not null && request.Capacity < availability.Value.ConsumedSeats)
-                return Result<UpdateEventDTO>.Failure(Errors_Ticketing.CapacityBelowSold);
+                return Result<UpdateEventResponse>.Failure(TicketingErrors.CapacityBelowSold);
 
             dbContext.Entry(eventEntity)
                 .Property(x => x.RowVersion)
@@ -68,12 +69,12 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
             }
             catch (DbUpdateConcurrencyException)
             {
-                return Result<UpdateEventDTO>.Failure(Errors_Common.ConcurrencyConflict);
+                return Result<UpdateEventResponse>.Failure(CommonErrors.ConcurrencyConflict);
             }
 
             // eventEntity.RowVersion now holds the value the database generated for this UPDATE,
             // so the client can chain another edit without a round trip.
-            var dto = new UpdateEventDTO(
+            var dto = new UpdateEventResponse(
                 Id: eventEntity.Id,
                 TitleEn: request.TitleEn,
                 TitleAr: request.TitleAr,
@@ -88,7 +89,7 @@ namespace TEDx.Application.Ticketing.Command.UpdateEvent
                 Status: eventEntity.Status,
                 RowVersion: Convert.ToBase64String(eventEntity.RowVersion));
 
-            return Result<UpdateEventDTO>.Success(dto);
+            return Result<UpdateEventResponse>.Success(dto);
         }
     }
 }
