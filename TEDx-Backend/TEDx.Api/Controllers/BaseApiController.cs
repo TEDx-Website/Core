@@ -76,6 +76,22 @@ namespace TEDx.Api.Controllers
             return NoContent();
         }
 
+        protected static bool TryDecodeRowVersion(string? value, out byte[] rowVersion)
+        {
+            rowVersion = [];
+
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            var buffer = new byte[((value.Length * 3) + 3) / 4];
+
+            if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten == 0)
+                return false;
+
+            rowVersion = buffer[..bytesWritten];
+            return true;
+        }
+
         private string? GetTraceId()
             => HttpContext.Items["CorrelationId"] as string;
     }

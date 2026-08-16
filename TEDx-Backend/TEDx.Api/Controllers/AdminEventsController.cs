@@ -44,10 +44,10 @@ namespace TEDx.Api.Controllers
 
             return HandlePagedResult(result);
         }
-        
+
         [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<CreateEventDTO>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -58,13 +58,10 @@ namespace TEDx.Api.Controllers
            CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return result.Match
-                (
-                onSuccess: data => CreatedEnvelope(data),
-                onFailure: errors => Problem(errors)
-                );
+
+            return HandleResult(result, CreatedEnvelope);
         }
-        
+
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -72,33 +69,35 @@ namespace TEDx.Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<ActionResult> DeleteEvent(
-        Guid id,
+        [FromRoute] Guid id,
         CancellationToken cancellationToken)
         {
             var result = await sender.Send(
                 new DeleteEventCommand { EventId = id },
                 cancellationToken);
 
-            return result.Match(
-                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
-                onFailure: errors => Problem(errors)
-            );
+            return HandleNullData(result);
         }
-        
-        [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+
+        [HttpGet("{id:guid}/orders")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<EventOrderDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> GetEventOrders(
-          [FromRoute] Guid id, [FromQuery] int page, [FromQuery] int pageSize, [FromQuery] OrderStatus? status
-           ,CancellationToken cancellationToken)
+            [FromRoute] Guid id,
+            CancellationToken cancellationToken,
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null,
+            [FromQuery] OrderStatus? status = null)
         {
-            // Use the positional constructor
             var query = new GetEventOrdersQuery(id, page, pageSize, status);
+
             var result = await sender.Send(query, cancellationToken);
 
-            return result.Match(
-                onSuccess: data => Ok(ApiResponse<object>.SuccessResult(data)),
-                onFailure: errors => Problem(errors)
-            );
+            return HandlePagedResult(result);
         }
 
         [HttpPut("{id:guid}")]
@@ -110,7 +109,7 @@ namespace TEDx.Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> UpdateEvent(
-            [FromRoute] Guid eventId,
+            [FromRoute] Guid id,
             [FromBody] UpdateEventRequest request,
             CancellationToken cancellationToken)
         {
@@ -119,7 +118,7 @@ namespace TEDx.Api.Controllers
 
 
             var command = new UpdateEventCommand(
-                EventId: eventId,
+                EventId: id,
                 TitleEn: request.TitleEn,
                 TitleAr: request.TitleAr,
                 DescriptionEn: request.DescriptionEn,
@@ -135,10 +134,10 @@ namespace TEDx.Api.Controllers
 
             var result = await sender.Send(command, cancellationToken);
 
-            return HandleResult(result, data => OkEnvelope(data));
+            return HandleResult(result, OkEnvelope);
         }
 
-        [HttpPut("{eventId:guid}/status")]
+        [HttpPost("{id:guid}/status")]
         [ProducesResponseType(typeof(ApiResponse<ChangeEventStatusDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -147,21 +146,20 @@ namespace TEDx.Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> ChangeEventStatus(
-        [FromRoute] Guid eventId,
-        [FromBody] ChangeEventStatusCommand request,
+        [FromRoute] Guid id,
+        [FromBody] ChangeEventStatusRequest request,
         CancellationToken cancellationToken)
         {
-
             var command = new ChangeEventStatusCommand(
-                request.Id,
-                request.TargetStatus
+                id,
+                request.Status
             );
+
             var result = await sender.Send(command, cancellationToken);
 
-
-            return HandleResult(result, data => OkEnvelope(data));
+            return HandleResult(result, OkEnvelope);
         }
-        
+
         [HttpPost("{id:guid}/cancel")]
         [ProducesResponseType(typeof(ApiResponse<CancelEventResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -170,29 +168,13 @@ namespace TEDx.Api.Controllers
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<ActionResult> CancelEvent(
             [FromRoute] Guid id,
-            CancellationToken ct)
+            CancellationToken cancellationToken)
         {
             var command = new CancelEventCommand(id);
 
-            var result = await sender.Send(command, ct);
+            var result = await sender.Send(command, cancellationToken);
 
-            return HandleResult(result, data => OkEnvelope(data));
-        }
-
-        private static bool TryDecodeRowVersion(string? value, out byte[] rowVersion)
-        {
-            rowVersion = [];
-
-            if (string.IsNullOrWhiteSpace(value))
-                return false;
-
-            var buffer = new byte[((value.Length * 3) + 3) / 4];
-
-            if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten == 0)
-                return false;
-
-            rowVersion = buffer[..bytesWritten];
-            return true;
+            return HandleResult(result, OkEnvelope);
         }
     }
 }
