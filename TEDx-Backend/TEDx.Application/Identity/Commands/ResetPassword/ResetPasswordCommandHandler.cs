@@ -26,7 +26,7 @@ public sealed class ResetPasswordCommandHandler(
             logger.LogInformation(
                 "Password reset rejected: no account for the submitted address.");
 
-            return Result<Unit>.Failure(Errors_Identity.ResetTokenInvalid);
+            return Result<Unit>.Failure(IdentityErrors.ResetTokenInvalid);
         }
 
         var reset = await accounts.ResetPasswordAsync(
@@ -40,7 +40,7 @@ public sealed class ResetPasswordCommandHandler(
 
         var revoked = await refreshTokens.RevokeAllAsync(
             user.Id,
-            ReasonRevoked.Logout,
+            RevocationReason.Logout,
             cancellationToken);
 
         logger.LogInformation(

@@ -2,15 +2,15 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.Filters;
 using TEDx.Api.RateLimiting;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Identity.Commands.ChangePassword;
 using TEDx.Application.Identity.Commands.UploadProfilePicture;
-using TEDx.Application.Identity.DTOs;
+using TEDx.Application.Identity.Dtos;
 using TEDx.Application.Identity.Queries.GetMyProfile;
-using TEDx.Application.Identity.Commands.UpdateProfile;
+using TEDx.Application.Identity.Commands.UpdateMyProfile;
 
 namespace TEDx.Api.Controllers
 {
@@ -21,10 +21,10 @@ namespace TEDx.Api.Controllers
         [HttpPost("change-password")]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> ChangePassword(
             [FromBody] ChangePasswordCommand command,
             CancellationToken cancellationToken)
@@ -36,11 +36,11 @@ namespace TEDx.Api.Controllers
 
         [HttpGet]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
-        [ProducesResponseType(typeof(ApiResponse<MyProfileDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<MyProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> GetMyProfile(
             CancellationToken cancellationToken)
         {
@@ -51,11 +51,11 @@ namespace TEDx.Api.Controllers
 
         [HttpPut]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
-        [ProducesResponseType(typeof(ApiResponse<MyProfileDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<MyProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> UpdateProfile(
             [FromBody] UpdateMyProfileCommand command,
             CancellationToken cancellationToken)
@@ -70,17 +70,17 @@ namespace TEDx.Api.Controllers
         [EnableRateLimiting(RateLimitPolicies.Upload)]
         [TypeFilter(typeof(UploadSizeLimitFilter))]
         [ProducesResponseType(typeof(ApiResponse<ProfilePictureResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> UploadProfilePicture(
             IFormFile file,
             CancellationToken cancellationToken)
         {
             if (file is null || file.Length == 0)
-                return Problem([Errors_Media.FileMissing]);
+                return Problem([MediaErrors.FileMissing]);
 
             await using var content = file.OpenReadStream();
 

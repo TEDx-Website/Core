@@ -1,4 +1,4 @@
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 
 namespace TEDx.Api.Middleware
 {
@@ -44,7 +44,7 @@ namespace TEDx.Api.Middleware
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-            var response = ApiResponse<object>.FailureResult(new ApiErrorResponse
+            var response = ApiResponse<object>.FailureResult(new ApiError
             {
                 Code = "INTERNAL_SERVER_ERROR",
                 Message = "An unexpected error occurred.",

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Identity.Enums;
 namespace TEDx.Domain.Identity.Entities
 {
-    public class User : IdentityUser<Guid> , IAuditable , ISoftDelete
+    public class User : IdentityUser<Guid> , IAuditable , ISoftDeletable
     {
         public string? FirstName { get; set; } // 100
         public string? LastName { get; set; }// 100

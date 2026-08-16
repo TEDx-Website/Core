@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 
 namespace TEDx.Api.Extensions;
 
@@ -28,7 +28,7 @@ public static class ApiBehaviorExtensions
                             .ToArray());
 
                 // Build the standard response envelope expected by the SPA
-                var response = ApiResponse<object>.FailureResult(new ApiErrorResponse
+                var response = ApiResponse<object>.FailureResult(new ApiError
                 {
                     Code = "BAD_REQUEST",
                     Message = "The request is malformed or contains invalid values.",

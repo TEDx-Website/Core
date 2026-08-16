@@ -6,7 +6,7 @@ public static class PagedQueryableExtensions
 {
     public static async Task<PagedResult<T>> ToPagedResultAsync<T>(
         this IQueryable<T> source,
-        PageRequest page,
+        PagedRequest page,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(source);

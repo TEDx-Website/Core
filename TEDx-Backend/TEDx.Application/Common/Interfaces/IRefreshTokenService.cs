@@ -27,10 +27,6 @@ public interface IRefreshTokenService
 
     Task<int> RevokeAllAsync(
         Guid accountId,
-        ReasonRevoked reason,
+        RevocationReason reason,
         CancellationToken cancellationToken = default);
 }
-
-public sealed record RefreshTokenIssued(string RawToken, DateTime ExpiresAtUtc);
-
-public sealed record RefreshTokenRotated(Guid AccountId, string RawToken, DateTime ExpiresAtUtc);

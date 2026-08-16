@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using TEDx.Application.Common.Exceptions;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Infrastructure.Email;
 
@@ -47,7 +47,7 @@ internal sealed class SmtpEmailSender : IEmailSender
 
     private async Task SendAsync(
         string to,
-        EmailTemplates.EmailBody body,
+        EmailBody body,
         CancellationToken cancellationToken)
     {
         try

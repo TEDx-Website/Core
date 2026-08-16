@@ -5,8 +5,8 @@ using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
-using Errors_Common = TEDx.Application.Common.Errors.Errors_Common;
-using Errors = TEDx.Application.Common.Errors.Errors_Identity;
+using CommonErrors = TEDx.Application.Common.Errors.CommonErrors;
+using Errors = TEDx.Application.Common.Errors.IdentityErrors;
 
 namespace TEDx.Infrastructure.Identity;
 
@@ -69,7 +69,7 @@ internal sealed class UserAccountService : IUserAccountService
 
         var validationErrors = created.Errors
             .Select(e => Error.Validation(
-                Errors_Common.ValidationError.Code,
+                CommonErrors.ValidationError.Code,
                 e.Description,
                 field: "password"))
             .ToList();
@@ -237,7 +237,7 @@ internal sealed class UserAccountService : IUserAccountService
 
         return result.Errors
             .Select(e => Error.Validation(
-                Errors_Common.ValidationError.Code,
+                CommonErrors.ValidationError.Code,
                 e.Description,
                 field: "newPassword"))
             .ToList();

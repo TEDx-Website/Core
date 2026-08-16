@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.Mapping;
 using TEDx.Application.Common.Pagination;
 using TEDx.Domain.Common;
@@ -55,7 +55,7 @@ namespace TEDx.Api.Controllers
         {
             return Ok(ApiResponse<IReadOnlyList<T>>.SuccessResult(
                 paged.Items,
-                new PaginationMeta
+                new PagedMeta
                 {
                     Page = paged.Page,
                     PageSize = paged.PageSize,

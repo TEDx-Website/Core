@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Identity.Enums;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 using TEDx.Infrastructure.Persistence;
 
 namespace TEDx.Infrastructure.BackgroundJobs;
@@ -140,7 +140,7 @@ public sealed class OutboxAndHoldExpirySweeper : BackgroundService
     //    foreach (var token in lapsed)
     //    {
     //        token.RevokedAtUtc = utcNow;
-    //        token.ReasonRevoked = ReasonRevoked.Expired;
+    //        token.ReasonRevoked = RevocationReason.Expired;
     //    }
 
     //    if (lapsed.Count > 0)

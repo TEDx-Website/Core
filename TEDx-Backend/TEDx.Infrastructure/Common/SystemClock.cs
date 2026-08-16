@@ -5,7 +5,7 @@ using TEDx.Application.Common.Interfaces;
 
 namespace TEDx.Infrastructure.Common
 {
-    public class SystemClock : IClock
+    public sealed class SystemClock : IClock
     {
         public DateTime UtcNow => DateTime.UtcNow;
 

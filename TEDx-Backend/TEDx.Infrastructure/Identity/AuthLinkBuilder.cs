@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Infrastructure.Identity;
 

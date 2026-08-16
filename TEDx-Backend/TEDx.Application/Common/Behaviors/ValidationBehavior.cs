@@ -30,7 +30,7 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             .Select(f => Error.Validation(
                 IsCustomCode(f.ErrorCode)
                     ? f.ErrorCode
-                    : Errors_Common.ValidationError.Code,
+                    : CommonErrors.ValidationError.Code,
                 f.ErrorMessage,
                 f.PropertyName))
             .ToList();

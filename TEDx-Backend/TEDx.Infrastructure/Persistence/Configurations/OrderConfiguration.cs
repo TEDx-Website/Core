@@ -9,7 +9,7 @@ using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {

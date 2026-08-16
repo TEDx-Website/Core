@@ -15,7 +15,7 @@ public sealed class LogoutCommandHandler(
     public async Task<Result<Unit>> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
         if (currentUser.UserId is not { } accountId)
-            return Result<Unit>.Failure(Errors_Identity.Unauthenticated);
+            return Result<Unit>.Failure(IdentityErrors.Unauthenticated);
 
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
         {

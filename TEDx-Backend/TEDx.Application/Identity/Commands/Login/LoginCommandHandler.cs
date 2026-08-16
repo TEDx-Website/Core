@@ -1,8 +1,9 @@
+using TEDx.Application.Identity.Dtos;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using TEDx.Application.Common.Errors;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Application.Identity.Common;
+using TEDx.Application.Identity.Commands.Login;
 using TEDx.Domain.Common;
 
 namespace TEDx.Application.Identity.Commands.Login;
@@ -26,7 +27,7 @@ public sealed class LoginCommandHandler(
         if (user is null)
         {
             logger.LogInformation("Login failed: no account for the submitted address.");
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.InvalidCredentials);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.InvalidCredentials);
         }
 
         var passwordCheck = await accounts.CheckPasswordAsync(
@@ -41,21 +42,21 @@ public sealed class LoginCommandHandler(
                 user.Id,
                 passwordCheck);
 
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.InvalidCredentials);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.InvalidCredentials);
         }
 
         if (!user.IsActive)
         {
             logger.LogInformation(
                 "Login refused for deactivated account {UserId}.", user.Id);
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.AccountDeactivated);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.AccountDeactivated);
         }
 
         if (!user.EmailConfirmed)
         {
             logger.LogInformation(
                 "Login refused for unconfirmed account {UserId}.", user.Id);
-            return Result<AuthTokensResponse>.Failure(Errors_Identity.EmailNotConfirmed);
+            return Result<AuthTokensResponse>.Failure(IdentityErrors.EmailNotConfirmed);
         }
 
         var access = jwt.CreateAccessToken(user);
@@ -72,7 +73,7 @@ public sealed class LoginCommandHandler(
             access.ExpiresInSeconds,
             refresh.RawToken,
             (int)(refresh.ExpiresAtUtc - clock.UtcNow).TotalSeconds,
-            new AuthUserResponse(
+            new AuthUserDto(
                 user.Id,
                 user.Email ?? email,
                 user.Role.ToString(),

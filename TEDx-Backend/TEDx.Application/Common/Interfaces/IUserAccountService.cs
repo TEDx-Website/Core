@@ -57,10 +57,3 @@ public interface IUserAccountService
         string profilePictureUrl,
         CancellationToken cancellationToken = default);
 }
-
-public enum PasswordCheckResult
-{
-    Succeeded = 0,
-    Failed = 1,
-    LockedOut = 2,
-}

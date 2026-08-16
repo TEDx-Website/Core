@@ -1,5 +1,5 @@
 using MediatR;
-using TEDx.Application.Identity.Common;
+using TEDx.Application.Identity.Commands.Login;
 using TEDx.Domain.Common;
 
 namespace TEDx.Application.Identity.Commands.Login;

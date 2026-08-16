@@ -6,9 +6,9 @@ namespace TEDx.Infrastructure.Identity
 {
     public sealed class TrackAccessReader : ITrackAccessReader
     {
-        private readonly IAppDbContext _db;
+        private readonly IApplicationDbContext _db;
         private readonly IClock _clock;
-        public TrackAccessReader(IAppDbContext db, IClock clock)
+        public TrackAccessReader(IApplicationDbContext db, IClock clock)
         {
             _db = db;
             _clock = clock;
@@ -18,7 +18,7 @@ namespace TEDx.Infrastructure.Identity
         {
             var now = _clock.UtcNow;
 
-            var isAccountUsable = await _db.ApplicationUsers
+            var isAccountUsable = await _db.Users
                 .AsNoTracking()
                 .AnyAsync(u => u.Id == accountId && u.IsActive, ct);
 

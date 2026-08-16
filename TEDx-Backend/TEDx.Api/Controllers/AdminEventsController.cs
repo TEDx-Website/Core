@@ -4,16 +4,16 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.RateLimiting;
 using TEDx.Api.Requests.Events;
 using TEDx.Application.Common.Errors;
-using TEDx.Application.Ticketing.Command.CancelEvent;
-using TEDx.Application.Ticketing.Command.CreateEvents;
-using TEDx.Application.Ticketing.Command.DeleteEvent;
-using TEDx.Application.Ticketing.Command.UpdateEvent;
-using TEDx.Application.Ticketing.Command.ChangeEventStatus;
-using TEDx.Application.Ticketing.DTOs;
+using TEDx.Application.Ticketing.Commands.CancelEvent;
+using TEDx.Application.Ticketing.Commands.CreateEvent;
+using TEDx.Application.Ticketing.Commands.DeleteEvent;
+using TEDx.Application.Ticketing.Commands.UpdateEvent;
+using TEDx.Application.Ticketing.Commands.ChangeEventStatus;
+using TEDx.Application.Ticketing.Dtos;
 using TEDx.Application.Ticketing.Queries.GetAdminEvents;
 using TEDx.Application.Ticketing.Queries.GetEventOrders;
 using TEDx.Domain.Ticketing.Enums;
@@ -25,11 +25,11 @@ namespace TEDx.Api.Controllers
     public sealed class AdminEventsController(ISender sender) : BaseApiController
     {
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminEventListItemDTO>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AdminEventListItemDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> GetEvents(
             CancellationToken cancellationToken,
             [FromQuery] int? page = null,
@@ -47,12 +47,12 @@ namespace TEDx.Api.Controllers
 
         [HttpPost]
         [EnableRateLimiting(RateLimitPolicies.Auth)]
-        [ProducesResponseType(typeof(ApiResponse<CreateEventDTO>), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
+        [ProducesResponseType(typeof(ApiResponse<CreateEventResponse>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> CreateEvent(
            [FromBody] CreateEventCommand command,
            CancellationToken cancellationToken)
@@ -64,16 +64,16 @@ namespace TEDx.Api.Controllers
 
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
         public async Task<ActionResult> DeleteEvent(
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
         {
             var result = await sender.Send(
-                new DeleteEventCommand { EventId = id },
+                new DeleteEventCommand(id),
                 cancellationToken);
 
             return HandleNullData(result);
@@ -81,11 +81,11 @@ namespace TEDx.Api.Controllers
 
         [HttpGet("{id:guid}/orders")]
         [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<EventOrderDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> GetEventOrders(
             [FromRoute] Guid id,
             CancellationToken cancellationToken,
@@ -101,20 +101,20 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<UpdateEventDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<UpdateEventResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> UpdateEvent(
             [FromRoute] Guid id,
             [FromBody] UpdateEventRequest request,
             CancellationToken cancellationToken)
         {
             if (!TryDecodeRowVersion(request.RowVersion, out var rowVersion))
-                return Problem(new[] { Errors_Common.InvalidRowVersion });
+                return Problem(new[] { CommonErrors.InvalidRowVersion });
 
 
             var command = new UpdateEventCommand(
@@ -138,13 +138,13 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpPost("{id:guid}/status")]
-        [ProducesResponseType(typeof(ApiResponse<ChangeEventStatusDTO>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(typeof(ApiResponse<ChangeEventStatusResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         public async Task<ActionResult> ChangeEventStatus(
         [FromRoute] Guid id,
         [FromBody] ChangeEventStatusRequest request,
@@ -162,10 +162,10 @@ namespace TEDx.Api.Controllers
 
         [HttpPost("{id:guid}/cancel")]
         [ProducesResponseType(typeof(ApiResponse<CancelEventResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status409Conflict)]
         public async Task<ActionResult> CancelEvent(
             [FromRoute] Guid id,
             CancellationToken cancellationToken)

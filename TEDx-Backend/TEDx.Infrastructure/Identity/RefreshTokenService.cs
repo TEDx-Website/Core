@@ -6,8 +6,8 @@ using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Common;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Identity.Enums;
-using TEDx.Infrastructure.Configuration;
-using Errors = TEDx.Application.Common.Errors.Errors_Identity;
+using TEDx.Infrastructure.Options;
+using Errors = TEDx.Application.Common.Errors.IdentityErrors;
 
 namespace TEDx.Infrastructure.Identity;
 
@@ -15,13 +15,13 @@ internal sealed class RefreshTokenService : IRefreshTokenService
 {
     private const int MaxFamilyWalk = 1000;
 
-    private readonly IAppDbContext _db;
+    private readonly IApplicationDbContext _db;
     private readonly IClock _clock;
     private readonly JwtOptions _options;
     private readonly ILogger<RefreshTokenService> _logger;
 
     public RefreshTokenService(
-        IAppDbContext db,
+        IApplicationDbContext db,
         IClock clock,
         IOptions<JwtOptions> options,
         ILogger<RefreshTokenService> logger)
@@ -66,7 +66,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
         if (presented.ExpiresAtUtc <= now)
         {
             presented.RevokedAtUtc = now;
-            presented.ReasonRevoked = ReasonRevoked.Expired;
+            presented.ReasonRevoked = RevocationReason.Expired;
             await _db.SaveChangesAsync(cancellationToken);
 
             return Result<RefreshTokenRotated>.Failure(Errors.TokenInvalid);
@@ -75,7 +75,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
         var replacement = AddToken(presented.AccountId, presentedFromIp);
 
         presented.RevokedAtUtc = now;
-        presented.ReasonRevoked = ReasonRevoked.Rotated;
+        presented.ReasonRevoked = RevocationReason.Rotated;
         presented.ReplacedByTokenHash = RefreshTokenGenerator.Hash(replacement.RawToken);
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -119,7 +119,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
         }
 
         presented.RevokedAtUtc = _clock.UtcNow;
-        presented.ReasonRevoked = ReasonRevoked.Logout;
+        presented.ReasonRevoked = RevocationReason.Logout;
 
         await _db.SaveChangesAsync(cancellationToken);
 
@@ -132,7 +132,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
 
     public async Task<int> RevokeAllAsync(
         Guid accountId,
-        ReasonRevoked reason,
+        RevocationReason reason,
         CancellationToken cancellationToken = default)
     {
         var now = _clock.UtcNow;
@@ -172,7 +172,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
         while (current is not null && revoked < MaxFamilyWalk)
         {
             current.RevokedAtUtc ??= now;
-            current.ReasonRevoked = ReasonRevoked.Reuse;
+            current.ReasonRevoked = RevocationReason.Reuse;
             revoked++;
 
             var nextHash = current.ReplacedByTokenHash;

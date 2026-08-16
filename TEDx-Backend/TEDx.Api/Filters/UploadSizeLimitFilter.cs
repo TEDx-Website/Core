@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 using TEDx.Api.Mapping;
 using TEDx.Application.Common.Errors;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Api.Filters;
 
@@ -38,7 +38,7 @@ public sealed class UploadSizeLimitFilter(
             _maxFileSizeBytes,
             correlationId);
 
-        var mapped = ErrorResultMapper.Map([Errors_Media.FileTooLarge], correlationId);
+        var mapped = ErrorResultMapper.Map([MediaErrors.FileTooLarge], correlationId);
 
         executed.ExceptionHandled = true;
         executed.Result = new ObjectResult(mapped.Body) { StatusCode = mapped.StatusCode };

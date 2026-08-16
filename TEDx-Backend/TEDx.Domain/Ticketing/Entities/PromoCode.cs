@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class PromoCode : AuditableEntity, ISoftDelete, IConcurrent
+    public class PromoCode : AuditableEntity, ISoftDeletable, IHasRowVersion
     {
         public Guid Id { get; set; }
         public string? Code { get; set; }

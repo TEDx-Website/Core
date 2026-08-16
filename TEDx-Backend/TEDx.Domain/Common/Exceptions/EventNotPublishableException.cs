@@ -1,19 +1,12 @@
-namespace TEDx.Domain.Common.Exceptions
+namespace TEDx.Domain.Common.Exceptions;
+
+public sealed class EventNotPublishableException : DomainException
 {
-    public enum EventPublishBlock
-    {
-        InvalidTicketPrice = 0,
-        InvalidCapacity = 1
-    }
+    public EventPublishBlock Block { get; }
 
-    public sealed class EventNotPublishableException : DomainException
+    public EventNotPublishableException(EventPublishBlock block, string reason)
+        : base($"Event cannot be published: {reason}")
     {
-        public EventPublishBlock Block { get; }
-
-        public EventNotPublishableException(EventPublishBlock block, string reason)
-            : base($"Event cannot be published: {reason}")
-        {
-            Block = block;
-        }
+        Block = block;
     }
 }

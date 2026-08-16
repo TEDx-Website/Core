@@ -9,7 +9,7 @@ using TEDx.Application.Ticketing.Payments;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Infrastructure.BackgroundJobs;
 using TEDx.Infrastructure.Common;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 using TEDx.Infrastructure.Email;
 using TEDx.Infrastructure.Identity;
 using TEDx.Infrastructure.Media;
@@ -49,7 +49,7 @@ public static class InfrastructureServiceExtensions
                     w.Ignore(CoreEventId.MappedEntityTypeIgnoredWarning)));
 
 
-        services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<AdminSeeder>();
 

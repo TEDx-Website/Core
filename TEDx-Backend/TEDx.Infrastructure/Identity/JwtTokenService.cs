@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Identity.Entities;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Infrastructure.Identity;
 

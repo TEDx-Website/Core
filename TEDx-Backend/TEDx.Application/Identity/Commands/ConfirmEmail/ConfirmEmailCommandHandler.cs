@@ -24,7 +24,7 @@ public sealed class ConfirmEmailCommandHandler(
             logger.LogInformation(
                 "Email confirmation rejected: no account for the submitted address.");
 
-            return Result<Unit>.Failure(Errors_Identity.ConfirmTokenInvalid);
+            return Result<Unit>.Failure(IdentityErrors.ConfirmTokenInvalid);
         }
 
         // Confirming twice is a link opened twice, not an error worth surfacing.

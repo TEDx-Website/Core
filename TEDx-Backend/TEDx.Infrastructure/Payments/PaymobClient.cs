@@ -3,7 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TEDx.Application.Ticketing.Payments;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Infrastructure.Payments;
 
@@ -18,7 +18,7 @@ public sealed class PaymobClient : IPaymobClient
         _logger = logger;
     }
 
-    public Task<PaymentIntention> CreatePaymentIntentionAsync(
+    public Task<PaymobPaymentIntention> CreatePaymentIntentionAsync(
         decimal amountEgp,
         string orderReference,
         CancellationToken cancellationToken = default)

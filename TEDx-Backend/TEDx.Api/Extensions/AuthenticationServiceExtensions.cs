@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using TEDx.Api.Mapping;
 using TEDx.Application.Common.Errors;
 using TEDx.Domain.Common;
-using TEDx.Infrastructure.Configuration;
+using TEDx.Infrastructure.Options;
 
 namespace TEDx.Api.Extensions;
 
@@ -87,11 +87,11 @@ public static class AuthenticationServiceExtensions
             ? "Bearer"
             : "Bearer error=\"invalid_token\"";
 
-        return WriteEnvelopeAsync(context.HttpContext, Errors_Identity.Unauthenticated);
+        return WriteEnvelopeAsync(context.HttpContext, IdentityErrors.Unauthenticated);
     }
 
     private static Task OnForbidden(ForbiddenContext context)
-        => WriteEnvelopeAsync(context.HttpContext, Errors_Identity.Forbidden);
+        => WriteEnvelopeAsync(context.HttpContext, IdentityErrors.Forbidden);
 
     private static Task WriteEnvelopeAsync(HttpContext context, Error error)
     {
