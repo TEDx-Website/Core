@@ -9,6 +9,8 @@ namespace TEDx.Domain.Ticketing.Entities
     {
         public Guid Id { get; set; }
         public Guid OrderId { get; set; }
+
+        public decimal Amount { get; set; }
         public string Reason { get; set; } = null!;
         public int VoidedTicketsCount { get; set; }
         public int CheckedInTicketsRetained { get; set; }
