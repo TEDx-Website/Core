@@ -16,6 +16,7 @@ using TEDx.Application.Ticketing.Commands.ChangeEventStatus;
 using TEDx.Application.Ticketing.Dtos;
 using TEDx.Application.Ticketing.Queries.GetAdminEvents;
 using TEDx.Application.Ticketing.Queries.GetEventOrders;
+using TEDx.Application.Ticketing.Queries.GetEventPromoCodes;
 using TEDx.Domain.Ticketing.Enums;
 namespace TEDx.Api.Controllers
 {
@@ -94,6 +95,26 @@ namespace TEDx.Api.Controllers
             [FromQuery] OrderStatus? status = null)
         {
             var query = new GetEventOrdersQuery(id, page, pageSize, status);
+
+            var result = await sender.Send(query, cancellationToken);
+
+            return HandlePagedResult(result);
+        }
+
+        [HttpGet("{eventId:guid}/promo-codes")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<EventPromoCodeDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        public async Task<ActionResult> GetEventPromoCodes(
+            [FromRoute] Guid eventId,
+            CancellationToken cancellationToken,
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null)
+        {
+            var query = new GetEventPromoCodesQuery(eventId, page, pageSize);
 
             var result = await sender.Send(query, cancellationToken);
 
