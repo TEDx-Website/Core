@@ -50,10 +50,10 @@ using (var scope = app.Services.CreateScope())
 
 // Rewrites RemoteIpAddress from X-Forwarded-For when a trusted proxy is configured. Must run
 // before anything reads the client IP — the rate limiter partitions on it.
-app.UseTedxForwardedHeaders();
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseTedxForwardedHeaders();
 app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
