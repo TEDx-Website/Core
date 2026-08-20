@@ -1,0 +1,248 @@
+{
+  "Navbar": {
+    "events": "Events",
+    "about": "About",
+    "team": "Team",
+    "contact": "Contact",
+    "login": "Login",
+    "bookNow": "BOOK NOW"
+  },
+  "Hero": {
+    "tagline": "TEDx ALKAWMIA 2026",
+    "title": "THE UNSAID",
+    "subtitle": "What hasn't been said...\ndeserves to be heard.",
+    "description": "A day for brave ideas, honest conversations, and the voices shaping what comes next.",
+    "primaryCta": "EXPLORE EVENTS",
+    "secondaryCta": "WATCH THE STORY",
+    "dateLabel": "DATE",
+    "dateValue": "12 OCTOBER 2026",
+    "venueLabel": "VENUE",
+    "venueValue": "AL AZHAR CONFERENCE CENTER",
+    "doorsLabel": "DOORS OPEN",
+    "doorsValue": "09:00 AM"
+  },
+  "UpcomingEvents": {
+    "tagline": "WHAT'S NEXT",
+    "title": "Ideas don't wait. Neither should you.",
+    "subtitle": "Choose the room where your next perspective begins.",
+    "viewAll": "VIEW ALL EVENTS",
+    "cards": {
+      "card1": {
+        "meta": "12 OCT 2026 • CAIRO",
+        "title": "The Unsaid",
+        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
+        "cta": "BECOME A PARTNER"
+      },
+      "card2": {
+        "meta": "28 NOV 2026 • GIZA",
+        "title": "Beyond the Frame",
+        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
+        "cta": "BECOME A PARTNER"
+      },
+      "card3": {
+        "meta": "14 FEB 2027 • CAIRO",
+        "title": "Small Acts, Wide Ripples",
+        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
+        "cta": "BECOME A PARTNER"
+      }
+    }
+  },
+  "Experience": {
+    "tagline": "THE TEDx EXPERIENCE",
+    "title": "More than a stage. A\nroom that changes you.",
+    "description": "Meet thinkers, makers, and neighbors who refuse easy answers. TEDx Alkawmia brings global ideas into a distinctly local conversation—live, unfiltered, and built for connection.",
+    "stats": {
+      "speakers": { "value": "18", "label": "SPEAKERS" },
+      "attendees": { "value": "900+", "label": "ATTENDEES" },
+      "sharedDay": { "value": "1", "label": "SHARED DAY" }
+    },
+    "cta": "DISCOVER THE EXPERIENCE"
+  },
+  "Platform": {
+    "tagline": "INDEPENDENTLY ORGANIZED. LOCALLY ROOTED.",
+    "title": "A platform for Alkawmia's boldest questions.",
+    "description": "We are a volunteer-led community creating space for ideas that challenge assumptions and bring people closer. Every gathering begins with curiosity—and ends with something worth carrying forward.",
+    "cta": "READ OUR STORY"
+  },
+  "Team": {
+    "tagline": "THE PEOPLE BEHIND THE RED X",
+    "title": "Built by people who believe ideas need a home.",
+    "description": "Curators, producers, designers, and community builders—working across tracks to make every moment thoughtful, accessible, and unmistakably Alkawmia.",
+    "cta": "MEET THE TEAM"
+  },
+  "Speakers": {
+    "tagline": "VOICES WORTH HEARING",
+    "title": "Meet the people moving the conversation forward.",
+    "viewAll": "EXPLORE ALL SPEAKERS",
+    "cards": {
+      "speaker1": {
+        "name": "Dr. Salma El-Shazly",
+        "role": "Urban researcher"
+      },
+      "speaker2": {
+        "name": "Youssef Nassar",
+        "role": "Documentary filmmaker"
+      },
+      "speaker3": {
+        "name": "Mariam El-Tayeb",
+        "role": "Social entrepreneur"
+      }
+    }
+  },
+  "FeaturesGrid": {
+    "tagline": "ONE PLATFORM • EVERY TEDx MOMENT",
+    "title": "Everything you need before, during, and after the event.",
+    "items": {
+      "item1": {
+        "badge": "VISITOR",
+        "title": "Discover Events",
+        "description": "Browse upcoming TEDx Alkawmia experiences by date, theme, and availability."
+      },
+      "item2": {
+        "badge": "ATTENDEE",
+        "title": "Book & Pay Securely",
+        "description": "Select ticket packages, apply promo codes, and complete payment through Paymob."
+      },
+      "item3": {
+        "badge": "ATTENDEE",
+        "title": "Digital Tickets & QR",
+        "description": "Open your ticket instantly, save the QR, and check in without printed confirmations."
+      },
+      "item4": {
+        "badge": "MEMBER",
+        "title": "Member Tracks",
+        "description": "Access your track overview, sessions, attendance record, and evaluations."
+      },
+      "item5": {
+        "badge": "ALL ROLES",
+        "title": "Updates That Matter",
+        "description": "Receive event, session, and track notifications in one organized inbox."
+      },
+      "item6": {
+        "badge": "PARTNER",
+        "title": "Partner With Us",
+        "description": "Explore sponsorship opportunities and support ideas rooted in the local community."
+      }
+    }
+  },
+  "Tracks": {
+    "tagline": "GROW BETWEEN EVENTS",
+    "title": "Join a track. Turn inspiration into practice.",
+    "description": "Member tracks are focused learning communities with facilitated sessions, attendance records, and useful feedback—not another group chat.",
+    "cta": "EXPLORE MEMBER TRACKS",
+    "items": {
+      "track1": {
+        "number": "01",
+        "title": "Creative Practice",
+        "description": "Design, storytelling, and the discipline of making."
+      },
+      "track2": {
+        "number": "02",
+        "title": "Future Cities",
+        "description": "Public space, mobility, and urban life in Egypt."
+      },
+      "track3": {
+        "number": "03",
+        "title": "Human Potential",
+        "description": "Wellbeing, leadership, and meaningful work."
+      }
+    }
+  },
+  "BookingSteps": {
+    "tagline": "FROM IDEA TO YOUR SEAT",
+    "title": "Book in minutes. Arrive with confidence.",
+    "steps": {
+      "step1": {
+        "number": "01",
+        "title": "Find your event",
+        "description": "Explore themes, dates, venues, and ticket availability."
+      },
+      "step2": {
+        "number": "02",
+        "title": "Choose your ticket",
+        "description": "Compare packages and apply a valid promo code."
+      },
+      "step3": {
+        "number": "03",
+        "title": "Pay securely",
+        "description": "Complete checkout through Paymob within the reservation hold."
+      },
+      "step4": {
+        "number": "04",
+        "title": "Open your QR",
+        "description": "Your confirmed ticket appears instantly in My Tickets."
+      }
+    }
+  },
+  "StatsQuote": {
+    "stats": {
+      "stat1": { "value": "4,800+", "label": "community members reached" },
+      "stat2": { "value": "72", "label": "local ideas placed on stage" },
+      "stat3": { "value": "19", "label": "active partners and collaborators" },
+      "stat4": { "value": "94%", "label": "would attend another TEDx Alkawmia event" }
+    },
+    "quote": "“I arrived for the talks and left with collaborators, questions, and a clearer sense of what I could build next.”",
+    "author": "NOURA HASSAN",
+    "meta": "ATTENDEE, CAIRO"
+  },
+  "Faq": {
+    "tagline": "GOOD TO KNOW",
+    "title": "Questions before you book?",
+    "description": "Can't find your answer? Contact our attendee support team.",
+    "items": {
+      "q1": {
+        "question": "Can I transfer my ticket?",
+        "answer": "Transfers are available until 72 hours before the event from Order Details."
+      },
+      "q2": {
+        "question": "Where can I find my QR code?",
+        "answer": "Open My Tickets after payment confirmation. Each attendee receives a unique QR."
+      },
+      "q3": {
+        "question": "What happens if payment is pending?",
+        "answer": "Your order stays in processing while we verify the Paymob callback. You'll receive an update automatically."
+      },
+      "q4": {
+        "question": "Are sessions accessible?",
+        "answer": "Venue accessibility details and language support are listed on each event page."
+      }
+    }
+  },
+  "CtaBanner": {
+    "tagline": "YOUR NEXT IDEA STARTS IN THE ROOM",
+    "title": "Ready to take your seat?",
+    "description": "Explore upcoming events and reserve the experience that speaks to you.",
+    "cta": "EXPLORE EVENTS"
+  },
+  "Newsletter": {
+    "tagline": "STAY CLOSE TO THE NEXT IDEA",
+    "title": "One thoughtful email. No noise.",
+    "description": "Event announcements, speaker reveals, and community stories.",
+    "placeholder": "you@example.com",
+    "cta": "SUBSCRIBE"
+  },
+  "Footer": {
+    "brandName": "TEDx Alkawmia",
+    "slogan": "Independent ideas. Shared locally. Carried everywhere.",
+    "columns": {
+      "discover": {
+        "title": "DISCOVER",
+        "events": "Events",
+        "about": "About",
+        "team": "Team"
+      },
+      "connect": {
+        "title": "CONNECT",
+        "contact": "Contact",
+        "instagram": "Instagram",
+        "linkedin": "LinkedIn"
+      },
+      "account": {
+        "title": "ACCOUNT",
+        "login": "Login",
+        "myTickets": "My Tickets",
+        "notifications": "Notifications"
+      }
+    }
+  }
+}

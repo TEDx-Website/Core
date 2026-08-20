@@ -10,12 +10,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = cookieStore.get('NEXT_LOCALE')?.value || routing.defaultLocale;
   }
 
-  const common = (await import(`../../messages/${locale}/common.json`)).default;
+  const landing = (await import(`../../messages/${locale}/landing.json`)).default;
 
   return {
     locale,
     messages: {
-      common,
+        landing,
     },
   };
 });
