@@ -1,5 +1,3 @@
-using System;
-using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -150,6 +148,7 @@ namespace TEDx.Api.Controllers
                 Capacity: request.Capacity,
                 TicketPrice: request.TicketPrice,
                 MaxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder,
+                ImageUrl: request.ImageUrl,
                 RowVersion: rowVersion
             );
 

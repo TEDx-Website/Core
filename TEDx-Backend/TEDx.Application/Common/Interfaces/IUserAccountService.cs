@@ -56,4 +56,9 @@ public interface IUserAccountService
         User user,
         string profilePictureUrl,
         CancellationToken cancellationToken = default);
+
+    //Task<Result<Unit>> SimulateResetPasswordAsync(
+    //string token,
+    //string newPassword,
+    //CancellationToken cancellationToken = default);
 }

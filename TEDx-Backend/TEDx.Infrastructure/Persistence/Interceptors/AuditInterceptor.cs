@@ -55,6 +55,22 @@ namespace TEDx.Infrastructure.Persistence.Interceptors
                     entry.State = EntityState.Modified;
                     entry.Entity.IsDeleted = true;
                     entry.Entity.DeletedAtUtc = now;
+
+                    // Only IsDeleted/DeletedAtUtc (and whatever the audit loop below
+                    // sets) should be written. Without this, EF marks every column
+                    // on the row as modified, and the UPDATE statement overwrites
+                    // any other property with whatever was loaded in memory —
+                    // risking a lost update if another request changed the row
+                    // concurrently.
+                    //foreach (var property in entry.Properties)
+                    //{
+                    //    var name = property.Metadata.Name;
+                    //    if (name != nameof(ISoftDeletable.IsDeleted)
+                    //        && name != nameof(ISoftDeletable.DeletedAtUtc))
+                    //    {
+                    //        property.IsModified = false;
+                    //    }
+                    //}
                 }
             }
 

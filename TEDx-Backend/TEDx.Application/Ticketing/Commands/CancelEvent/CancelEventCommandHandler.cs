@@ -40,11 +40,15 @@ namespace TEDx.Application.Ticketing.Commands.CancelEvent
 
             if (eventEntity is null)
             {
+                await transaction.RollbackAsync(cancellationToken);
+
                 return Result<CancelEventResponse>.Failure(CommonErrors.NotFound);
             }
 
             if (eventEntity.Status is not (EventStatus.Published or EventStatus.Archived))
             {
+                await transaction.RollbackAsync(cancellationToken);
+
                 return Result<CancelEventResponse>.Failure(CommonErrors.IllegalStatusTransition);
             }
 
@@ -112,17 +116,16 @@ namespace TEDx.Application.Ticketing.Commands.CancelEvent
 
         private static int CancelPendingOrders(Event eventEntity, DateTime now)
         {
-            var releasedHolds = 0;
+            var releasedHolds = 0; // no of Pending payement orders ?? or no of order quantity?
 
             foreach (var order in eventEntity.Orders ?? Enumerable.Empty<Order>())
             {
                 if (order.Status == OrderStatus.PendingPayment)
                 {
                     order.Cancel(now);
-                    releasedHolds += order.Quantity;
+                    releasedHolds += order.Quantity; // releaseHolds++
                 }
             }
-
             return releasedHolds;
         }
 

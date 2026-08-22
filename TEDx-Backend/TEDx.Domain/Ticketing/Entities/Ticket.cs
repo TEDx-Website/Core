@@ -40,7 +40,7 @@ namespace TEDx.Domain.Ticketing.Entities
         /// <summary>Issued or CheckedIn → Voided.</summary>
         public void Void()
         {
-            if (Status == TicketStatus.Voided)
+            if (Status != TicketStatus.Voided)
                 throw new InvalidStateTransitionException(nameof(Ticket), Status, TicketStatus.Voided);
 
             Status = TicketStatus.Voided;

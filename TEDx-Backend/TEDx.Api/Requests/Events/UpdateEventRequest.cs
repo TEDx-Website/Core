@@ -14,6 +14,7 @@ namespace TEDx.Api.Requests.Events
         int Capacity,
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
+        string? ImageUrl,
         string RowVersion
     );
 }

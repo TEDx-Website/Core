@@ -171,7 +171,7 @@ internal sealed class RefreshTokenService : IRefreshTokenService
 
         while (current is not null && revoked < MaxFamilyWalk)
         {
-            current.RevokedAtUtc ??= now;
+            current.RevokedAtUtc = now;
             current.ReasonRevoked = RevocationReason.Reuse;
             revoked++;
 

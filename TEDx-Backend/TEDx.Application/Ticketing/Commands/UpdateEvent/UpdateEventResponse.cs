@@ -15,5 +15,6 @@ public sealed record UpdateEventResponse(
     int Capacity,
     MoneyDto TicketPrice,
     int? MaxIndividualQtyPerOrder,
+    string? ImageUrl,
     EventStatus Status,
     string RowVersion);

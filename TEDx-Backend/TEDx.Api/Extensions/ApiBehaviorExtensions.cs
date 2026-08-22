@@ -43,7 +43,6 @@ public static class ApiBehaviorExtensions
 
         return services;
     }
-
     private static string ToCamelCase(string field)
     {
         if (string.IsNullOrEmpty(field) || char.IsLower(field[0]))

@@ -17,7 +17,6 @@ namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
                     "Only Draft, Published or Archived can be set here. " +
                     "To cancel an event use POST /api/v1/admin/events/{id}/cancel.");
         }
-
         private static bool BeAdminSelectable(EventStatus status)
             => status is EventStatus.Draft or EventStatus.Published or EventStatus.Archived;
     }
