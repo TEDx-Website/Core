@@ -5,6 +5,8 @@ namespace TEDx.Domain.Identity.Enums
         Rotated = 0,
         Reuse = 1,
         Logout = 2,
-        Expired = 3
+        Expired = 3,
+        PasswordReset = 4,
+        PasswordChange = 5
     }
 }
