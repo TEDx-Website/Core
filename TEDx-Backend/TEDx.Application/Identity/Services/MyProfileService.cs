@@ -25,8 +25,8 @@ namespace TEDx.Application.Identity.Services
         }
 
         public async Task<MyProfileResponse?> GetMyProfileAsync(
-            Guid userId,
-            CancellationToken ct)
+         Guid userId,
+         CancellationToken ct)
         {
             var user = await _appDbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId, ct);
             if (user == null)

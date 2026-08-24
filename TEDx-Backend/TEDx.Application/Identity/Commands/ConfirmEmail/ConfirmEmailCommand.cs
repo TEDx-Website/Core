@@ -4,6 +4,6 @@ using TEDx.Domain.Common;
 namespace TEDx.Application.Identity.Commands.ConfirmEmail;
 
 public sealed record ConfirmEmailCommand(
-    string Email,
+    Guid UserId,
     string Token)
-    : IRequest<Result<Unit>>;
+    : IRequest<Result<ConfirmEmailResponse>>;

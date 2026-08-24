@@ -115,7 +115,7 @@ namespace TEDx.Api.Controllers
             CancellationToken cancellationToken)
         {
             var result = await sender.Send(command, cancellationToken);
-            return HandleNullData(result);
+            return HandleResult(result, OkEnvelope); 
         }
 
         [HttpPost("resend-confirmation")]

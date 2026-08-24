@@ -11,5 +11,5 @@ public sealed record EventPromoCodeDto(
     int GlobalRedemptionCap,
     int PerUserLimit,
     bool IsActive,
-    DateTime ValidFromUtc,
-    DateTime ValidUntilUtc);
+    DateTime ValidFrom,
+    DateTime ValidUntil);

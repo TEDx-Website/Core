@@ -77,7 +77,12 @@ internal sealed class UserAccountService : IUserAccountService
             return Result<User>.Failure(Errors.EmailTaken);
         }
 
-        var validationErrors = ToPasswordErrors(created, field: "password");
+        var validationErrors = created.Errors
+            .Select(e => Error.Validation(
+             CommonErrors.ValidationError.Code,
+                e.Description,
+                field: "password"))
+            .ToList();
 
         _logger.LogWarning(
             "Identity rejected a registration that passed validation: {Codes}",
@@ -232,6 +237,16 @@ internal sealed class UserAccountService : IUserAccountService
 
         return Result<Unit>.Failure(Errors.ProfileUpdateFailed);
     }
+    //public Task<Result<Unit>> SimulateResetPasswordAsync(
+    //string token,
+    //string newPassword,
+    //CancellationToken cancellationToken = default)
+    //{
+    //    //// يوزر وهمي ثابت (مش موجود فعليًا في الداتابيز، بس شكله زي أي يوزر حقيقي)
+    //    //// الهدف إننا نخلي UserManager يعمل نفس خطوات فك التوكن (Unprotect)
+    //    //// اللي هي الجزء المكلف في الوقت، حتى لو النتيجة هترفض أكيد.
+    //    //return _userManager.ResetPasswordAsync(_userManager., token, newPassword);
+    //}
 
     private IReadOnlyList<Error> ToPasswordValidationErrors(IdentityResult result, Guid userId)
     {
@@ -269,4 +284,5 @@ internal sealed class UserAccountService : IUserAccountService
         // localized, so they belong in the caller's warning log, not the response.
         return [Errors.WeakPassword, .. fieldErrors];
     }
+
 }

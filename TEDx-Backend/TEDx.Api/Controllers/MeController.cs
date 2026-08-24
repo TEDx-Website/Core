@@ -19,7 +19,6 @@ namespace TEDx.Api.Controllers
     public sealed class MeController(ISender sender) : BaseApiController
     {
         [HttpPost("change-password")]
-        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -35,11 +34,8 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpGet]
-        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<MyProfileResponse>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status429TooManyRequests)]
         public async Task<ActionResult> GetMyProfile(
             CancellationToken cancellationToken)
@@ -50,7 +46,6 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpPut]
-        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<MyProfileResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]

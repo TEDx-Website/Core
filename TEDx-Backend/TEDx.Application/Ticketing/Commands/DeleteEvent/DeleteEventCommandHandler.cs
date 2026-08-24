@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using MediatR;
 using TEDx.Application.Common.Interfaces;
 using TEDx.Domain.Common;

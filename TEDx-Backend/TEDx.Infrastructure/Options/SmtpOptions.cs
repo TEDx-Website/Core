@@ -37,7 +37,7 @@ namespace TEDx.Infrastructure.Options
                 failures.Add($"{SmtpOptions.SectionName}:{nameof(SmtpOptions.Username)} is required.");
 
             if (string.IsNullOrWhiteSpace(options.Password))
-                failures.Add($"{SmtpOptions.SectionName}:{nameof(SmtpOptions.Username)} is required.");
+                failures.Add($"{SmtpOptions.SectionName}:{nameof(SmtpOptions.Password)} is required.");
 
             if (string.IsNullOrWhiteSpace(options.FromAddress))
                 failures.Add($"{SmtpOptions.SectionName}:{nameof(SmtpOptions.FromAddress)} is required.");

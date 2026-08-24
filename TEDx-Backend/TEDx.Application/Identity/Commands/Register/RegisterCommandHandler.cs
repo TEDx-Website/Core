@@ -28,8 +28,9 @@ public sealed class RegisterCommandHandler(
             cancellationToken);
 
         if (created.IsError)
+        {
             return Result<RegisterResponse>.Failure(created.Errors);
-
+        }
         var user = created.Value;
 
         logger.LogInformation(

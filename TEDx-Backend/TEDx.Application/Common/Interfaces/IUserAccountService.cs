@@ -56,4 +56,5 @@ public interface IUserAccountService
         User user,
         string profilePictureUrl,
         CancellationToken cancellationToken = default);
+
 }

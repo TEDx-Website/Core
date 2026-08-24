@@ -34,8 +34,11 @@ namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (@event is null)
+            {
+                await transaction.RollbackAsync(cancellationToken); // new -> for 
                 return Result<ChangeEventStatusResponse>.Failure(
-                    CommonErrors.NotFound);
+                        CommonErrors.NotFound);
+            }
 
             try
             {
@@ -52,6 +55,7 @@ namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
                                      && (o.Status == OrderStatus.PendingPayment
                                          || o.Status == OrderStatus.Paid),
                                 cancellationToken);
+
                         @event.Revert(liveOrderCount);
                         break;
 
@@ -77,7 +81,8 @@ namespace TEDx.Application.Ticketing.Commands.ChangeEventStatus
                 return Result<ChangeEventStatusResponse>.Failure(ex.Block switch
                 {
                     EventPublishBlock.InvalidCapacity => TicketingErrors.InvalidCapacity,
-                    _ => TicketingErrors.InvalidTicketPrice
+                    EventPublishBlock.InvalidTicketPrice => TicketingErrors.InvalidTicketPrice,
+                    _ => CommonErrors.ValidationError
                 });
             }
             catch (InvalidStateTransitionException)

@@ -62,6 +62,7 @@ namespace TEDx.Application.Ticketing.Commands.UpdateEvent
             eventEntity.Capacity = request.Capacity;
             eventEntity.TicketPrice = request.TicketPrice.Amount;
             eventEntity.MaxIndividualQtyPerOrder = request.MaxIndividualQtyPerOrder;
+            eventEntity.ImageUrl = request.ImageUrl;
 
             try
             {
@@ -86,6 +87,7 @@ namespace TEDx.Application.Ticketing.Commands.UpdateEvent
                 Capacity: request.Capacity,
                 TicketPrice: new MoneyDto(eventEntity.TicketPrice, request.TicketPrice.Currency),
                 MaxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder,
+                ImageUrl: request.ImageUrl,
                 Status: eventEntity.Status,
                 RowVersion: Convert.ToBase64String(eventEntity.RowVersion));
 

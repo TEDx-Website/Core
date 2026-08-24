@@ -6,9 +6,8 @@ public sealed class ConfirmEmailCommandValidator : AbstractValidator<ConfirmEmai
 {
     public ConfirmEmailCommandValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email is required.")
-            .EmailAddress().WithMessage("Enter a valid email address.");
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("UserId is required.");
 
         RuleFor(x => x.Token)
             .NotEmpty().WithMessage("Confirmation token is required.");

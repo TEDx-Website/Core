@@ -18,6 +18,7 @@ namespace TEDx.Application.Ticketing.Commands.UpdateEvent
         int Capacity,
         MoneyDto TicketPrice,
         int? MaxIndividualQtyPerOrder,
+        string? ImageUrl,
         byte[] RowVersion
     ) : IRequest<Result<UpdateEventResponse>>, IRequireAdmin;
 }

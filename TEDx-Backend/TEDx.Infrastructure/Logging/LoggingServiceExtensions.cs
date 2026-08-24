@@ -12,6 +12,7 @@ public static class LoggingServiceExtensions
             config
                 .ReadFrom.Configuration(ctx.Configuration)
                 .ReadFrom.Services(services)
+                //.Destructure.With<SensitiveDataDestructuringPolicy>()   // ← الإضافة الناقصة
                 .Enrich.FromLogContext()
                 .Enrich.WithMachineName()
                 .Enrich.WithEnvironmentName()

@@ -26,10 +26,11 @@ public sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior
                     requestName, stopwatch.ElapsedMilliseconds);
                 return response;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 stopwatch.Stop();
                 logger.LogError(
+                    ex,
                     "Unhandled exception in {RequestName} after {ElapsedMilliseconds}ms",
                     requestName, stopwatch.ElapsedMilliseconds);
                 throw;

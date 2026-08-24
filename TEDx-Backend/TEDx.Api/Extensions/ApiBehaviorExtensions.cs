@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Responses;
+using TEDx.Application.Common.Errors;
 
 namespace TEDx.Api.Extensions;
 
 public static class ApiBehaviorExtensions
 {
-    /// <summary>
-    /// Configures API behavior to ensure model validation errors (400 Bad Request)
-    /// return our standard { success, data, error } envelope format.
-    /// </summary>
     public static IServiceCollection AddCustomApiBehavior(this IServiceCollection services)
     {
         services.Configure<ApiBehaviorOptions>(options =>
@@ -28,22 +25,39 @@ public static class ApiBehaviorExtensions
                             .ToArray());
 
                 // Build the standard response envelope expected by the SPA
+                var malformed = context.ModelState // Check if the model state contains any errors with exceptions (if T -> BadRequest bc invalid Values , F -> Validation error bc missing data in JSON response) 
+                                    .Any(kvp => kvp.Value is not null
+                                                && kvp.Value.Errors.Any(e => e.Exception is not null));
+
+                // Build the standard response envelope expected by the SPA
                 var response = ApiResponse<object>.FailureResult(new ApiError
                 {
-                    Code = "BAD_REQUEST",
-                    Message = "The request is malformed or contains invalid values.",
-                    FieldErrors = fieldErrors.Count > 0 ? fieldErrors : null,
+                    Code = malformed
+                        ? "BAD_REQUEST" // Malformed request, invalid values
+                        : CommonErrors.ValidationError.Code, // Validation error, missing data in JSON response
+                    Message = malformed
+                        ? "The request is malformed or contains invalid values."
+                        : CommonErrors.ValidationError.Description,
+
+                    // §0.2: fieldErrors belongs to input-validation failures only.
+                    // !malformed -> Validation error, missing data in JSON response ,
+                    // bc malformed -> Malformed request, invalid values, invalid values can't be filed validation
+
+                    FieldErrors = !malformed && fieldErrors.Count > 0 ? fieldErrors : null,
                     TraceId = context.HttpContext.Items["CorrelationId"] as string,
                 });
-
-                // Return a 400 Bad Request
-                return new BadRequestObjectResult(response);
+                //return new BadRequestObjectResult(response); // always returns 400 only, but we want to return 422 for validation errors
+                return new ObjectResult(response)
+                {
+                    StatusCode = malformed
+                        ? StatusCodes.Status400BadRequest
+                        : StatusCodes.Status422UnprocessableEntity,
+                };
             };
         });
 
         return services;
     }
-
     private static string ToCamelCase(string field)
     {
         if (string.IsNullOrEmpty(field) || char.IsLower(field[0]))

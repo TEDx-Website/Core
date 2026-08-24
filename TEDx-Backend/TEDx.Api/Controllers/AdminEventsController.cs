@@ -1,5 +1,3 @@
-using System;
-using System.Threading;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +45,6 @@ namespace TEDx.Api.Controllers
         }
 
         [HttpPost]
-        [EnableRateLimiting(RateLimitPolicies.Auth)]
         [ProducesResponseType(typeof(ApiResponse<CreateEventResponse>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
@@ -150,6 +147,7 @@ namespace TEDx.Api.Controllers
                 Capacity: request.Capacity,
                 TicketPrice: request.TicketPrice,
                 MaxIndividualQtyPerOrder: request.MaxIndividualQtyPerOrder,
+                ImageUrl: request.ImageUrl,
                 RowVersion: rowVersion
             );
 
