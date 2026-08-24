@@ -46,6 +46,7 @@ public sealed class ResetPasswordCommandHandler(
         var revoked = await refreshTokens.RevokeAllAsync(
             user.Id,
             RevocationReason.Logout, // RevocationReason.PasswordReset,   // بدل Logout — سبب دقيق
+            RevocationReason.PasswordReset,
             cancellationToken);
 
         logger.LogInformation(

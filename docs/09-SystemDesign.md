@@ -366,7 +366,7 @@ The refresh token travels in the **JSON body** (uniform for web + future mobile)
 
 ### 6.3 Refresh rotation & reuse detection
 
-On refresh, the presented token is revoked and a new pair issued; the old row links forward via `ReplacedByTokenHash` (D:Q47). Presenting an **already-revoked** token triggers a **family revoke** of the whole rotation chain → `TOKEN_REUSED` (D:Q24, Q47). The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the refresh *interaction* (lookup by hash, rotate vs. family-revoke) is drawn in [[12-SequenceDiagrams#7. Refresh-token rotation + reuse detection (D:Q24, Q47)|12 — Sequence Diagrams §7]].
+On refresh, the presented token is revoked and a new pair issued; the old row links forward via `ReplacedByTokenHash` (D:Q47). Presenting an **already-revoked** token triggers a **family revoke** of the whole rotation chain → `TOKEN_REUSED` (D:Q24, Q47). The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse|PasswordReset|PasswordChange}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the refresh *interaction* (lookup by hash, rotate vs. family-revoke) is drawn in [[12-SequenceDiagrams#7. Refresh-token rotation + reuse detection (D:Q24, Q47)|12 — Sequence Diagrams §7]].
 
 Related behaviors owned by other docs: login/logout/no-enumeration (User Flows §1.2), forgot/reset (§1.3), password-change revokes refresh tokens (§10.A4). Deactivation blocks login/refresh only (D:Q10, §9.4).
 
