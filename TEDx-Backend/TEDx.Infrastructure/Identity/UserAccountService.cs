@@ -17,6 +17,16 @@ internal sealed class UserAccountService : IUserAccountService
     private const string InvalidTokenCode = "InvalidToken";
     private const string PasswordMismatchCode = "PasswordMismatch";
 
+    private static readonly HashSet<string> PasswordStrengthCodes = new(StringComparer.Ordinal)
+    {
+        "PasswordTooShort",
+        "PasswordRequiresUpper",
+        "PasswordRequiresLower",
+        "PasswordRequiresDigit",
+        "PasswordRequiresNonAlphanumeric",
+        "PasswordRequiresUniqueChars",
+    };
+
     private readonly UserManager<User> _userManager;
     private readonly IClock _clock;
     private readonly ILogger<UserAccountService> _logger;
@@ -67,12 +77,7 @@ internal sealed class UserAccountService : IUserAccountService
             return Result<User>.Failure(Errors.EmailTaken);
         }
 
-        var validationErrors = created.Errors
-            .Select(e => Error.Validation(
-                CommonErrors.ValidationError.Code,
-                e.Description,
-                field: "password"))
-            .ToList();
+        var validationErrors = ToPasswordErrors(created, field: "password");
 
         _logger.LogWarning(
             "Identity rejected a registration that passed validation: {Codes}",
@@ -235,11 +240,33 @@ internal sealed class UserAccountService : IUserAccountService
             userId,
             string.Join(",", result.Errors.Select(e => e.Code)));
 
-        return result.Errors
+        return ToPasswordErrors(result, field: "newPassword");
+    }
+
+    /// <summary>
+    /// Maps Identity's password failures onto the envelope the API Contract promises.
+    /// A strength failure surfaces as the top-level <c>WEAK_PASSWORD</c> code (§1.4, §1.6, §2.3) — a stable
+    /// identifier the bilingual client can translate, unlike Identity's English description — while
+    /// anything else Identity rejects stays a field-level <c>VALIDATION_ERROR</c> so no reason is dropped.
+    /// </summary>
+    private static IReadOnlyList<Error> ToPasswordErrors(IdentityResult result, string field)
+    {
+        var fieldErrors = result.Errors
+            .Where(e => !PasswordStrengthCodes.Contains(e.Code))
             .Select(e => Error.Validation(
                 CommonErrors.ValidationError.Code,
                 e.Description,
-                field: "newPassword"))
+                field))
             .ToList();
+
+        if (!result.Errors.Any(e => PasswordStrengthCodes.Contains(e.Code)))
+            return fieldErrors;
+
+        // WEAK_PASSWORD leads, because the envelope takes its top-level code from the first error.
+        // It deliberately carries no `field`: the contract treats a strength failure as a form-level
+        // code the client banners, distinct from the VALIDATION_ERROR it renders inline (§1.6). One
+        // error covers every broken rule — Identity's per-rule descriptions are English and cannot be
+        // localized, so they belong in the caller's warning log, not the response.
+        return [Errors.WeakPassword, .. fieldErrors];
     }
 }

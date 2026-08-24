@@ -42,7 +42,7 @@ public sealed class ChangePasswordCommandHandler(
 
         var revoked = await refreshTokens.RevokeAllAsync(
             user.Id,
-            RevocationReason.Logout,
+            RevocationReason.PasswordChange,
             cancellationToken);
 
         logger.LogInformation(

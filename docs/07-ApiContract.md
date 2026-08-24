@@ -80,7 +80,8 @@ Every response — success or failure — uses the same envelope:
 
 ### 0.7 Idempotency & rate limiting (D:Q28)
 - **`Idempotency-Key`** header is accepted on **payment initiation**; a repeat with the same key returns the same checkout session rather than creating a new one.
-- Rate-limited endpoint groups (NFR-SEC-10, D:Q28): **auth** (`/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/refresh`, `/auth/confirm-email`, `/auth/resend-confirmation`), **ordering** (`/orders/quote`, `/orders/reserve`, `/orders/{id}/pay`), and **contact** (`/contact`, by IP). Limits are config-driven per group ("SHOULD" targets, D:Q28b). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
+- Rate-limited endpoint groups (NFR-SEC-10, D:Q28): **auth** (`/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/refresh`, `/auth/confirm-email`, `/auth/resend-confirmation`), **ordering** (`/orders/quote`, `/orders/reserve`, `/orders/{id}/pay`), **contact** (`/contact`, by IP), and **anonymous** (`GET /events`, `GET /events/{id}`, `POST /contact`, by IP). Limits are config-driven per group ("SHOULD" targets, D:Q28b). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
+- The **anonymous** group covers every endpoint reachable **without a token** — the only surface an unauthenticated flood can reach, and the highest-traffic one in the platform. `POST /contact` sits in both **anonymous** and **contact**: the stricter **contact** limit applies on top, because it is the only unauthenticated *write* (D:Q20). Partitioning is by **client IP resolved through the forwarded-headers pipeline**, never the proxy's own address, or a reverse proxy collapses every visitor into one bucket.
 - Within the **auth** group, the mail-sending endpoints (`/auth/forgot-password`, `/auth/resend-confirmation`) take a **tighter** limit than the rest: each request costs an outbound email, so an unthrottled loop turns the API into a mail-bomb relay against a third party's inbox and burns the provider quota (D:Q57).
 - The mail-sending limit is enforced on **two independent dimensions** — per **target email** and per **client IP** — and a request must satisfy both. Client-visible consequence: a `429` on `/auth/resend-confirmation` is **not** cleared by retrying from a different network, because the per-email counter is unaffected by the caller's IP. Clients must surface `Retry-After` rather than prompting the user to retry immediately.
 
@@ -938,6 +939,15 @@ Create an Attendee account. **Public.**
 //   "messageExcerpt": "First 120 chars…", "status": "New",
 //   "createdAtUtc": "…" } ], meta: {...}
 ```
+
+### GET `/api/v1/admin/contact-submissions/{id}`
+**Admin.** Full record for one submission, including the **complete `message` body** that the list projection deliberately omits (the list carries only `messageExcerpt`, so the inbox cannot render a message without this read).
+```jsonc
+// 200 → data: { "id", "name", "email", "subject", "message",
+//   "status": "Read", "createdAtUtc": "…",
+//   "updatedAtUtc": "…", "updatedBy": "…" }
+```
+- **404** `NOT_FOUND` for an unknown id. Body is returned **exactly as stored** and is never interpolated into server-side HTML; the client renders it as plain text (visitor content is untrusted).
 
 ### PUT `/api/v1/admin/contact-submissions/{id}`
 **Admin.** Update status (Read/Archived). No in-app reply (D:Q20).

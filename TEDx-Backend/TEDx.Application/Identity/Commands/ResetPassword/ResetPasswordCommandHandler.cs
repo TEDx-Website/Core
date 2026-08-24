@@ -40,7 +40,7 @@ public sealed class ResetPasswordCommandHandler(
 
         var revoked = await refreshTokens.RevokeAllAsync(
             user.Id,
-            RevocationReason.Logout,
+            RevocationReason.PasswordReset,
             cancellationToken);
 
         logger.LogInformation(

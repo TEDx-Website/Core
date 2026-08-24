@@ -15,11 +15,6 @@ public interface IRefreshTokenService
         string? presentedFromIp,
         CancellationToken cancellationToken = default);
 
-    Task<Result<Guid>> DetectReuseAsync(
-        string presentedRawToken,
-        string? presentedFromIp,
-        CancellationToken cancellationToken = default);
-
     Task<bool> RevokeForAccountAsync(
         Guid accountId,
         string presentedRawToken,

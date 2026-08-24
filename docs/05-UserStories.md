@@ -45,7 +45,7 @@ Each story follows the canonical form:
 ### US-AUTH-03
 *As an **Attendee**, I want my session to refresh silently, so that I stay logged in without re-entering my password.*
 - **Traces:** AUTH-06 · FR-AUTH-08, FR-AUTH-09 · Flow §1.2
-- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02). An expired refresh token (past `ExpiresAtUtc`) is rejected with `TOKEN_INVALID` (`ReasonRevoked = Expired`), distinct from `TOKEN_REUSED` (rotation violation) — the client must distinguish these for appropriate UX (D:Q47 `ReasonRevoked` enum: `Rotated | Reuse | Logout | Expired`).
+- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02). An expired refresh token (past `ExpiresAtUtc`) is rejected with `TOKEN_INVALID` (`ReasonRevoked = Expired`), distinct from `TOKEN_REUSED` (rotation violation) — the client must distinguish these for appropriate UX (D:Q47 `ReasonRevoked` enum: `Rotated | Reuse | Logout | Expired | PasswordReset | PasswordChange`).
 
 ### US-AUTH-04
 *As an **Attendee**, I want to log out, so that my refresh token can no longer be used.*
