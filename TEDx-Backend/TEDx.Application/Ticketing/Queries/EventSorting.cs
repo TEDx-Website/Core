@@ -11,4 +11,11 @@ public static class EventSorting
         .Allow("createdAt", e => e.CreatedAtUtc)
         .TieBreakBy(e => e.Id)
         .WithDefault("startsAtUtc", SortDirection.Descending);
+
+    public static readonly SortWhitelist<Event> Public =
+        new SortWhitelist<Event>()
+            .Allow("startsAtUtc", e => e.StartAtUtc)
+            .Allow("titleEn", e => e.TitleEn)
+            .TieBreakBy(e => e.Id)
+            .WithDefault("startsAtUtc", SortDirection.Ascending);
 }
