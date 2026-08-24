@@ -84,24 +84,6 @@ internal sealed class RefreshTokenService : IRefreshTokenService
             new RefreshTokenRotated(presented.AccountId, replacement.RawToken, replacement.ExpiresAtUtc));
     }
 
-    public async Task<Result<Guid>> DetectReuseAsync(
-        string presentedRawToken,
-        string? presentedFromIp,
-        CancellationToken cancellationToken = default)
-    {
-        var presented = await FindByRawAsync(presentedRawToken, cancellationToken);
-
-        if (presented is null)
-            return Result<Guid>.Failure(Errors.TokenInvalid);
-
-        if (presented.RevokedAtUtc is null)
-            return Result<Guid>.Success(presented.AccountId);
-
-        await RevokeFamilyAsync(presented, presentedFromIp, cancellationToken);
-
-        return Result<Guid>.Failure(Errors.TokenReused);
-    }
-
     public async Task<bool> RevokeForAccountAsync(
         Guid accountId,
         string presentedRawToken,
