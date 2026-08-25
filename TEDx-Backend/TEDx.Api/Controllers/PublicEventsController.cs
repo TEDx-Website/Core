@@ -7,6 +7,8 @@ using TEDx.Api.Common.Responses;
 using TEDx.Application.Ticketing.Dtos;
 using TEDx.Application.Ticketing.Queries.GetAdminEvents;
 using TEDx.Application.Ticketing.Queries.GetPublicEvents;
+using TEDx.Application.Ticketing.Queries.GetPublicEventById;
+
 using TEDx.Domain.Ticketing.Entities;
 
 namespace TEDx.Api.Controllers
@@ -27,5 +29,18 @@ namespace TEDx.Api.Controllers
 
             return HandlePagedResult(result);
         }
+
+        [AllowAnonymous]
+        [HttpGet("{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<GetPublicEventByIdResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetPublicEventById([FromRoute] Guid id, CancellationToken ct)
+        {
+            var result = await sender.Send(new GetPublicEventByIdQuery(id), ct);
+            return HandleResult(result, OkEnvelope);
+        }
+
+
+
     }
 }
