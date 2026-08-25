@@ -13,6 +13,7 @@ namespace TEDx.Api.Controllers
 {
     [Route("api/v1/events")]
     [ApiController]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public sealed class PublicEventsController(ISender sender) : BaseApiController
     {
         [AllowAnonymous]

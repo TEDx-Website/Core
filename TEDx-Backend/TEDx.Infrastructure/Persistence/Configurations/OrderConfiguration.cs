@@ -74,7 +74,12 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 o.EventId,
                 o.Status
             })
-            .HasDatabaseName("IX_Order_Event_Status");
+            .HasDatabaseName("IX_Order_Event_Status")
+            .IncludeProperties(o => new
+            {
+                o.Quantity,
+                o.HoldExpiresAtUtc
+            });
 
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);

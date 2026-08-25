@@ -108,7 +108,7 @@ public sealed class GetAdminEventsQueryHandler(
             [.. page.Items.Select(entity => entity.Id)],
             cancellationToken);
 
-        return page.Map(entity => ToDto(entity, RemainingSeatsOf(entity, availability)));
+        return page.Map(entity => ToDto(entity, availability.RemainingSeatsFor(entity.Id)));
     }
 
     private static AdminEventListItemDto ToDto(Event entity, int remainingSeats)
@@ -126,11 +126,4 @@ public sealed class GetAdminEventsQueryHandler(
             RowVersion: entity.RowVersion is null or { Length: 0 }
                 ? string.Empty
                 : Convert.ToBase64String(entity.RowVersion));
-
-    private static int RemainingSeatsOf(
-        Event entity,
-        IReadOnlyDictionary<Guid, EventSeatAvailability> availability)
-        => availability.TryGetValue(entity.Id, out var seats)
-            ? seats.RemainingSeats
-            : entity.Capacity;
 }

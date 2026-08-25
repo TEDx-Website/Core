@@ -52,8 +52,7 @@ namespace TEDx.Application.Ticketing.Queries.GetPublicEvents
             var availability = await eventSeat.GetManyAsync(
             [.. page.Items.Select(e => e.Id)],cancellationToken);
 
-            var result = page.Map(e => ToDto(e, availability.TryGetValue(e.Id, out var seats) ?
-                seats.RemainingSeats : e.Capacity));
+            var result = page.Map(e => ToDto(e, availability.RemainingSeatsFor(e.Id)));
 
             return Result<PagedResult<GetPublicEventResponse>>.Success(result);
 
