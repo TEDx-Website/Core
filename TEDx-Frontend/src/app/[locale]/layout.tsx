@@ -1,8 +1,16 @@
-import { Inter, Alexandria, Noto_Sans_Arabic,Great_Vibes } from "next/font/google";
+import {
+  Inter,
+  Alexandria,
+  Noto_Sans_Arabic,
+  Great_Vibes,
+} from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+
 import "../globals.css";
+import { Footer } from "@/shared/layout/footer";
+import { Navbar } from "@/shared/layout/navbar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const alexandria = Alexandria({
@@ -14,10 +22,10 @@ const notoSansArabic = Noto_Sans_Arabic({
   variable: "--font-noto",
 });
 
-const greatVibes = Great_Vibes({ 
-  weight: "400", 
-  subsets: ["latin"], 
-  variable: "--font-script" 
+const greatVibes = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-script",
 });
 
 export default async function LocaleLayout({
@@ -41,7 +49,9 @@ export default async function LocaleLayout({
       >
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <Navbar />
             {children}
+            <Footer />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
