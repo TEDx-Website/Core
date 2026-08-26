@@ -1,0 +1,71 @@
+{
+    "metadata": {
+    "title": "Meet The Team | TEDx Alkawmia",
+    "description": "The visionaries, curators, and builders behind the Resilient Futures experience of TEDx Alkawmia."
+  },
+  "Hero": {
+    "titleLine1": "MEET",
+    "titleLine2": "THE",
+    "titleHighlight": "TEAM",
+    "description": "The visionaries, curators, and builders behind the Resilient Futures experience. We are a collective of thinkers dedicated to ideas worth spreading."
+  },
+  "LeaderSection": {
+    "members": [
+      {
+        "id": "01",
+        "category": "LEADERSHIP",
+        "categoryDesc": "Guiding the strategic vision and overall execution of the TEDx Digital platform.",
+        "name": "Marcus Chen",
+        "role": "executive producer",
+        "bio": "Marcus brings over 15 years of experience in digital event production and strategic communications. His vision for the Resilient Futures experience integrates cutting-edge technology with the timeless power of human storytelling.",
+        "viewProfile": "View Profile"
+      }
+    ]
+  },
+  "CuratorsSection": {
+    "id": "02",
+    "category": "THE CURATORS",
+    "categoryDesc": "Discovering, refining, and elevating the ideas that define our program.",
+    "viewProfile": "View Profile",
+    "members": [
+      {
+        "name": "Sarah Jenkins",
+        "role": "Lead Curator",
+        "bio": "Sarah Jenkins expertly navigates the intricate logistics of global speaker coordination and digital venue management, transforming creative chaos into seamless experiences."
+      },
+      {
+        "name": "David Okafor",
+        "role": "Creative Director",
+        "bio": "David crafts innovative streaming solutions and immersive digital environments that effortlessly connect our speakers with a worldwide audience."
+      }
+    ]
+  },
+  "ProductionSection": {
+    "id": "03",
+    "category": "PRODUCTION",
+    "categoryDesc": "Architecting the digital infrastructure and ensuring flawless execution.",
+    "viewProfile": "View Profile",
+    "members": [
+      {
+        "name": "Elena James",
+        "role": "Operations Lead",
+        "bio": "Elena orchestrates the complex logistics of global speaker coordination and digital venue management, bringing order to creative chaos."
+      },
+      {
+        "name": "Samir Gupta",
+        "role": "Technical Director",
+        "bio": "Samir builds the bespoke streaming architecture and interactive digital environments that connect our speakers to a global audience seamlessly."
+      },
+      {
+        "name": "Mary Martinez",
+        "role": "Events Coordinator",
+        "bio": "Elena expertly navigates the intricate web of international speaker logistics and virtual venue setups, transforming chaos into seamless execution."
+      }
+    ]
+  },
+  "TeamCta": {
+    "title": "Become Part of The Story",
+    "description": "Our event is built by a collective of passionate volunteers. If you're interested in shaping the future of ideas, we'd love to hear from you.",
+    "cta": "Join the Team"
+  }
+}

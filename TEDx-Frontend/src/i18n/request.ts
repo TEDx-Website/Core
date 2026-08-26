@@ -11,11 +11,13 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   const landing = (await import(`../../messages/${locale}/landing.json`)).default;
+  const about = (await import(`../../messages/${locale}/about.json`)).default;
 
   return {
     locale,
     messages: {
         landing,
+        about,
     },
   };
 });
