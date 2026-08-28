@@ -9,7 +9,7 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="absolute top-0 left-0 w-full z-50 bg-white border-b border-neutral-200">
+    <header className="fixed top-0 left-0 w-full z-50 bg-neutral-100   border-b border-neutral-200">
       <div className="mx-auto max-w-360 px-4 md:px-[32px] lg:px-[80px] h-[80px] flex items-center justify-between">
         <Link
           href="/"
@@ -26,13 +26,13 @@ export function Navbar() {
             Events
           </Link>
           <Link
-            href="#about"
+            href="about"
             className="text-sm font-semibold text-neutral-600 hover:text-black transition-colors"
           >
             About
           </Link>
           <Link
-            href="#team"
+            href="team"
             className="text-sm font-semibold text-neutral-600 hover:text-black transition-colors"
           >
             Team

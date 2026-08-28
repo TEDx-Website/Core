@@ -1,4 +1,3 @@
-import { Navbar } from "@/shared/layout/navbar";
 import { Hero } from "@/features/landing/components/hero";
 import { UpcomingEvents } from "@/features/landing/components/upcoming-events";
 import { Experience } from "@/features/landing/components/experience";
@@ -12,12 +11,30 @@ import { StatsQuote } from "@/features/landing/components/stats-quote";
 import { FaqSection } from "@/features/landing/components/faq-section";
 import { CtaBanner } from "@/features/landing/components/cta-banner";
 import { Newsletter } from "@/features/landing/components/newsletter";
-import { Footer } from "@/shared/layout/footer";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "landing.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      type: "website",
+      images: ["/assets/og-home.jpg"], 
+    },
+    twitter: {
+      card: "summary_large_image",
+    }
+  };
+}
 
 export default function LandingPage() {
   return (
     <>
-      <Navbar />
       <main className="w-full">
         <Hero />
         <UpcomingEvents />
@@ -33,7 +50,6 @@ export default function LandingPage() {
         <CtaBanner />
         <Newsletter />
       </main>
-      <Footer />
     </>
   );
 }
