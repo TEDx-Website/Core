@@ -14,5 +14,10 @@ namespace TEDx.Domain.Communication.Entities
         public string Subject { get; private set; } = null!;
         public string Message { get; private set; } = null!;
         public ContactStatus Status { get; private set; }
+        // guardless
+        public void ChangeStatus(ContactStatus status)
+        {
+            Status = status;
+        }
     }
 }
