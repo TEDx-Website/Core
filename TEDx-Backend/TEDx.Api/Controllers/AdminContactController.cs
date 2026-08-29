@@ -10,13 +10,14 @@ namespace TEDx.Api.Controllers
     [Route("api/v1/admin")]
     [ApiController]
     [Authorize]
-    public class PublicPagesController : BaseApiController
+    public class AdminContactController : BaseApiController
     {
         private readonly ISender sender;
-        public PublicPagesController(ISender sender)
+        public AdminContactController(ISender sender)
         {
             this.sender = sender;
         }
+
         [HttpGet("contact-submissions")]
         [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ContactSubmissionListItemDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
@@ -30,24 +31,22 @@ namespace TEDx.Api.Controllers
             [FromQuery] string? sort = null)
         {
             var query = new GetContactSubmissionsQuery(page, pageSize, status, sort);
-
             var result = await sender.Send(query, ct);
-
             return HandlePagedResult(result);
         }
 
-        [HttpPut("contact-submissions/{id:guid}")]
+        [HttpPatch("contact-submissions/{id:guid}/status")]
         [ProducesResponseType(typeof(ApiResponse<UpdateContactStatusResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateContactstatusById(
+        public async Task<IActionResult> UpdateContactStatusById(
             [FromRoute] Guid id,
             [FromBody] UpdateContactStatusCommand command,
             CancellationToken ct)
         {
             var request = command with { Id = id };
             var result = await sender.Send(request, ct);
-            return HandleResult(result,OkEnvelope);
-        }   
+            return HandleResult(result, OkEnvelope);
+        }
     }
 }
