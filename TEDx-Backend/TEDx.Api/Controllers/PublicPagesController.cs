@@ -2,6 +2,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Responses;
+using TEDx.Application.Communication.Dtos;
+using TEDx.Application.Communication.Queries.GetContactSubmissions;
 using TEDx.Application.Ticketing.Commands.UpdateContactStatus;
 namespace TEDx.Api.Controllers
 {
@@ -15,6 +17,25 @@ namespace TEDx.Api.Controllers
         {
             this.sender = sender;
         }
+        [HttpGet("contact-submissions")]
+        [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<ContactSubmissionListItemDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
+        public async Task<IActionResult> GetContactSubmissions(
+            CancellationToken ct,
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null,
+            [FromQuery] string? status = null,
+            [FromQuery] string? sort = null)
+        {
+            var query = new GetContactSubmissionsQuery(page, pageSize, status, sort);
+
+            var result = await sender.Send(query, ct);
+
+            return HandlePagedResult(result);
+        }
+
         [HttpPut("contact-submissions/{id:guid}")]
         [ProducesResponseType(typeof(ApiResponse<UpdateContactStatusResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
