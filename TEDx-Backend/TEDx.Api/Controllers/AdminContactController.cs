@@ -5,6 +5,7 @@ using TEDx.Api.Common.Responses;
 using TEDx.Application.Communication.Dtos;
 using TEDx.Application.Communication.Queries.GetContactSubmissions;
 using TEDx.Application.Ticketing.Commands.UpdateContactStatus;
+using TEDx.Application.Ticketing.Queries.GetContactSubmissionById;
 namespace TEDx.Api.Controllers
 {
     [Route("api/v1/admin")]
@@ -35,6 +36,19 @@ namespace TEDx.Api.Controllers
             return HandlePagedResult(result);
         }
 
+        [HttpGet("contact-submissions/{id:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<GetContactSubmissionByIdResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetContactSubmissionById(
+            [FromRoute] Guid id,
+            CancellationToken ct)
+        {
+            var result = await sender.Send(new GetContactSubmissionByIdQuery(id),ct);
+            return HandleResult(result, OkEnvelope);
+        }
+
         [HttpPatch("contact-submissions/{id:guid}/status")]
         [ProducesResponseType(typeof(ApiResponse<UpdateContactStatusResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status422UnprocessableEntity)]
@@ -48,5 +62,6 @@ namespace TEDx.Api.Controllers
             var result = await sender.Send(request, ct);
             return HandleResult(result, OkEnvelope);
         }
+
     }
 }
