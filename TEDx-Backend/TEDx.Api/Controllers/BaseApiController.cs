@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Api.Mapping;
+using TEDx.Application.Common.Pagination;
 using TEDx.Domain.Common;
 
 namespace TEDx.Api.Controllers
@@ -18,6 +19,27 @@ namespace TEDx.Api.Controllers
                 Problem);
         }
 
+        protected ActionResult HandleNoContent<T>(Result<T> result)
+        {
+            return result.Match(
+                _ => NoContentEnvelope(),
+                Problem);
+        }
+
+        protected ActionResult HandleNullData<T>(Result<T> result)
+        {
+            return result.Match(
+                _ => Ok(ApiResponse<object?>.SuccessResult(null)),
+                Problem);
+        }
+
+        protected ActionResult HandlePagedResult<T>(Result<PagedResult<T>> result)
+        {
+            return result.Match(
+                OkPagedEnvelope,
+                Problem);
+        }
+
         protected ActionResult Problem(IReadOnlyList<Error> errors)
         {
             var mapped = ErrorResultMapper.Map(errors, GetTraceId());
@@ -27,6 +49,19 @@ namespace TEDx.Api.Controllers
         protected ActionResult OkEnvelope<T>(T data)
         {
             return Ok(ApiResponse<T>.SuccessResult(data));
+        }
+
+        protected ActionResult OkPagedEnvelope<T>(PagedResult<T> paged)
+        {
+            return Ok(ApiResponse<IReadOnlyList<T>>.SuccessResult(
+                paged.Items,
+                new PagedMeta
+                {
+                    Page = paged.Page,
+                    PageSize = paged.PageSize,
+                    TotalItems = paged.TotalItems,
+                    TotalPages = paged.TotalPages
+                }));
         }
 
         protected ActionResult CreatedEnvelope<T>(T data)
@@ -41,7 +76,25 @@ namespace TEDx.Api.Controllers
             return NoContent();
         }
 
+        protected static bool TryDecodeRowVersion(string? value, out byte[] rowVersion)
+        {
+            rowVersion = [];
+
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            var buffer = new byte[((value.Length * 3) + 3) / 4];
+
+            if (!Convert.TryFromBase64String(value, buffer, out var bytesWritten) || bytesWritten == 0)
+                return false;
+
+            rowVersion = buffer[..bytesWritten];
+            return true;
+        }
+
         private string? GetTraceId()
             => HttpContext.Items["CorrelationId"] as string;
     }
 }
+
+

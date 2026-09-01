@@ -2,7 +2,7 @@ namespace TEDx.Application.Ticketing.Payments;
 
 public interface IPaymobClient
 {
-    Task<PaymentIntention> CreatePaymentIntentionAsync(
+    Task<PaymobPaymentIntention> CreatePaymentIntentionAsync(
         decimal amountEgp,
         string orderReference,
         CancellationToken cancellationToken = default);

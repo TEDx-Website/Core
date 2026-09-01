@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using TEDx.Api.Common.Respones;
+using TEDx.Api.Common.Responses;
 using TEDx.Domain.Common;
 
 namespace TEDx.Api.Mapping;
@@ -15,7 +15,7 @@ public static class ErrorResultMapper
     {
         if (errors is null || errors.Count == 0)
         {
-            var fallback = ApiResponse<object>.FailureResult(new ApiErrorResponse
+            var fallback = ApiResponse<object>.FailureResult(new ApiError
             {
                 Code = InternalErrorCode,
                 Message = InternalErrorMessage,
@@ -26,7 +26,7 @@ public static class ErrorResultMapper
 
         var first = errors[0];
 
-        var apiError = new ApiErrorResponse
+        var apiError = new ApiError
         {
             Code = first.Code,
             Message = first.Description,
@@ -75,3 +75,4 @@ public static class ErrorResultMapper
         return char.ToLowerInvariant(field[0]) + field[1..];
     }
 }
+

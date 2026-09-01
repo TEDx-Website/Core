@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Common.Exceptions;
 using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class Ticket : AuditableEntity, IConcurrent
+    public class Ticket : AuditableEntity, IHasRowVersion
     {
         public Guid Id { get; set; }
         public Guid EventId { get; set; }
@@ -40,7 +40,7 @@ namespace TEDx.Domain.Ticketing.Entities
         /// <summary>Issued or CheckedIn → Voided.</summary>
         public void Void()
         {
-            if (Status == TicketStatus.Voided)
+            if (Status != TicketStatus.Voided)
                 throw new InvalidStateTransitionException(nameof(Ticket), Status, TicketStatus.Voided);
 
             Status = TicketStatus.Voided;

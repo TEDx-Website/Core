@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using static System.Collections.Specialized.BitVector32;
 using TEDx.Domain.Training.Enums;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Training.Entities
 {
-    public class Attendance : AuditableEntity, IConcurrent
+    public class Attendance : AuditableEntity, IHasRowVersion
     {
         public Guid Id { get; private set; }
 

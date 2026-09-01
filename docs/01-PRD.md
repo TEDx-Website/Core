@@ -103,13 +103,14 @@ Two dimensions: a **global role** (Attendee/Admin) and **per-track assignments**
 #### 6.1 Authentication & Authorization
 | ID | Feature | Description | Priority |
 |----|---------|-------------|----------|
-| AUTH-01 | User Registration | Email + password registration. Auto-assigns Attendee role. | P0 |
+| AUTH-01 | User Registration | Email + password registration. Auto-assigns Attendee role. Account starts with an unconfirmed email (see AUTH-08). | P0 |
 | AUTH-02 | Login | Email + password login. Returns JWT access + refresh tokens. | P0 |
 | AUTH-03 | Logout | Invalidate refresh token. | P0 |
 | AUTH-04 | Forgot Password | Send password reset link via email. | P0 |
 | AUTH-05 | Reset Password | Reset password using token from email. | P0 |
 | AUTH-06 | JWT Authentication | Stateless API authentication via Bearer tokens. | P0 |
 | AUTH-07 | Role-Based Authorization | API endpoints protected by global role (Attendee, Admin) plus per-track policies (Member/Board). | P0 |
+| AUTH-08 | Email Confirmation | Registration sends a confirmation link; login is blocked until the address is confirmed. Includes a resend endpoint. Guarantees every account has a reachable inbox before it can hold a ticket. | P0 |
 
 #### 6.2 User Management
 | ID | Feature | Description | Priority |

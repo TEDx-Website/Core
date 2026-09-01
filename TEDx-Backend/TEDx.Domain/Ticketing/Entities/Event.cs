@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Common.Exceptions;
 using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class Event : AuditableEntity, ISoftDelete, IConcurrent
+    public class Event : AuditableEntity, ISoftDeletable, IHasRowVersion
     {
         public Guid Id { get; set; }
         public string? TitleEn { get; set; }
@@ -20,7 +20,7 @@ namespace TEDx.Domain.Ticketing.Entities
         public DateTime EndAtUtc { get; set; }
         public int Capacity { get; set; }
         public decimal TicketPrice { get; set; }
-        public int MaxIndividualQtyPerOrder { get; set; }
+        public int? MaxIndividualQtyPerOrder { get; set; }
         public EventStatus Status { get; private set; }
         public string? ImageUrl { get; set; }
         public bool IsDeleted { get; set; }
@@ -33,33 +33,81 @@ namespace TEDx.Domain.Ticketing.Entities
         public List<PromoCode>? PromoCodes { get; set; }
         public List<Package>? Packages { get; set; }
 
-        // --- State machine (D:Q55) ---
+        // --- State machine (D:Q55, D:Q56) ---
 
-        /// <summary>Draft → Published.</summary>
         public void Publish()
         {
-            if (Status != EventStatus.Draft)
+            if (Status != EventStatus.Draft && Status != EventStatus.Archived)
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Published);
+
+            if (TicketPrice < 0)
+                throw new EventNotPublishableException(
+                    EventPublishBlock.InvalidTicketPrice, "TicketPrice must be ≥ 0.");
+
+            if (Capacity <= 0)
+                throw new EventNotPublishableException(
+                    EventPublishBlock.InvalidCapacity, "Capacity must be > 0.");
 
             Status = EventStatus.Published;
         }
 
-        /// <summary>Draft or Published → Cancelled.</summary>
+        public void Revert(int orderCount)
+        {
+            if (Status != EventStatus.Published)
+                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Draft);
+
+            if (orderCount > 0)
+                throw new EventHasOrdersException();
+
+            Status = EventStatus.Draft;
+        }
+
+        public void Archive()
+        {
+            if (Status != EventStatus.Published)
+                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Archived);
+
+            Status = EventStatus.Archived;
+        }
+
         public void Cancel()
         {
-            if (Status != EventStatus.Draft && Status != EventStatus.Published)
+            if (Status != EventStatus.Published && Status != EventStatus.Archived)
                 throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Cancelled);
 
             Status = EventStatus.Cancelled;
         }
 
-        /// <summary>Published or Cancelled → Archived.</summary>
-        public void Archive()
+        public static Event Create(
+            string titleEn,
+            string titleAr,
+            string descriptionEn,
+            string descriptionAr,
+            DateTime startAtUtc,
+            DateTime endAtUtc,
+            string venue,
+            int capacity,
+            decimal ticketPrice,
+            int? maxIndividualQtyPerOrder,
+            string? imageUrl)
         {
-            if (Status != EventStatus.Published && Status != EventStatus.Cancelled)
-                throw new InvalidStateTransitionException(nameof(Event), Status, EventStatus.Archived);
-
-            Status = EventStatus.Archived;
+            return new Event
+            {
+                Id = Guid.NewGuid(),
+                TitleEn = titleEn,
+                TitleAr = titleAr,
+                DescriptionEn = descriptionEn,
+                DescriptionAr = descriptionAr,
+                StartAtUtc = startAtUtc,
+                EndAtUtc = endAtUtc,
+                Venue = venue,
+                Capacity = capacity,
+                TicketPrice = ticketPrice,
+                MaxIndividualQtyPerOrder = maxIndividualQtyPerOrder,
+                ImageUrl = imageUrl,
+                Status = EventStatus.Draft
+            };
         }
     }
+
 }

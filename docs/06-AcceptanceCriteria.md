@@ -1,9 +1,13 @@
 # TEDxAlkawmia — Acceptance Criteria
 
-> **Version:** 1.2
-> **Date:** 2026-07-24
+> **Version:** 1.4
+> **Date:** 2026-08-05
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md)
 > **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+>
+> **v1.4 (2026-08-05) — OPEN-S2 rulings.** **OPEN-S2-2:** AC-EVT-05's unpublish-with-orders scenario now asserts **`HAS_ORDERS_CANNOT_UNPUBLISH`** instead of `EVENT_HAS_ORDERS`, which it shared with AC-EVT-07's soft-delete block in violation of one-code-↔-one-status (audit-Issue-10); AC-EVT-07 is unchanged and keeps `EVENT_HAS_ORDERS`. **OPEN-S2-1:** a new AC-EVT-05 scenario pins that `Cancelled` is **rejected 422** at `POST /{id}/status` and reachable only via `/cancel`. No behaviour is added — both changes make the document agree with [07 §6](./07-ApiContract.md), which was already correct.
+>
+> **v1.3 (2026-08-03):** AC-AUTH-04 logout aligns with the API contract v1.4 change log: response is **204 No Content** (not 200), and the scenario is now testable against the implemented contract. Refresh remains 401 TOKEN_REUSED / 401 TOKEN_INVALID per AC-AUTH-03.
 >
 > **v1.2 (2026-07-24):** AC-EVT-05 transition table gains **Archived→Cancelled (D:Q56)** and an explicit "Draft→Cancelled rejected (use soft-delete)" row; a new scenario covers Archived-with-sold-tickets cancellation; AC-EVT-06 widens to "Published or Archived" (identical ripple). Provenance refreshed to Q1–Q56.
 >
@@ -32,6 +36,7 @@ Scenario: Successful registration creates an Attendee
        password "Passw0rd!", and matching confirm-password
   Then an account is created with the global role "Attendee"
   And the account has no track assignments
+  And the account's email is unconfirmed (AC-AUTH-08)
   And the response is 201 with the created account summary (no password echoed)
 
 Scenario: Registration rejected for a duplicate email
@@ -62,6 +67,7 @@ Scenario: Registration rejected when passwords do not match
 ```gherkin
 Scenario: Successful login issues a token pair
   Given an active account exists for "nour@example.com" with password "Passw0rd!"
+  And her email is confirmed
   When she logs in with the correct email and password
   Then the response is 200 with an access token and a refresh token
   And the access token contains claims: account id, email, global role
@@ -85,6 +91,13 @@ Scenario: Login rejected for a deactivated account
   When she logs in with correct credentials
   Then the response is 403 with error.code "ACCOUNT_DEACTIVATED"
   And a distinct message advises contacting an organizer
+
+Scenario: Login rejected for an unconfirmed email
+  Given an active account for "nour@example.com" whose email is unconfirmed
+  When she logs in with correct credentials
+  Then the response is 403 with error.code "EMAIL_NOT_CONFIRMED"
+  And the full gate order is: credentials, then deactivation, then confirmation
+       (so a deactivated-and-unconfirmed account reports ACCOUNT_DEACTIVATED)
 
 Scenario: Repeated failed logins trigger account lockout (ASP.NET Core Identity)
   Given an active account
@@ -127,7 +140,7 @@ Scenario: Refresh tokens are stored hashed
 Scenario: Logout revokes the presented refresh token
   Given a logged-in user with a valid refresh token
   When she logs out
-  Then the response is 200
+  Then the response is 204 No Content
   And that refresh token can no longer be exchanged
   And a subsequent exchange returns 401 error.code "TOKEN_INVALID"
 ```
@@ -197,6 +210,85 @@ Scenario: Per-track authority is not taken from the token
   Given an access token carrying only the global role
   When any per-track action is authorized
   Then the server resolves the caller's assignments from current data, not the token
+```
+
+## AC-AUTH-08 — Confirm email address
+> **Covers:** US-AUTH-08
+
+```gherkin
+Scenario: Registration creates an unconfirmed account and emails a link
+  Given a Visitor registers with "nour@example.com"
+  Then the account is created with the email unconfirmed
+  And a confirmation token valid for 24 hours is emailed (D:Q57)
+  And the response is 201 with emailConfirmationRequired true
+  And the response does not include tokens (no auto-login)
+
+Scenario: Registration succeeds even if the mail provider fails
+  Given the mail provider is unavailable
+  When a Visitor registers
+  Then the account is still created
+  And the response is still 201
+  And the failure is logged server-side
+  And the user can obtain a link later via resend
+
+Scenario: Valid confirmation token confirms the address
+  Given a valid, unexpired, unused confirmation token for "nour@example.com"
+  When it is submitted
+  Then the email is marked confirmed
+  And the response is 200
+  And she can now log in
+
+Scenario: Confirming twice is idempotent, not an error
+  Given a confirmation token that was already used successfully
+  When it is submitted again while still unexpired
+  Then the response is 200 with emailConfirmed true
+  And no error is raised
+  # Identity does not rotate the SecurityStamp on confirm, so the token stays
+  # valid for its 24 hours; mail prefetchers routinely fire the link twice
+
+Scenario: An older link still works after a resend
+  Given a pending account that requested a second confirmation email
+  When the user clicks the link from the FIRST email, still unexpired
+  Then the response is 200 and the email is confirmed
+  # Resend adds a valid token; it does not revoke earlier ones
+
+Scenario: Expired or forged confirmation token is rejected
+  Given a confirmation token that is expired, tampered with, or not issued by us
+  When it is submitted
+  Then the response is 400 with error.code "CONFIRM_TOKEN_INVALID"
+  And the message invites requesting a new link
+
+Scenario: Login is refused while the email is unconfirmed
+  Given an account whose email is not yet confirmed
+  When she logs in with the correct password
+  Then the response is 403 with error.code "EMAIL_NOT_CONFIRMED"
+  And no tokens are issued
+  And the client can offer to resend the confirmation email
+
+Scenario: An unconfirmed address is not disclosed by a wrong password
+  Given an account whose email is not yet confirmed
+  When someone submits the wrong password for it
+  Then the response is 401 with error.code "INVALID_CREDENTIALS"
+  And the response is identical to that for an unknown email
+  And nothing reveals that the account exists or is unconfirmed
+
+Scenario: Resend responds identically for every address state
+  Given three addresses: one pending confirmation, one already confirmed,
+        and one with no account at all
+  When a resend is requested for each
+  Then all three responses are 200 with an identical neutral body
+  And an email is sent only for the pending one
+
+Scenario: Resend is rate limited
+  Given repeated resend requests from one client beyond the configured limit
+  Then the response is 429 with error.code "RATE_LIMITED"
+  And a Retry-After header in seconds
+
+Scenario: Pre-existing accounts are not locked out
+  Given accounts created before this feature shipped, including the seeded Admin
+  When the confirmation migration runs
+  Then their emails are marked confirmed
+  And they can log in without confirming (FR-AUTH-16)
 ```
 
 ---
@@ -639,9 +731,17 @@ Scenario: Unpublish to Draft only while zero orders (D:Q23)
 Scenario: Unpublish blocked once orders exist (D:Q23)
   Given a Published event with at least one order
   When an Admin attempts to move it to Draft
-  Then the response is 409 error.code "EVENT_HAS_ORDERS"
+  Then the response is 409 error.code "HAS_ORDERS_CANNOT_UNPUBLISH"
   And the Admin is directed to Cancel instead
+
+Scenario: Cancelled is not reachable through the status endpoint (OPEN-S2-1)
+  Given a Published event
+  When an Admin posts status "Cancelled" to the status endpoint
+  Then the response is 422 error.code "VALIDATION_ERROR"
+  And the Admin is directed to the dedicated cancel endpoint
 ```
+
+> **Error-code split (OPEN-S2-2).** `HAS_ORDERS_CANNOT_UNPUBLISH` belongs to the **unpublish** block above; `EVENT_HAS_ORDERS` belongs to the **soft-delete** block in AC-EVT-07. Both codes exist in `Errors_Ticketing`, and the one-code-↔-one-status rule (audit-Issue-10) requires each to name exactly one situation. This scenario previously asserted `EVENT_HAS_ORDERS`, contradicting [07 §6](./07-ApiContract.md).
 
 ## AC-EVT-06 — Cancel an event (D:Q22)
 > **Covers:** US-ADM-EVT-04

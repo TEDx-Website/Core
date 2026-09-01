@@ -1,9 +1,15 @@
 # TEDxAlkawmia — API Contract
 
-> **Version:** 1.2
-> **Date:** 2026-07-24
+> **Version:** 1.5
+> **Date:** 2026-08-05
 > **Reads from:** [01 — PRD](./01-PRD.md) · [02 — SRS](./02-SRS.md) · [03 — User Flows](./03-UserFlows.md) · [05 — User Stories](./05-UserStories.md) · [06 — Acceptance Criteria](./06-AcceptanceCriteria.md)
-> **Decisions:** grilling sessions 2026-07-20 to 2026-07-24 — **Q1–Q56** (requirements Q1–Q28 + architecture Q29–Q55 + Q56), cited as **(D:Qn)**.
+> **Decisions:** grilling sessions 2026-07-20 to 2026-07-31 — **Q1–Q57** (requirements Q1–Q28 + architecture Q29–Q55 + Q56 + Q57), cited as **(D:Qn)**.
+>
+> **v1.5 (2026-08-05) — OPEN-S2 rulings (S2/S3 unblock).** Four spec contradictions surfaced while planning Sprint 2, now closed. **OPEN-S2-1:** §6 `POST /events/{id}/status` separates the endpoint's **accepted targets** (`Draft|Published|Archived`) from the **domain state machine** (which includes the two `→Cancelled` edges); `Cancelled` at `/status` is **422 `VALIDATION_ERROR`** and is served only by `/cancel`, matching US-ADM-EVT-03. **OPEN-S2-2:** the unpublish block is `HAS_ORDERS_CANNOT_UNPUBLISH` and the soft-delete block is `EVENT_HAS_ORDERS` — one code, one situation (audit-Issue-10); [06 AC-EVT-05](./06-AcceptanceCriteria.md) amended to match. **OPEN-S2-3:** `summary` is **removed** from the §5 public list row — it had no column in [DataModel §2.1](./10-DataModel.md); the card client-truncates `descriptionEn`/`descriptionAr`, which the row now carries. **OPEN-S2-4:** `priceFrom` is **still emitted** but equals `ticketPrice` in MVP, since packages are R2 (v1.1) and there is nothing to take a minimum against; the field stays so the FE contract survives their arrival. Related: **OPEN-S2-5** deleted the unreachable `NO_PACKAGES` error from `Errors_Ticketing` (no contract change — §6 already documented that no such block exists).
+>
+> **v1.4 (2026-08-01) — EP-AUTH frontend sign-off pass.** No behaviour changes; §1 and §2 are now complete enough for the SPA to be built against without reading the backend. Every §1/§2 endpoint had its request/response shape reconciled against the implementation docs, which closed six real gaps: `POST /auth/register` publishes `firstName`/`lastName` in the 201 body and `confirmPassword` in the request; `WEAK_PASSWORD` (422) is attached to register, reset-password, and change-password instead of sitting unreferenced in §0.9; `POST /auth/logout` documents that **every** outcome is `204` (optional/unknown/foreign token) and that the access token survives; `POST /auth/reset-password` and `POST /me/change-password` document the server-side `confirmPassword` check and the full refresh-token revocation that logs the caller out; `POST /auth/confirm-email` returns a real body (`email`, `emailConfirmed`), not `data:null`; `POST /me/profile-picture` promotes `INVALID_FILE_TYPE`/`FILE_TOO_LARGE` to **top-level codes** (D-2) and registers them in §0.9; `GET /me` documents why `assignments` is two nullable scalars and where the FE gets `enrollmentId`; `PUT /me` documents **replace-not-patch** semantics and field lengths.
+>
+> **v1.3 (2026-07-31):** **Email confirmation (D:Q57)** — new `POST /auth/confirm-email` and `POST /auth/resend-confirmation`; registration returns `emailConfirmationRequired`; login gains a `403 EMAIL_NOT_CONFIRMED` branch (checked after the password, so it is not an enumeration oracle); new codes `EMAIL_NOT_CONFIRMED` (403) and `CONFIRM_TOKEN_INVALID` (400); §0.7 auth rate-limit group extended with the two new endpoints. Also: `POST /auth/reset-password` gains the **required `email` field** it was missing — Identity resolves the user before validating the token, so the token alone was not a sufficient request body (contract gap, not a behaviour change).
 >
 > **v1.2 (2026-07-24):** §6 `POST /events/{id}/status` documents **Archived→Cancelled (D:Q56)**; `POST /events/{id}/cancel` widens the precondition from "Published" to "**Published or Archived**" (identical ripple). Provenance refreshed to Q1–Q56.
 >
@@ -74,18 +80,21 @@ Every response — success or failure — uses the same envelope:
 
 ### 0.7 Idempotency & rate limiting (D:Q28)
 - **`Idempotency-Key`** header is accepted on **payment initiation**; a repeat with the same key returns the same checkout session rather than creating a new one.
-- Rate-limited endpoint groups (NFR-SEC-10, D:Q28): **auth** (`/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/refresh`), **ordering** (`/orders/quote`, `/orders/reserve`, `/orders/{id}/pay`), and **contact** (`/contact`, by IP). Limits are config-driven per group ("SHOULD" targets, D:Q28b). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
+- Rate-limited endpoint groups (NFR-SEC-10, D:Q28): **auth** (`/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/refresh`, `/auth/confirm-email`, `/auth/resend-confirmation`), **ordering** (`/orders/quote`, `/orders/reserve`, `/orders/{id}/pay`), **contact** (`/contact`, by IP), and **anonymous** (`GET /events`, `GET /events/{id}`, `POST /contact`, by IP). Limits are config-driven per group ("SHOULD" targets, D:Q28b). Exceeding a limit → **429** with `error.code = "RATE_LIMITED"` and a `Retry-After` header (seconds).
+- The **anonymous** group covers every endpoint reachable **without a token** — the only surface an unauthenticated flood can reach, and the highest-traffic one in the platform. `POST /contact` sits in both **anonymous** and **contact**: the stricter **contact** limit applies on top, because it is the only unauthenticated *write* (D:Q20). Partitioning is by **client IP resolved through the forwarded-headers pipeline**, never the proxy's own address, or a reverse proxy collapses every visitor into one bucket.
+- Within the **auth** group, the mail-sending endpoints (`/auth/forgot-password`, `/auth/resend-confirmation`) take a **tighter** limit than the rest: each request costs an outbound email, so an unthrottled loop turns the API into a mail-bomb relay against a third party's inbox and burns the provider quota (D:Q57).
+- The mail-sending limit is enforced on **two independent dimensions** — per **target email** and per **client IP** — and a request must satisfy both. Client-visible consequence: a `429` on `/auth/resend-confirmation` is **not** cleared by retrying from a different network, because the per-email counter is unaffected by the caller's IP. Clients must surface `Retry-After` rather than prompting the user to retry immediately.
 
 ### 0.8 Optimistic concurrency (D:Q22, NFR-REL-06)
 - Admin-managed records (Event, Package, PromoCode, Order, TrackAssignment) carry a `rowVersion` (base64 string). Mutations must echo it back; a stale token → **409** `CONCURRENCY_CONFLICT`.
 - **Order `rowVersion` is required only for the Admin void operation** (§12) — Attendee order operations (reserve, cancel, pay, confirm-free) mutate the order via guarded transition methods (`MarkAsPaid`/`Cancel`/`Expire`, D:Q55) and do **not** submit `rowVersion` (DataModel §2.3).
 
 ### 0.9 Common error codes (non-exhaustive, extended per section)
-`VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `TRACK_FORBIDDEN`, `NOT_FOUND`, `CONCURRENCY_CONFLICT`, `RATE_LIMITED`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `CURRENT_PASSWORD_INCORRECT`, `ACCOUNT_DEACTIVATED`, `WEAK_PASSWORD`, `TOKEN_INVALID`, `TOKEN_REUSED`, `RESET_TOKEN_INVALID`, `TICKET_ALREADY_CHECKED_IN`, `WRONG_EVENT`, `TICKET_VOIDED`, `TICKET_INVALID`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `QUANTITY_EXCEEDS_MAX`, `ACTIVE_ORDER_EXISTS`, `HOLD_EXPIRED`, `ORDER_NOT_CANCELLABLE`, `ORDER_NOT_PAYABLE`, `ORDER_IS_FREE`, `ORDER_NOT_FREE`, `PROMO_CODE_TAKEN`, `PROMO_INACTIVE`, `PROMO_NOT_YET_VALID`, `PROMO_EXPIRED`, `PROMO_CAP_REACHED`, `PROMO_USER_LIMIT`, `PROMO_WRONG_EVENT`, `NO_RECIPIENTS_RESOLVED`.
+`VALIDATION_ERROR`, `UNAUTHENTICATED`, `FORBIDDEN`, `TRACK_FORBIDDEN`, `NOT_FOUND`, `CONCURRENCY_CONFLICT`, `RATE_LIMITED`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `CURRENT_PASSWORD_INCORRECT`, `ACCOUNT_DEACTIVATED`, `EMAIL_NOT_CONFIRMED`, `WEAK_PASSWORD`, `INVALID_FILE_TYPE`, `FILE_TOO_LARGE`, `TOKEN_INVALID`, `TOKEN_REUSED`, `RESET_TOKEN_INVALID`, `CONFIRM_TOKEN_INVALID`, `TICKET_ALREADY_CHECKED_IN`, `WRONG_EVENT`, `TICKET_VOIDED`, `TICKET_INVALID`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `QUANTITY_EXCEEDS_MAX`, `ACTIVE_ORDER_EXISTS`, `HOLD_EXPIRED`, `ORDER_NOT_CANCELLABLE`, `ORDER_NOT_PAYABLE`, `ORDER_IS_FREE`, `ORDER_NOT_FREE`, `PROMO_CODE_TAKEN`, `PROMO_INACTIVE`, `PROMO_NOT_YET_VALID`, `PROMO_EXPIRED`, `PROMO_CAP_REACHED`, `PROMO_USER_LIMIT`, `PROMO_WRONG_EVENT`, `NO_RECIPIENTS_RESOLVED`.
 
 > **Error-model convention (D-2, audit).** A **well-formed request that violates a business rule** returns **`422`** with a **flat, distinct `error.code`** (e.g. `QUANTITY_EXCEEDS_MAX`, the `PROMO_*` reasons, `SESSION_NOT_OCCURRED`, `MEMBER_NOT_ENROLLED`). **`409`** is reserved for genuine **state/concurrency conflicts** (`CONCURRENCY_CONFLICT`, `PRICE_CHANGED`, `SEATS_UNAVAILABLE`, `ACTIVE_ORDER_EXISTS`, `HOLD_EXPIRED`, event/order state transitions). There is no `PROMO_INVALID` umbrella code — each promo failure has its own reason.
 
-> **Status/code pairing (audit-Issue-10).** A given `error.code` maps to exactly one HTTP status. Notably: token failures on the **refresh** credential use `401 TOKEN_INVALID` / `401 TOKEN_REUSED`; an invalid/expired **password-reset** token (a submitted field, not a session credential) uses `400 RESET_TOKEN_INVALID` — a distinct code so clients never see the same code under two statuses.
+> **Status/code pairing (audit-Issue-10).** A given `error.code` maps to exactly one HTTP status. Notably: token failures on the **refresh** credential use `401 TOKEN_INVALID` / `401 TOKEN_REUSED`; an invalid/expired **password-reset** token (a submitted field, not a session credential) uses `400 RESET_TOKEN_INVALID` — a distinct code so clients never see the same code under two statuses. By the same rule an invalid **email-confirmation** token uses `400 CONFIRM_TOKEN_INVALID`, and the unconfirmed-login gate uses `403 EMAIL_NOT_CONFIRMED` (**403**, not 401 — the credentials were correct; it is the account state that forbids the session, exactly like `ACCOUNT_DEACTIVATED`).
 >
 > **State-transition codes (audit-Issue-30).** An illegal lifecycle transition (Event, Order, Session status) is a **state conflict → `409`** with a single shared code family: **`ILLEGAL_STATUS_TRANSITION`** for the generic case, plus the specific state codes (`EVENT_HAS_ORDERS`, `SESSION_HAS_RECORDS`, `CAPACITY_BELOW_SOLD`, …). This aligns with the D-2 convention (409 = state/concurrency); **`INVALID_STATUS_TRANSITION` (422) is retired** — sessions use `409 ILLEGAL_STATUS_TRANSITION` like events/orders. A `422` transition code is never used.
 
@@ -99,7 +108,7 @@ Every response — success or failure — uses the same envelope:
 
 ---
 
-## 1. Authentication (SRS §3.1 · US-AUTH-01..07)
+## 1. Authentication (SRS §3.1 · US-AUTH-01..08)
 
 ### POST `/api/v1/auth/register`
 Create an Attendee account. **Public.**
@@ -108,10 +117,13 @@ Create an Attendee account. **Public.**
 { "firstName": "Nour", "lastName": "Adel", "email": "nour@example.com",
   "password": "Str0ngPass", "confirmPassword": "Str0ngPass" }
 // 201 → data
-{ "id": "3f...", "email": "nour@example.com", "globalRole": "Attendee" }
+{ "id": "3f...", "email": "nour@example.com",
+  "firstName": "Nour", "lastName": "Adel",
+  "globalRole": "Attendee", "emailConfirmationRequired": true }
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (format/policy/mismatch → `fieldErrors`); 409 `EMAIL_TAKEN`.
+- **Errors:** 422 `VALIDATION_ERROR` (format/mismatch → `fieldErrors`); 422 `WEAK_PASSWORD` (policy not met); 409 `EMAIL_TAKEN`.
 - Password policy ≥ 8 chars, ≥1 upper, ≥1 lower, ≥1 digit (server-enforced, FR-AUTH-03).
+- **No tokens are returned** — there is no auto-login. The account is created with the email **unconfirmed** and a confirmation link is emailed (FR-AUTH-12, D:Q57); `emailConfirmationRequired` is always `true` and exists so the client routes to a "check your inbox" screen rather than the logged-in shell. A mail-provider failure does **not** fail this call (the user can resend), so a `201` is not proof the email was delivered.
 
 ### POST `/api/v1/auth/login`
 **Public.** Returns token pair.
@@ -124,7 +136,8 @@ Create an Attendee account. **Public.**
   "user": { "id": "3f...", "email": "nour@example.com", "globalRole": "Attendee",
             "firstName": "Nour", "lastName": "Adel" } }
 ```
-- **Errors:** 401 `INVALID_CREDENTIALS` (generic, for unknown email **or** wrong password — no enumeration); 403 `ACCOUNT_DEACTIVATED`.
+- **Errors:** 401 `INVALID_CREDENTIALS` (generic, for unknown email **or** wrong password — no enumeration); 403 `ACCOUNT_DEACTIVATED`; 403 `EMAIL_NOT_CONFIRMED` (FR-AUTH-13, D:Q57).
+- **Gate order is normative:** password first, then `IsActive`, then `EmailConfirmed`. The two `403`s are only ever returned to a caller who already proved the password, so neither leaks account existence; a wrong password against an unconfirmed or deactivated account still returns the generic `401`. On `EMAIL_NOT_CONFIRMED` the client should offer **resend confirmation**; on `ACCOUNT_DEACTIVATED` it should not.
 
 ### POST `/api/v1/auth/refresh`
 **Public** (refresh token is the credential). Single-use rotation (D:Q24).
@@ -142,6 +155,10 @@ Create an Attendee account. **Public.**
 { "refreshToken": "<opaque>" }
 // 204
 ```
+- **Errors:** 401 `UNAUTHENTICATED` (missing/expired **access** token — this endpoint is authenticated, unlike `/auth/refresh`). Note this is *not* `TOKEN_INVALID`, which per §0.9 belongs to the refresh credential alone.
+- `refreshToken` is **optional**. Omitting it still returns `204`; it just means only the client-side session is dropped and that refresh token stays alive until it expires. Send it — the FE has it, and this is the only way the server-side session actually dies.
+- An unknown, already-revoked, or **another account's** refresh token also returns `204`. The server verifies the token belongs to the caller and silently does nothing otherwise; it never reports which of those happened, so this endpoint cannot be used to probe whether a token is valid.
+- The **access token stays valid** for the remainder of its ≤15 minutes — nothing revokes a JWT (D:Q24). The FE must discard it in memory on logout rather than rely on the server rejecting it.
 
 ### POST `/api/v1/auth/forgot-password`
 **Public.** Always neutral response (no enumeration, FR-AUTH-10).
@@ -155,10 +172,38 @@ Create an Attendee account. **Public.**
 **Public.** Consumes a single-use, time-limited reset token (default 1h, D:Q24).
 ```jsonc
 // Request
-{ "token": "<reset-token>", "newPassword": "N3wStr0ng", "confirmPassword": "N3wStr0ng" }
+{ "email": "nour@example.com", "token": "<reset-token>",
+  "newPassword": "N3wStr0ng", "confirmPassword": "N3wStr0ng" }
 // 200 → data: null
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (weak/mismatch); 400 `RESET_TOKEN_INVALID` (used/expired). On success, existing refresh tokens for the account **MUST** be revoked (D:Q24, NFR-SEC-02).
+- **Errors:** 422 `VALIDATION_ERROR` (missing field, malformed email, `newPassword` ≠ `confirmPassword`); 422 `WEAK_PASSWORD` (fails Identity's complexity rules); 400 `RESET_TOKEN_INVALID` (used/expired/unknown email/token-email mismatch). On success, existing refresh tokens for the account **MUST** be revoked (D:Q24, NFR-SEC-02).
+- `confirmPassword` is checked **server-side**, not only in the browser. It is a `422 VALIDATION_ERROR` with a `fieldErrors` entry on `confirmPassword` — distinct from `WEAK_PASSWORD`, which is about the password's strength rather than the two fields disagreeing. The FE can surface them on different inputs.
+- **`email` is required** (added v1.3). Identity validates a reset token *against a resolved user*, so the token alone cannot identify the account. The client takes both values from the reset link's query string and posts them in the **body** — never re-sending them as query parameters, which would land the token in server logs and `Referer` headers.
+- An unknown email returns `400 RESET_TOKEN_INVALID`, identical to a bad token — this endpoint must not become the enumeration oracle that `/auth/forgot-password` carefully avoids.
+
+### POST `/api/v1/auth/confirm-email`
+**Public.** Consumes a 24-hour confirmation token (FR-AUTH-14, D:Q57).
+```jsonc
+// Request
+{ "userId": "3f...", "token": "<confirm-token>" }
+// 200 → data
+{ "email": "nour@example.com", "emailConfirmed": true }
+```
+- **Errors:** 400 `CONFIRM_TOKEN_INVALID` (expired/forged/tampered/unknown user); 422 `VALIDATION_ERROR` (missing field).
+- Confirming an **already-confirmed** account returns **200** with the same body, not an error — mail clients and link-prefetchers routinely fire the link twice, and a second click must not read as failure.
+- Success does **not** log the user in; the client redirects to sign-in. Returning `email` lets it pre-fill that field.
+- The emailed link points at the **frontend** (`{FrontendBaseUrl}/confirm-email?userId=…&token=…`), which reads the query string and POSTs this endpoint — the same indirection as password reset. Both values are URL-encoded in the link (`Uri.EscapeDataString`); the token is base64-ish and **will** contain `+` and `/`, which silently corrupt if unencoded.
+
+### POST `/api/v1/auth/resend-confirmation`
+**Public.** Always neutral response (no enumeration, FR-AUTH-15).
+```jsonc
+// Request
+{ "email": "nour@example.com" }
+// 200 → data: null   (identical whether the account is unknown, already confirmed, or pending)
+```
+- **Errors:** 422 `VALIDATION_ERROR` (malformed email); 429 `RATE_LIMITED` (+ `Retry-After`).
+- An email is sent **only** when an account exists and is genuinely unconfirmed. The response body, status, and timing are otherwise indistinguishable across all three states.
+- Each resend issues an **additional valid token**; it does not revoke earlier ones. Identity derives confirmation tokens from the account's `SecurityStamp` and neither generating nor consuming one rotates that stamp, so every unexpired link for the account keeps working until its own 24 hours run out. Clicking an older link is therefore *not* an error — do not design the email copy or the FE around "only the newest link works." (Contrast password reset, where `ResetPasswordAsync` **does** rotate the stamp, making reset tokens genuinely single-use.)
 
 ---
 
@@ -173,14 +218,22 @@ Create an Attendee account. **Public.**
   "globalRole": "Attendee",
   "assignments": { "memberOfTrackId": null, "boardOfTrackId": null } }
 ```
+- **`assignments` is two nullable scalars, not an array** — and the FE can rely on that. The DataModel enforces it physically: `UQ_Assignment_OneActiveMember` and `UQ_Assignment_OneActiveBoard` cap a user at **≤ 1 active Member track and ≤ 1 active Board track**. Both may be set at once (`Member@X` + `Board@Y` is the sanctioned dual role); both being the *same* track is rejected server-side (`MEMBER_BOARD_SAME_TRACK`).
+- Only **active** assignments appear here. Ended ones (`EndedAtUtc != null`) are retained in the database for attendance history but are **not** reported — a user whose enrollment ended reads as `null`, exactly like one who never enrolled.
+- **No track names and no `enrollmentId` here, by design.** This response is the session/identity payload; the FE gets the Member-side details (`enrollmentId`, `trackNameEn`/`trackNameAr`, progress) from **`GET /me/enrollment`** (§14) and the Board side from **`GET /me/board-dashboard`**. Duplicating them would give the SPA two sources of truth for the same track that drift the moment an admin reassigns someone.
+- **`globalRole` here is authoritative over the JWT claim.** The token carries the role at issue time and lives up to 15 minutes; a role changed by an admin shows up here on the next fetch but *not* in the current access token. Render from `/me`, and never gate a **security** decision client-side on either value — the server re-checks on every request (§0.4).
 
 ### PUT `/api/v1/me`
 **Authenticated.** Edit own mutable fields. **Email is immutable** (FR-USER-02).
 ```jsonc
 // Request
 { "firstName": "Nour", "lastName": "Adel", "phone": "+20...", "bio": "…" }
-// 200 → data: updated profile
+// 200 → data: updated profile   (same shape as GET /me, including assignments)
 ```
+- **Errors:** 422 `VALIDATION_ERROR` (missing/over-length field, with `fieldErrors` per input).
+- **This is a `PUT`, so it replaces — it does not patch.** `firstName` and `lastName` are **required**; `phone` and `bio` are nullable and **omitting them clears the stored value**. The FE must send the full object it read from `GET /me`, not just the inputs the user touched, or editing a name will silently wipe the bio.
+- Lengths (DataModel §1.1): `firstName`/`lastName` ≤ **100**, `phone` ≤ **32**, `bio` ≤ **1000**. Mirror these as `maxlength` client-side so the user hits the limit while typing instead of on submit.
+- `email`, `globalRole`, `isActive`, and `assignments` are **not** accepted here. Sending them is not an error — they are ignored. Email changes are unsupported product-wide (there is no verified-change flow); role and activation are admin-only (§3, §4).
 
 ### POST `/api/v1/me/profile-picture`
 **Authenticated.** `multipart/form-data`, field `file`. Validated for image type + size (FR-USER-03).
@@ -188,7 +241,8 @@ Create an Attendee account. **Public.**
 // 200 → data
 { "profilePictureUrl": "https://res.cloudinary.com/…" }
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (`INVALID_FILE_TYPE`, `FILE_TOO_LARGE`).
+- **Errors:** 422 `INVALID_FILE_TYPE`; 422 `FILE_TOO_LARGE`. These are **top-level `error.code` values**, not `fieldErrors` nested under `VALIDATION_ERROR` — per D-2 a well-formed request that breaks a business rule gets its own flat code, and the FE needs to switch on them to show "PNG/JPEG only" versus "under 2 MB".
+- Allowed types and the size ceiling are configuration, not contract; the FE must not hardcode a limit for validation — it should let the server decide and render `error.message`.
 
 ### POST `/api/v1/me/change-password`
 **Authenticated.** Requires current + new password.
@@ -197,7 +251,8 @@ Create an Attendee account. **Public.**
 { "currentPassword": "Str0ngPass", "newPassword": "N3wStr0ng", "confirmPassword": "N3wStr0ng" }
 // 200 → data: null
 ```
-- **Errors:** 422 `VALIDATION_ERROR` (weak/mismatch); 400 `CURRENT_PASSWORD_INCORRECT` (current wrong).
+- **Errors:** 422 `VALIDATION_ERROR` (missing field, `newPassword` ≠ `confirmPassword`); 422 `WEAK_PASSWORD` (fails complexity rules); 400 `CURRENT_PASSWORD_INCORRECT` (current wrong).
+- On success, **all** refresh tokens for the account are revoked (same rule as reset-password). The caller's own session dies too: its next `/auth/refresh` returns `401 TOKEN_INVALID`, so the FE must either re-authenticate immediately or treat a successful change-password as a logout. This is deliberate — a password change is how a user evicts someone else from their account.
 
 ---
 
@@ -284,14 +339,16 @@ Create an Attendee account. **Public.**
 **Public.** Paginated list of Published events.
 - **Query:** `page`, `pageSize`, `sort` (whitelist: `startsAtUtc`, `titleEn`), `when` (`upcoming|past`, default `upcoming`).
 ```jsonc
-// 200 → data: [ { "id", "titleEn", "titleAr", "summary",
+// 200 → data: [ { "id", "titleEn", "titleAr",
+//   "descriptionEn", "descriptionAr",
 //   "startsAtUtc": "2026-08-01T18:30:00Z", "endsAtUtc": "2026-08-01T21:00:00Z",
 //   "location", "imageUrl", "capacity", "remainingSeats", "status": "Published",
 //   "ticketPrice": { "amount": 200.00, "currency": "EGP" },
-//   "priceFrom": { "amount": 100.00, "currency": "EGP" } } ], meta: {...}
+//   "priceFrom": { "amount": 200.00, "currency": "EGP" } } ], meta: {...}
 ```
+- **No `summary` field (OPEN-S2-3):** the row carries the full `descriptionEn`/`descriptionAr` and the card **client-truncates** them. There is no `Summary` column in [DataModel §2.1](./10-DataModel.md), and adding one would be a schema change with no story behind it.
 - `remainingSeats` is **computed live** = `capacity − (paid + unexpired-held seats)` (D:Q3, FR-EVT-07); never cached for booking decisions (NFR-PERF-05).
-- `ticketPrice` is the event's **individual-ticket face price** (Model B); `priceFrom` = `min(ticketPrice, active package unit prices)` — the cheapest way to attend.
+- `ticketPrice` is the event's **individual-ticket face price** (Model B); `priceFrom` = `min(ticketPrice, active package unit prices)` — the cheapest way to attend. **In MVP `priceFrom == ticketPrice`** (OPEN-S2-4): packages are R2 (v1.1), so there is nothing to take a minimum against. The field is still **emitted** so the FE contract does not change when packages arrive.
 - `upcoming|past` is derived from `startsAtUtc` relative to now (D:Q23).
 
 ### GET `/api/v1/events/{id}`
@@ -365,11 +422,12 @@ Create an Attendee account. **Public.**
 ### POST `/api/v1/admin/events/{id}/status`
 **Admin.** State transition (D:Q23).
 ```jsonc
-{ "status": "Published" }   // legal targets validated by the state machine
+{ "status": "Draft" | "Published" | "Archived" }   // Cancelled is not accepted here
 ```
-- **State machine (D:Q23, D:Q56):** Draft⇄Published *(only while zero orders)*; Published→Archived; **Published→Cancelled**; **Archived→Cancelled (D:Q56)**; Archived→Published. **Draft→Cancelled is blocked** (dispose a zero-order Draft via soft-delete, D:Q22). **Cancelled is terminal.**
-- **No package precondition (Model B):** an event with **zero packages is publishable** — individual tickets are sold at `ticketPrice`. (There is no `NO_PACKAGES` block.)
-- **Errors:** 409 `ILLEGAL_STATUS_TRANSITION`; 409 `HAS_ORDERS_CANNOT_UNPUBLISH` (Published→Draft with existing orders).
+- **Accepted targets (OPEN-S2-1):** `Draft`, `Published`, `Archived` **only**. `Cancelled` is reachable **exclusively** through `POST /{id}/cancel`, which performs the void/refund/release ripple this endpoint does not (US-ADM-EVT-03). `"status": "Cancelled"` here → **422** `VALIDATION_ERROR`.
+- **Domain state machine (D:Q23, D:Q56)** — the legal *state* pairs, which are a superset of this endpoint's accepted targets: Draft⇄Published *(only while zero orders)*; Published→Archived; **Published→Cancelled**; **Archived→Cancelled (D:Q56)**; Archived→Published. **Draft→Cancelled is blocked** (dispose a zero-order Draft via soft-delete, D:Q22). **Cancelled is terminal.** The two `→Cancelled` edges are served by `/cancel`, not by this endpoint.
+- **No package precondition (Model B):** an event with **zero packages is publishable** — individual tickets are sold at `ticketPrice`. There is no `NO_PACKAGES` block, and no such code exists in the catalog (OPEN-S2-5).
+- **Errors:** 409 `ILLEGAL_STATUS_TRANSITION`; 409 `HAS_ORDERS_CANNOT_UNPUBLISH` (Published→Draft with existing orders — the soft-delete block uses `EVENT_HAS_ORDERS`, OPEN-S2-2); 422 `VALIDATION_ERROR` (`Cancelled` requested here).
 
 ### POST `/api/v1/admin/events/{id}/cancel`
 **Admin.** Cancel a **Published or Archived** event with side effects (D:Q22, D:Q56).
@@ -882,6 +940,15 @@ Create an Attendee account. **Public.**
 //   "createdAtUtc": "…" } ], meta: {...}
 ```
 
+### GET `/api/v1/admin/contact-submissions/{id}`
+**Admin.** Full record for one submission, including the **complete `message` body** that the list projection deliberately omits (the list carries only `messageExcerpt`, so the inbox cannot render a message without this read).
+```jsonc
+// 200 → data: { "id", "name", "email", "subject", "message",
+//   "status": "Read", "createdAtUtc": "…",
+//   "updatedAtUtc": "…", "updatedBy": "…" }
+```
+- **404** `NOT_FOUND` for an unknown id. Body is returned **exactly as stored** and is never interpolated into server-side HTML; the client renders it as plain text (visitor content is untrusted).
+
 ### PUT `/api/v1/admin/contact-submissions/{id}`
 **Admin.** Update status (Read/Archived). No in-app reply (D:Q20).
 ```jsonc
@@ -957,4 +1024,4 @@ Create an Attendee account. **Public.**
 
 ## 20. Out of scope for this contract (D:Q28c)
 
-Mobile app, SignalR real-time push, automated gateway refunds (PAY-01), additional payment channels (PAY-02), financial reconciliation (PAY-03), analytics beyond RPT-01..03, and email/SMS beyond the password-reset email. These are acknowledged future work, intentionally excluded from these endpoints.
+Mobile app, SignalR real-time push, automated gateway refunds (PAY-01), additional payment channels (PAY-02), financial reconciliation (PAY-03), analytics beyond RPT-01..03, and email/SMS beyond the password-reset and email-confirmation messages. These are acknowledged future work, intentionally excluded from these endpoints.

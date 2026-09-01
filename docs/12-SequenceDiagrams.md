@@ -208,7 +208,7 @@ sequenceDiagram
 
 ## 7. Refresh-token rotation + reuse detection (D:Q24, Q47)
 
-The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the *sequence* below shows the refresh interaction.
+The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse|PasswordReset|PasswordChange}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the *sequence* below shows the refresh interaction.
 
 ```mermaid
 sequenceDiagram

@@ -5,6 +5,7 @@ namespace TEDx.Domain.Ticketing.Enums
         PendingPayment = 0,
         Paid = 1,
         Cancelled = 2,
-        Expired = 3
+        Expired = 3,
+        Active = 4,
     }
 }

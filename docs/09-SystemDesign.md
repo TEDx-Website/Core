@@ -358,12 +358,15 @@ All lifetimes are config-overridable defaults (D:Q24):
 | Access JWT | 15 min | client-held | Claims: account id, email, **global role** only (no track scope) |
 | Refresh | 7 days | **hashed** (`RefreshToken.TokenHash`, raw never stored) | Single-use, **rotated**, family-revoke on reuse |
 | Reset | 1 hour | Identity `SecurityStamp`-backed provider (no table) | Single-use, expiring |
+| Email confirmation | 24 hours | Identity `SecurityStamp`-backed provider (no table) | Expiring; **not** single-use (confirm does not rotate the stamp) — replay is idempotent; blocks login until consumed (D:Q57) |
+
+Both the reset and confirmation tokens come from Identity's `SecurityStamp`-backed provider family, which requires `.AddDefaultTokenProviders()`. Because they need **different lifetimes** (1 h vs 24 h) and `TokenLifespan` is a property of the *provider*, not the call site, the confirmation token MUST use its own registered provider — a `DataProtectorTokenProvider` with a 24-hour `TokenLifespan` registered under a distinct name and selected by name when generating. Setting `DataProtectionTokenProviderOptions.TokenLifespan` globally would silently stretch the password-reset window to 24 hours too, weakening NFR-SEC-02.
 
 The refresh token travels in the **JSON body** (uniform for web + future mobile), not an httpOnly cookie (D:Q24).
 
 ### 6.3 Refresh rotation & reuse detection
 
-On refresh, the presented token is revoked and a new pair issued; the old row links forward via `ReplacedByTokenHash` (D:Q47). Presenting an **already-revoked** token triggers a **family revoke** of the whole rotation chain → `TOKEN_REUSED` (D:Q24, Q47). The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the refresh *interaction* (lookup by hash, rotate vs. family-revoke) is drawn in [[12-SequenceDiagrams#7. Refresh-token rotation + reuse detection (D:Q24, Q47)|12 — Sequence Diagrams §7]].
+On refresh, the presented token is revoked and a new pair issued; the old row links forward via `ReplacedByTokenHash` (D:Q47). Presenting an **already-revoked** token triggers a **family revoke** of the whole rotation chain → `TOKEN_REUSED` (D:Q24, Q47). The token *state* lifecycle (Active → Revoked{Rotated|Logout|Expired|Reuse|PasswordReset|PasswordChange}) is owned by [[11-StateMachines#8. RefreshToken (D:Q24, Q47)|11 — State Machines §8]]; the refresh *interaction* (lookup by hash, rotate vs. family-revoke) is drawn in [[12-SequenceDiagrams#7. Refresh-token rotation + reuse detection (D:Q24, Q47)|12 — Sequence Diagrams §7]].
 
 Related behaviors owned by other docs: login/logout/no-enumeration (User Flows §1.2), forgot/reset (§1.3), password-change revokes refresh tokens (§10.A4). Deactivation blocks login/refresh only (D:Q10, §9.4).
 
