@@ -1,3 +1,6 @@
+import { Navbar } from "@/shared/layout/navbar";
+import { Footer } from "@/shared/layout/footer";
+
 export default function PublicLayout({
   children,
 }: {
@@ -5,7 +8,9 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      {children}
+      <Navbar />
+      <main className="w-full">{children}</main>
+      <Footer />
     </>
   );
 }

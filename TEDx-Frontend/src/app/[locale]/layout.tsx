@@ -7,10 +7,9 @@ import {
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 import "../globals.css";
-import { Footer } from "@/shared/layout/footer";
-import { Navbar } from "@/shared/layout/navbar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const alexandria = Alexandria({
@@ -48,11 +47,11 @@ export default async function LocaleLayout({
         className={`${inter.variable} ${alexandria.variable} ${notoSansArabic.variable} ${greatVibes.variable} font-sans antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <Navbar />
-            {children}
-            <Footer />
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+              {children}
+            </ThemeProvider>
+          </QueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

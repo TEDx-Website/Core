@@ -12,12 +12,14 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const landing = (await import(`../../messages/${locale}/landing.json`)).default;
   const about = (await import(`../../messages/${locale}/about.json`)).default;
+  const auth = (await import(`../../messages/${locale}/auth.json`)).default;
 
   return {
     locale,
     messages: {
         landing,
         about,
+        auth
     },
   };
 });
