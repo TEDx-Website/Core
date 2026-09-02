@@ -57,7 +57,7 @@ public sealed class RegisterCommandHandler(
     {
         var token = await accounts.GenerateEmailConfirmationTokenAsync(user, cancellationToken);
 
-        var confirmLink = linkBuilder.BuildEmailConfirmation(email, token);
+        var confirmLink = linkBuilder.BuildEmailConfirmation(user.Id, token);
 
         try
         {

@@ -49,7 +49,7 @@ public sealed class ResendConfirmationCommandHandler(
 
         var token = await accounts.GenerateEmailConfirmationTokenAsync(user, cancellationToken);
 
-        var confirmLink = linkBuilder.BuildEmailConfirmation(user.Email ?? email, token);
+        var confirmLink = linkBuilder.BuildEmailConfirmation(user.Id, token);
 
         try
         {
