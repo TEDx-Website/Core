@@ -7,16 +7,29 @@ const intlMiddleware = createMiddleware({
   localePrefix: 'always'
 });
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const token = request.cookies.get('accessToken')?.value;
   const { pathname } = request.nextUrl;
 
+  if (pathname.startsWith('/api/proxy')) {
+    const requestHeaders = new Headers(request.headers);
+    if (token) {
+      requestHeaders.set('Authorization', `Bearer ${token}`);
+    }
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  }
+
   const isAuthRoute = ['/login', '/register', '/forgot-password', '/reset-password'].some(route => pathname.endsWith(route));
   const isProtectedRoute = ['/profile'].some(route => pathname.endsWith(route));
+  const isPrefetch = request.headers.get('next-router-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
 
   const locale = pathname.split('/')[1] || 'en';
 
-  if (isProtectedRoute && !token) {
+  if (isProtectedRoute && !token && !isPrefetch) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
@@ -24,15 +37,9 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
-  const response = intlMiddleware(request);
-
-  if (token) {
-    response.headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  return response;
+  return intlMiddleware(request);
 }
 
 export const config = {
-  matcher: ['/((?!api/proxy|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
