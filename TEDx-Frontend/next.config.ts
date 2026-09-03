@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: "https://tedx.runasp.net/api/:path*",
+        destination: "https://tedx.runasp.net/:path*",
       },
     ];
   },
