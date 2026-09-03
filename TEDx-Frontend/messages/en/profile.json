@@ -1,0 +1,66 @@
+{
+  "errors": {
+    "firstNameMin": "First name must be at least 2 characters.",
+    "firstNameMax": "First name cannot exceed 100 characters.",
+    "lastNameMin": "Last name must be at least 2 characters.",
+    "lastNameMax": "Last name cannot exceed 100 characters.",
+    "phoneMax": "Phone number cannot exceed 32 characters.",
+    "bioMax": "Bio cannot exceed 1000 characters.",
+    "requiredCurrentPassword": "Current password is required.",
+    "weakPassword": "Must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit.",
+    "passwordMismatch": "Passwords do not match.",
+    "uploadFailed": "Upload Error",
+    "fetchFailed": "Failed to load profile data."
+  },
+  "layout": {
+    "title": "Profile & Account Space",
+    "guide": "Guide",
+    "speakers": "Speakers",
+    "schedule": "Schedule",
+    "profileSpace": "Profile Space",
+    "signOut": "Sign Out"
+  },
+  "header": {
+    "editProfile": "Edit Profile",
+    "viewReadProfile": "View Read Profile",
+    "verifiedAccount": "Verified Account",
+    "saving": "Saving"
+  },
+  "tabs": {
+    "profileDetails": "Profile Details",
+    "security": "Security & Password"
+  },
+  "details": {
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "readOnly": "Read-Only",
+    "immutable": "Immutable",
+    "phoneNumber": "Phone Number",
+    "optional": "(Optional)",
+    "notProvided": "Not Provided",
+    "accountRole": "Account Role",
+    "biography": "Biography",
+    "noBio": "No biography provided.",
+    "replaceWarningTitle": "Replace-Not-Patch Semantics:",
+    "replaceWarningText": "Saving updates your entire profile record. Clearing the phone number or biography and saving will permanently remove them.",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "saving": "Replacing Record...",
+    "updateSuccess": "Profile updated successfully."
+  },
+  "security": {
+    "warningTitle": "Immediate Session Revocation:",
+    "warningText": "Changing your password will immediately end all active sessions across all devices, requiring you to sign in again.",
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Create new strong password",
+    "confirmPassword": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "policyHint": "Must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit.",
+    "updateBtn": "Update Password & Revoke Sessions",
+    "updating": "Revoking Sessions..."
+  }
+}

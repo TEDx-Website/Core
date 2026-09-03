@@ -7,20 +7,26 @@ export async function setAuthCookies(data: AuthTokens) {
   const cookieStore = await cookies();
   const isProduction = process.env.NODE_ENV === "production";
 
-  cookieStore.set("accessToken", data.accessToken, {
+  const cookieOptions = {
+    httpOnly: true,
     secure: isProduction,
+    sameSite: "lax" as const,
     path: "/",
+  };
+
+  cookieStore.set("accessToken", data.accessToken, {
+    ...cookieOptions,
     maxAge: data.accessTokenExpiresIn,
   });
 
   cookieStore.set("refreshToken", data.refreshToken, {
-    secure: isProduction,
-    path: "/",
+    ...cookieOptions,
     maxAge: data.refreshTokenExpiresIn,
   });
 
   cookieStore.set("user", JSON.stringify(data.user), {
     secure: isProduction,
+    sameSite: "lax",
     path: "/",
     maxAge: data.refreshTokenExpiresIn,
   });

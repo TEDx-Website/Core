@@ -15,7 +15,7 @@ export function AuthBrandCanvas() {
     <div className="hidden lg:flex lg:col-span-6 xl:col-span-6 relative flex-col justify-between p-12 xl:p-16 overflow-hidden bg-[#050507]">
       <div className="absolute inset-0 z-0 bg-[#050507]">
         <Image
-          src="/assets/auth-login-bg.jpg" //not seted yet, add this image in public/assets
+          src="/assets/login.webp" 
           alt="Login Canvas"
           fill
           priority
@@ -25,13 +25,13 @@ export function AuthBrandCanvas() {
           }`}
         />
         <Image
-          src="/assets/auth-register-bg.jpg" // same
+          src="/assets/signup.webp" 
           alt="Register Canvas"
           fill
           priority
           sizes="50vw"
           className={`object-cover object-center grayscale contrast-125 mix-blend-luminosity transition-opacity duration-700 ease-in-out ${
-            isRegisterFlow ? "opacity-35" : "opacity-0"
+            isRegisterFlow ? "opacity-30" : "opacity-0"
           }`}
         />
 

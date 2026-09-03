@@ -9,8 +9,8 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-neutral-100   border-b border-neutral-200">
-      <div className="mx-auto max-w-360 px-4 md:px-[32px] lg:px-[80px] h-[80px] flex items-center justify-between">
+    <header className="fixed top-0 left-0 w-full z-50 bg-neutral-100 border-b border-neutral-200">
+      <div className="mx-auto max-w-360 px-4 md:px-[32px] lg:px-[80px] h-17.5 flex items-center justify-between">
         <Link
           href="/"
           className="text-xl md:text-2xl font-bold tracking-tight text-neutral-900"
