@@ -16,7 +16,7 @@ export async function generateMetadata({
 
 export default function ProfilePage() {
   return (
-    <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-14 ">
       <ProfileView />
     </main>
   );

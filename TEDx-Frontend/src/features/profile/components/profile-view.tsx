@@ -1,17 +1,33 @@
 "use client";
 
+import { useEffect } from "react"; 
 import { useTranslations } from "next-intl";
 import { useProfile } from "../api/profile.hooks";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProfileForm } from "./profile-form";
 import { ChangePasswordForm } from "./change-password-form";
 import { User, Shield, Loader2 } from "lucide-react";
+import { useUserStore } from "@/shared/store/use-user-store"; 
 
 export function ProfileView() {
   const t = useTranslations("profile");
-
   const { data: res, isLoading, isError } = useProfile();
 
+  const setUser = useUserStore((state) => state.setUser);
+
+  const userData = res?.data;
+
+  useEffect(() => {
+    if (userData) {
+      setUser({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profilePictureUrl: userData.profilePictureUrl,
+        email: userData.email,
+        globalRole: userData.globalRole,
+      });
+    }
+  }, [userData, setUser]);
   if (isLoading) {
     return (
       <div className="w-full flex justify-center items-center py-32">
@@ -20,7 +36,6 @@ export function ProfileView() {
     );
   }
 
-  const userData = res?.data;
 
   if (isError || !userData) {
     return (

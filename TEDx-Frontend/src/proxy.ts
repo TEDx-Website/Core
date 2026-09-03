@@ -25,10 +25,11 @@ export default function proxy(request: NextRequest) {
 
   const isAuthRoute = ['/login', '/register', '/forgot-password', '/reset-password'].some(route => pathname.endsWith(route));
   const isProtectedRoute = ['/profile'].some(route => pathname.endsWith(route));
+  const isPrefetch = request.headers.get('next-router-prefetch') === '1' || request.headers.get('purpose') === 'prefetch';
 
   const locale = pathname.split('/')[1] || 'en';
 
-  if (isProtectedRoute && !token) {
+  if (isProtectedRoute && !token && !isPrefetch) {
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
