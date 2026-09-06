@@ -14,6 +14,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const about = (await import(`../../messages/${locale}/about.json`)).default;
   const auth = (await import(`../../messages/${locale}/auth.json`)).default;
   const profile = (await import(`../../messages/${locale}/profile.json`)).default;
+  const footer = (await import(`../../messages/${locale}/footer.json`)).default;
+  const nav =(await import(`../../messages/${locale}/nav.json`)).default
 
   return {
     locale,
@@ -21,7 +23,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
         landing,
         about,
         auth,
-        profile
+        profile,
+        footer,
+        nav
     },
   };
 });
