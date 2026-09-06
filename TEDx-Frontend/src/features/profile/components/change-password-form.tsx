@@ -1,23 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   getChangePasswordSchema,
   ChangePasswordInput,
 } from "../schema/profile.schema";
 import { useChangePassword } from "../api/profile.hooks";
 import { clearAuthCookies } from "@/features/auth/api/auth.actions";
-import { useRouter } from "next/navigation";
+import { PasswordInput } from "@/shared/ui/password-input";
+import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner";
 
 export function ChangePasswordForm() {
   const t = useTranslations("profile");
   const router = useRouter();
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
 
   const { mutate: changePassword, isPending } = useChangePassword();
 
@@ -91,25 +90,11 @@ export function ChangePasswordForm() {
             {t("security.currentPassword")}{" "}
             <span className="text-brand-500">*</span>
           </label>
-          <div className="relative">
-            <input
-              {...register("currentPassword")}
-              type={showCurrent ? "text" : "password"}
-              id="currentPassword"
-              className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500 font-mono pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
-            >
-              {showCurrent ? (
-                <Eye className="size-4" />
-              ) : (
-                <EyeOff className="size-4" />
-              )}
-            </button>
-          </div>
+          <PasswordInput
+            {...register("currentPassword")}
+            id="currentPassword"
+            className={errors.currentPassword ? "border-red-500" : ""}
+          />
           {errors.currentPassword && (
             <span className="text-[11px] text-red-400 mt-1 block">
               {errors.currentPassword.message}
@@ -125,25 +110,11 @@ export function ChangePasswordForm() {
             {t("security.newPassword")}{" "}
             <span className="text-brand-500">*</span>
           </label>
-          <div className="relative">
-            <input
-              {...register("newPassword")}
-              type={showNew ? "text" : "password"}
-              id="newPassword"
-              className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500 font-mono pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
-            >
-              {showNew ? (
-                <Eye className="size-4" />
-              ) : (
-                <EyeOff className="size-4" />
-              )}
-            </button>
-          </div>
+          <PasswordInput
+            {...register("newPassword")}
+            id="newPassword"
+            className={errors.newPassword ? "border-red-500" : ""}
+          />
           <div className="mt-2 space-y-1.5">
             <div className="grid grid-cols-4 gap-1.5">
               {[1, 2, 3, 4].map((idx) => (
@@ -174,11 +145,10 @@ export function ChangePasswordForm() {
             {t("security.confirmPassword")}{" "}
             <span className="text-brand-500">*</span>
           </label>
-          <input
+          <PasswordInput
             {...register("confirmPassword")}
-            type="password"
             id="confirmPassword"
-            className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500 font-mono"
+            className={errors.confirmPassword ? "border-red-500" : ""}
           />
           {errors.confirmPassword && (
             <span className="text-[11px] text-red-400 mt-1 block">
@@ -187,20 +157,20 @@ export function ChangePasswordForm() {
           )}
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm rounded-xl px-5 py-3.5 flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+          className="w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold text-sm rounded-xl h-12 flex items-center justify-center gap-2 shadow-md"
         >
           {isPending ? (
             <>
-              <Loader2 className="size-4 animate-spin" />
+              <Spinner className="mr-2 text-white" />
               <span>{t("security.updating")}</span>
             </>
           ) : (
             <span>{t("security.updateBtn")}</span>
           )}
-        </button>
+        </Button>
       </form>
     </div>
   );

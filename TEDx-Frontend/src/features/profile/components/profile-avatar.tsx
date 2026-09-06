@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Camera } from "lucide-react";
+import Image from "next/image";
+import { Camera } from "lucide-react";
 import { useUploadProfilePicture } from "../api/profile.hooks";
+import { Spinner } from "@/shared/ui/spinner";
 
 interface ProfileAvatarProps {
   profilePictureUrl?: string;
@@ -39,27 +41,29 @@ export function ProfileAvatar({
 
   return (
     <div className="relative">
-      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#181822] to-[#0D0D12] border border-[#262636] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-xl overflow-hidden group">
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-linear-to-br from-[#181822] to-[#0D0D12] border border-[#262636] flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-xl overflow-hidden group">
         {profilePictureUrl ? (
-          <img
+          <Image
             src={profilePictureUrl}
             alt="Profile"
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 640px) 5rem, 6rem"
+            className="object-cover"
           />
         ) : (
           <span>{initials}</span>
         )}
 
         {isPending && (
-          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-1 text-brand-400">
-            <Loader2 className="size-5 animate-spin text-white" />
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center gap-1 text-brand-400 z-10">
+            <Spinner className="size-5 text-white" />
           </div>
         )}
       </div>
 
       <label
         htmlFor="avatarUploadInput"
-        className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-brand-500/60 cursor-pointer shadow-lg transition-all"
+        className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-brand-500/60 cursor-pointer shadow-lg transition-all z-20"
       >
         <Camera className="size-3.5" />
         <input
@@ -73,7 +77,7 @@ export function ProfileAvatar({
       </label>
 
       {errorMessage && (
-        <div className="absolute top-full mt-2 left-0 z-25 p-2 rounded bg-red-950/80 border border-red-500 text-[10px] text-red-200 whitespace-nowrap">
+        <div className="absolute top-full mt-2 left-0 z-30 p-2 rounded bg-red-950/80 border border-red-500 text-[10px] text-red-200 whitespace-nowrap">
           {errorMessage}
         </div>
       )}

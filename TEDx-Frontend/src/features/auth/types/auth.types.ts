@@ -3,7 +3,7 @@ export interface BaseResponse<T> {
   data: T;
   error: {
     code: string;
-    message: string;
+    message: string;  
     fieldErrors: Record<string, string[]>;
     traceId: string;
   } | null;
@@ -13,6 +13,13 @@ export interface BaseResponse<T> {
     totalItems: number;
     totalPages: number;
   } | null;
+}
+
+export interface ApiError extends Error {
+  response?: {
+    data?: BaseResponse<null>;
+    status?: number;
+  };
 }
 
 export interface User {
