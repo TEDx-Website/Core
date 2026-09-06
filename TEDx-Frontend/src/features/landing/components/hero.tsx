@@ -1,116 +1,77 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Button } from "@/shared/ui/button";
-import { GridContainer } from "@/shared/ui/grid-container";
-import { ArrowUpRight, Calendar, MapPin, Clock } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Calendar, MapPin, Hourglass } from "lucide-react";
+import { HeroSparks } from "./hero-sparks";
 
 export function Hero() {
   const t = useTranslations("landing.Hero");
 
   return (
-    <section className="relative w-full min-h-dvh flex items-center pt-25 md:pt-120px pb-70 md:pb-35 bg-neutral-950 overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="/assets/experience.webp"
-          alt="Speaker Background"
-          fill
-          priority
-          quality={100}
-          className="object-cover object-top opacity-60 md:opacity-90"
-        />
-        <div className="absolute inset-0 bg-linear-to-r from-neutral-950 via-neutral-950/80 to-transparent" />
-      </div>
+    <section className="relative min-h-screen flex items-center justify-center pt-20 pb-12 overflow-hidden bg-dark-obsidian">
+      <HeroSparks />
 
-      <GridContainer className="relative z-10 w-full">
-        <div className="col-span-4 md:col-span-8 lg:col-span-7 flex flex-col gap-5 md:gap-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="w-8 md:w-10 h-1 bg-brand-500 shrink-0" />
-              <span className="text-[10px] md:text-xs font-bold text-neutral-300 tracking-[0.2em] uppercase">
-                {t("tagline")}
-              </span>
-            </div>
+      <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto px-4 w-full animate-in fade-in slide-in-from-bottom-8 duration-1000">
+        <span className="text-xs md:text-sm font-semibold tracking-[0.3em] text-neutral-400 uppercase mb-4 opacity-80">
+          {t("eyebrow")}
+        </span>
 
-            <h1 className="text-[42px] leading-[0.95] sm:text-6xl md:text-7xl lg:text-[80px] lg:leading-[0.9] font-black text-white tracking-tighter uppercase">
-              {t("title")}
-            </h1>
+        <h1 className="font-bold text-6xl md:text-8xl lg:text-[9rem] leading-[0.9] tracking-tighter mb-6 text-white drop-shadow-2xl">
+          {t("titleLine1")}
+          <br />
+          <span className="relative inline-block isolate">
+            {t("titleLine2")}
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-[-2%] inset-y-[14%] bg-brand-500 blur-[46px] opacity-40 -z-10"
+            />
+          </span>
+        </h1>
 
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white leading-tight whitespace-pre-line mt-1">
-              {t("subtitle")}
-            </h2>
+        <p className="max-w-2xl text-lg md:text-xl text-neutral-300 font-light mb-12 leading-relaxed">
+          {t("description")}
+        </p>
+
+        <div className="glass-panel rounded-full p-1.5 flex flex-wrap justify-center items-center gap-2 md:gap-6 mb-12 text-sm md:text-base font-medium">
+          <div className="flex items-center px-4 py-2 bg-dark-carbon/50 rounded-full border border-dark-border/50">
+            <Calendar className="text-brand-500 mr-2 size-5" />
+            <span>{t("date")}</span>
           </div>
-
-          <p className="text-sm md:text-base text-neutral-300 max-w-[480px] leading-relaxed">
-            {t("description")}
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4 w-full sm:w-auto">
-            <Button
-              size="lg"
-              className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white rounded-full px-8 h-12 md:h-14 text-xs md:text-sm font-bold tracking-wide"
-            >
-              {t("primaryCta")}
-              <ArrowUpRight className="ml-2 size-4" strokeWidth={3} />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-black rounded-full px-8 h-12 md:h-14 text-xs md:text-sm font-bold tracking-wide bg-transparent transition-colors"
-            >
-              {t("secondaryCta")}
-            </Button>
+          <div className="flex items-center px-4 py-2 bg-dark-carbon/50 rounded-full border border-dark-border/50">
+            <MapPin className="text-brand-500 mr-2 size-5" />
+            <span>{t("location")}</span>
+          </div>
+          <div className="flex items-center px-4 py-2 bg-dark-carbon/50 rounded-full border border-dark-border/50 text-brand-neon">
+            <Hourglass className="mr-2 size-5 animate-pulse" />
+            <span>{t("countdown")}</span>
           </div>
         </div>
-      </GridContainer>
 
-      <div className="absolute bottom-6 md:bottom-8 left-0 w-full z-20 px-4 md:px-[32px] lg:px-[80px]">
-        <div className="mx-auto max-w-360">
-          <div className="w-full bg-[#141414]/95 rounded-[24px] py-4 md:py-5 px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 shadow-2xl">
-            <div className="flex items-center gap-4">
-              <Calendar
-                className="text-brand-500 size-5 shrink-0"
-                strokeWidth={2}
-              />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
-                  {t("dateLabel")}
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {t("dateValue")}
-                </span>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <Link
+            href="#doors"
+            className="group relative px-8 py-4 bg-brand-500 text-white font-semibold rounded-lg overflow-hidden transition-all hover:scale-105"
+          >
+            <div className="absolute inset-0 w-full h-full bg-linear-to-r from-brand-500 via-brand-glow to-brand-500 group-hover:animate-[gradient_2s_linear_infinite]" />
+            <span className="relative flex items-center z-10">
+              {t("ctaPrimary")}
+              <ArrowUpRight className="ml-2 size-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </span>
+          </Link>
+          <Link
+            href="#possibilities"
+            className="px-8 py-4 text-white font-semibold rounded-lg border border-dark-border hover:bg-dark-glass transition-colors flex items-center"
+          >
+            {t("ctaSecondary")}
+          </Link>
+        </div>
+      </div>
 
-            <div className="flex items-center gap-4">
-              <MapPin
-                className="text-brand-500 size-5 shrink-0"
-                strokeWidth={2}
-              />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
-                  {t("venueLabel")}
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {t("venueValue")}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <Clock
-                className="text-brand-500 size-5 shrink-0"
-                strokeWidth={2}
-              />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">
-                  {t("doorsLabel")}
-                </span>
-                <span className="text-sm font-bold text-white">
-                  {t("doorsValue")}
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 hover:opacity-100 transition-opacity">
+        <span className="text-[10px] tracking-widest uppercase mb-2 text-white">
+          {t("scroll")}
+        </span>
+        <div className="w-px h-12 bg-linear-to-b from-white to-transparent overflow-hidden relative">
+          <div className="w-full h-1/2 bg-white absolute top-0 left-0 animate-scroll-down" />
         </div>
       </div>
     </section>
