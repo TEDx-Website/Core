@@ -8,5 +8,9 @@ public static class RateLimitPolicies
 
     public const string Contact = "contact";
 
-    public static readonly IReadOnlyList<string> All = [Auth, AuthMail, Upload, Contact];
+    // Every endpoint reachable without a token. POST /contact sits in both groups but
+    // takes the stricter Contact one: EnableRateLimiting replaces, it does not stack.
+    public const string Anonymous = "anonymous";
+
+    public static readonly IReadOnlyList<string> All = [Auth, AuthMail, Upload, Contact, Anonymous];
 }
