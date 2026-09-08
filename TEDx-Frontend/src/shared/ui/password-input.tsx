@@ -2,8 +2,10 @@
 
 import { forwardRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { Input } from "@/shared/ui/input";
+import { cn } from "@/lib/utils";
 
-export interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+export interface PasswordInputProps extends React.ComponentProps<"input"> {}
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, ...props }, ref) => {
@@ -11,9 +13,9 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
 
     return (
       <div className="relative">
-        <input
+        <Input
           type={showPassword ? "text" : "password"}
-          className={`w-full bg-neutral-100 dark:bg-[#121217] border border-neutral-200 dark:border-[#2B2B38] rounded-lg text-foreground px-4 py-3 text-sm transition-all focus:border-brand-500 focus:dark:bg-[#15151B] focus:ring-4 focus:ring-brand-500/20 outline-none placeholder:text-neutral-500 font-mono pr-10 ${className}`}
+          className={cn("pr-10 font-mono", className)}
           ref={ref}
           {...props}
         />

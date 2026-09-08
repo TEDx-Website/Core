@@ -4,13 +4,16 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { Loader2, Check, Edit2 } from "lucide-react";
+import { Check, Edit2 } from "lucide-react";
 import {
   getUpdateProfileSchema,
   UpdateProfileInput,
 } from "../schema/profile.schema";
 import { UserProfile } from "../types/profile.types";
 import { useUpdateProfile } from "../api/profile.hooks";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Spinner } from "@/shared/ui/spinner";
 
 interface ProfileFormProps {
   user: UserProfile;
@@ -81,14 +84,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
       {!isEditing ? (
         <div className="space-y-6">
           <div className="flex justify-end">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center gap-2 bg-[#15151B] border border-[#22222D] text-white font-medium text-xs px-4 py-2.5 rounded-xl hover:bg-[#1C1C24] transition-all"
+              className="h-10 border-neutral-200 dark:border-[#2B2B38] bg-neutral-100 dark:bg-[#16161D] hover:dark:bg-[#20202A]"
             >
-              <Edit2 className="size-3.5 text-neutral-400" />
+              <Edit2 className="size-3.5 mr-2 text-neutral-400" />
               <span>{t("header.editProfile")}</span>
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -157,11 +161,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
               >
                 {t("details.firstNameLabel")}
               </label>
-              <input
+              <Input
                 {...register("firstName")}
                 id="firstName"
                 maxLength={100}
-                className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500"
+                className={errors.firstName ? "border-red-500" : ""}
               />
               <span className="text-[10px] text-neutral-500 font-mono mt-1 block">
                 {firstNameValue.length}/100
@@ -180,11 +184,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
               >
                 {t("details.lastNameLabel")}
               </label>
-              <input
+              <Input
                 {...register("lastName")}
                 id="lastName"
                 maxLength={100}
-                className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500"
+                className={errors.lastName ? "border-red-500" : ""}
               />
               <span className="text-[10px] text-neutral-500 font-mono mt-1 block">
                 {lastNameValue.length}/100
@@ -203,11 +207,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
               >
                 {t("details.phoneNumber")} {t("details.optional")}
               </label>
-              <input
+              <Input
                 {...register("phone")}
                 id="phone"
                 maxLength={32}
-                className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500 font-mono"
+                className={errors.phone ? "border-red-500" : ""}
               />
               <span className="text-[10px] text-neutral-500 font-mono mt-1 block">
                 {phoneValue.length}/32
@@ -232,7 +236,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
               id="bio"
               rows={4}
               maxLength={1000}
-              className="w-full bg-[#111115] border border-[#22222D] rounded-xl text-white px-4 py-3 text-sm outline-none focus:border-brand-500"
+              className={`flex w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                errors.bio ? "border-red-500" : "border-input"
+              }`}
             />
             <span className="text-[10px] text-neutral-500 font-mono mt-1 block">
               {bioValue.length}/1000
@@ -245,27 +251,28 @@ export function ProfileForm({ user }: ProfileFormProps) {
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#181820]">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => setIsEditing(false)}
-              className="bg-[#15151B] border border-[#22222D] text-white font-medium text-xs px-4 py-2.5 rounded-xl hover:bg-[#1C1C24]"
+              className="h-10 border-neutral-200 dark:border-[#2B2B38] bg-neutral-100 dark:bg-[#16161D] hover:dark:bg-[#20202A]"
             >
               {t("details.cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isPending}
-              className="bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md disabled:opacity-50"
+              className="bg-brand-500 hover:bg-brand-600 text-white h-10 shadow-md"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <Spinner className="mr-2 text-white" />
                   <span>{t("details.saving")}</span>
                 </>
               ) : (
                 <span>{t("details.saveChanges")}</span>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       )}

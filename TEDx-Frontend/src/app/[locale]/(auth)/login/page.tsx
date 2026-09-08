@@ -13,7 +13,7 @@ export async function generateMetadata({
     title: `${t("title")} | TEDx Alkawmia`,
   };
 }
-
 export default function LoginPage() {
+
   return <LoginForm />;
 }

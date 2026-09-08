@@ -4,96 +4,155 @@
     "title": "TEDx Alkawmia | The Unsaid",
     "description": "A day for brave ideas, honest conversations, and the voices shaping what comes next. Join TEDx Alkawmia 2026."
   },
-  "Navbar": {
-    "events": "Events",
-    "about": "About",
-    "team": "Team",
-    "contact": "Contact",
-    "login": "Login",
-    "bookNow": "BOOK NOW"
-  },
   "Hero": {
-    "tagline": "TEDx ALKAWMIA 2026",
-    "title": "THE UNSAID",
-    "subtitle": "What hasn't been said...\ndeserves to be heard.",
-    "description": "A day for brave ideas, honest conversations, and the voices shaping what comes next.",
-    "primaryCta": "EXPLORE EVENTS",
-    "secondaryCta": "WATCH THE STORY",
-    "dateLabel": "DATE",
-    "dateValue": "12 OCTOBER 2026",
-    "venueLabel": "VENUE",
-    "venueValue": "AL AZHAR CONFERENCE CENTER",
-    "doorsLabel": "DOORS OPEN",
-    "doorsValue": "09:00 AM"
-  },
-  "UpcomingEvents": {
-    "tagline": "WHAT'S NEXT",
-    "title": "Ideas don't wait. Neither should you.",
-    "subtitle": "Choose the room where your next perspective begins.",
-    "viewAll": "VIEW ALL EVENTS",
-    "cards": {
-      "card1": {
-        "meta": "12 OCT 2026 • CAIRO",
-        "title": "The Unsaid",
-        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
-        "cta": "BECOME A PARTNER"
-      },
-      "card2": {
-        "meta": "28 NOV 2026 • GIZA",
-        "title": "Beyond the Frame",
-        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
-        "cta": "BECOME A PARTNER"
-      },
-      "card3": {
-        "meta": "14 FEB 2027 • CAIRO",
-        "title": "Small Acts, Wide Ripples",
-        "description": "An intensive hands-on workshop to help new entrepreneurs break traditional patterns and build resilient business models.",
-        "cta": "BECOME A PARTNER"
-      }
-    }
-  },
-  "Experience": {
-    "tagline": "THE TEDx EXPERIENCE",
-    "title": "More than a stage. A\nroom that changes you.",
-    "description": "Meet thinkers, makers, and neighbors who refuse easy answers. TEDx Alkawmia brings global ideas into a distinctly local conversation—live, unfiltered, and built for connection.",
-    "stats": {
-      "speakers": { "value": "18", "label": "SPEAKERS" },
-      "attendees": { "value": "900+", "label": "ATTENDEES" },
-      "sharedDay": { "value": "1", "label": "SHARED DAY" }
+      "eyebrow": "Step Beyond The Known",
+      "titleLine1": "UNLIMITED",
+      "titleLine2": "DOORS",
+      "description": "TEDxAlkawmia 2026 brings together thinkers, innovators, and visionaries to unlock the thresholds of human potential.",
+      "date": "November 24, 2026",
+      "location": "Grand Hall, Alkawmia",
+      "countdown": "Tickets Drop in: 14d 08h",
+      "ctaPrimary": "Unlock Your Ticket",
+      "ctaSecondary": "Explore Theme Story",
+      "scroll": "Scroll"
     },
-    "cta": "DISCOVER THE EXPERIENCE"
-  },
-  "Platform": {
-    "tagline": "INDEPENDENTLY ORGANIZED. LOCALLY ROOTED.",
-    "title": "A platform for Alkawmia's boldest questions.",
-    "description": "We are a volunteer-led community creating space for ideas that challenge assumptions and bring people closer. Every gathering begins with curiosity—and ends with something worth carrying forward.",
-    "cta": "READ OUR STORY"
-  },
-  "Team": {
-    "tagline": "THE PEOPLE BEHIND THE RED X",
-    "title": "Built by people who believe ideas need a home.",
-    "description": "Curators, producers, designers, and community builders—working across tracks to make every moment thoughtful, accessible, and unmistakably Alkawmia.",
-    "cta": "MEET THE TEAM"
-  },
-  "Speakers": {
-    "tagline": "VOICES WORTH HEARING",
-    "title": "Meet the people moving the conversation forward.",
-    "viewAll": "EXPLORE ALL SPEAKERS",
-    "cards": {
-      "speaker1": {
-        "name": "Dr. Salma El-Shazly",
-        "role": "Urban researcher"
+  "about": {
+      "eyebrow": "Meaningful Human Stories",
+      "titleLine1": "Unlock Unlimited",
+      "titleLine2": "Possibilities",
+      "brandName": "TEDx Alkawmia",
+      "p1Text": " is an independently organized platform that hosts high-quality events and community-driven initiatives. We serve the local youth community by spreading valuable ideas and experiences.",
+      "p2": "Our purpose is a philosophical cultural movement designed to foster mindset shifts and inspire lasting transformation through shared growth.",
+      "imageAlt": "An endless corridor of open black doorframes receding into a single point of red light"
+    },
+  "doors": {
+      "title": "Choose Your Door",
+      "subtitle": "Four curated tracks exploring the edge of possibility.",
+      "chamberPrefix": "CHAMBER",
+      "sessions": "4 SESSIONS",
+      "keynote": "Keynote Speaker",
+      "unlockBtn": "Unlock Track Passes",
+      "pushToEnter": "Push Door to Enter",
+      "tracks": [
+        {
+          "name": "Technology & AI",
+          "desc": "Machine cognition, neural synthesis, and autonomous moral frameworks in the post-algorithm epoch.",
+          "speakerName": "Omar Tariq",
+          "theme1": "Neural Ethics & AI Agency",
+          "theme2": "Quantum Cryptographic Realities",
+          "theme3": "Autonomous Cognition Systems"
+        },
+        {
+          "name": "Culture & Narrative",
+          "desc": "The myths we create and the stories that bind us in an accelerating, fragmented world.",
+          "speakerName": "Farah Zeid",
+          "theme1": "Digital Mythology in Modern Space",
+          "theme2": "Linguistic Thresholds & Dialects",
+          "theme3": "Collective Memory Preservation"
+        },
+        {
+          "name": "Science & Cosmos",
+          "desc": "Deep astrophysics, quantum teleportation, and decoding the fundamental laws of spacetime.",
+          "speakerName": "Dr. Laila Hassan",
+          "theme1": "Subatomic Geometries & Spacetime",
+          "theme2": "Deep Space Orbital Exploration",
+          "theme3": "Synthetic Biology & Genesis"
+        },
+        {
+          "name": "Social Innovation",
+          "desc": "Radical social architectures, grassroots empowerment, and building resilient civic futures.",
+          "speakerName": "Sara Mansour",
+          "theme1": "Civic Architecture & Governance",
+          "theme2": "Decentralized Community Power",
+          "theme3": "Ecological Regeneration Systems"
+        }
+      ]
+    },
+  "speakers": {
+      "sectionLabel": "Voices of the Threshold",
+      "brandName": "TEDxAlkawmia 2026",
+      "keynote": "Keynote Talk",
+      "reserveBtn": "Reserve a Seat",
+      "saveBtn": "Save Speaker",
+      "list": [
+        {
+          "field": "Quantum Physics · Science & Consciousness",
+          "nameLine1": "Dr. Laila",
+          "nameLine2": "Hassan",
+          "title": "Quantum Physicist & Author — Stanford Institute of Consciousness Research",
+          "topic": "\"The Quantum Architecture of Consciousness\"",
+          "bio": "Dr. Hassan's groundbreaking research bridges quantum entanglement theory with the neuroscience of self-awareness, proposing that consciousness is not produced by the brain — it is accessed by it. A CERN fellow and three-time TED alumna, her talk dismantles the materialist model of mind."
+        },
+        {
+          "field": "Artificial Intelligence · Ethics & Governance",
+          "nameLine1": "Omar",
+          "nameLine2": "Tariq",
+          "title": "AI Ethicist & System Architect — MIT Media Lab",
+          "topic": "\"Beyond the Algorithm: When Machines Dream Morality\"",
+          "bio": "A principal architect of the UN's AI Rights Framework, Omar builds systems that ask 'should we?' before 'can we?'. His talk confronts the silent biases embedded in every model — and the irreversible consequences of deploying autonomy without accountability."
+        },
+        {
+          "field": "Urban Architecture · Biophilic Design",
+          "nameLine1": "Nadia",
+          "nameLine2": "El-Sayed",
+          "title": "Biophilic Urban Architect — Pritzker Award Nominee, Cairo & Amsterdam",
+          "topic": "\"Living Metropolises: Designing Cities That Breathe\"",
+          "bio": "Nadia merges ancient Arabic spatial philosophy with living-system ecology to design cities that metabolize, adapt, and heal. She questions the fundamental assumption of urban permanence — and presents evidence that cities built to live outperform those built to last."
+        },
+        {
+          "field": "Generative Art · Digital Mythology",
+          "nameLine1": "Farah",
+          "nameLine2": "Zeid",
+          "title": "Generative Digital Artist — Co-founder, Void Studio, Dubai & Berlin",
+          "topic": "\"Synthesized Mythologies: Art Born in the Threshold\"",
+          "bio": "Farah trains neural networks on the world's oldest cultural archives to produce new visual myths — images that feel ancestral yet alien. Her Louvre-exhibited work challenges what it means for a machine to 'dream' and asks whether synthetic beauty can carry authentic grief."
+        },
+        {
+          "field": "Aerospace Engineering · Deep Space",
+          "nameLine1": "Tarek",
+          "nameLine2": "Nour",
+          "title": "Aerospace Propulsion Engineer — Lead Engineer, ESA Deep Space Programme",
+          "topic": "\"Deep Space Thresholds: The Next Horizon of Human Reach\"",
+          "bio": "Tarek designed the propulsion architecture for the first crewed Mars transit vehicle. His talk moves beyond engineering — into what it means for a species defined by Earth to cross into permanent cosmic citizenship, and why the psychological challenge dwarfs the technical one."
+        }
+      ]
+    },
+ "sponsors": {
+      "eyebrow": "Section 09 // The Keyholders",
+      "titleLine1": "Who Holds",
+      "titleLine2": "The Door Open",
+      "description": "No idea crosses a threshold alone. These are the organisations that fund the stage, light the room, and make every seat in it free of excuses.",
+      "becomeKeyholder": "Become a Keyholder",
+      "tier1": "Threshold Partners",
+      "tier2": "Contributing Partners",
+      "tier3": "Supporters",
+      "ctaTitle1": "Put your name on a door",
+      "ctaTitle2": "somebody else walks through.",
+      "ctaDesc": "Partnership tiers run from stage presence to a single funded seat. Every tier is published, priced, and audited — no hidden packages.",
+      "deckBtn": "Partnership Deck",
+      "contactBtn": "Talk to the Team"
+    },
+  "team": {
+      "eyebrow": "Section 10 // The Architects",
+      "titleLine1": "Build The Next",
+      "titleLine2": "Threshold",
+      "description": "An event of this magnitude requires visionaries, operators, and artists. We are assembling the core committee for the 2026 edition. Will you help us build the doors?",
+      "roles": {
+        "curators": {
+          "title": "The Curators",
+          "desc": "Scout the speakers, shape the narrative, and refine the ideas worth spreading."
+        },
+        "creators": {
+          "title": "The Creators",
+          "desc": "Design the visual identity, the stage architecture, and the digital experience."
+        },
+        "operators": {
+          "title": "The Operators",
+          "desc": "Engineer the logistics, secure the partnerships, and run the show seamlessly."
+        }
       },
-      "speaker2": {
-        "name": "Youssef Nassar",
-        "role": "Documentary filmmaker"
-      },
-      "speaker3": {
-        "name": "Mariam El-Tayeb",
-        "role": "Social entrepreneur"
-      }
-    }
-  },
+      "cta": "Apply to the Core Team"
+    },
   "FeaturesGrid": {
     "tagline": "ONE PLATFORM • EVERY TEDx MOMENT",
     "title": "Everything you need before, during, and after the event.",
