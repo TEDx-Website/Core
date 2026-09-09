@@ -1,11 +1,9 @@
 {
-    "nav": {
-      "whoWeAre": "Who We Are",
-      "theDoors": "The Doors",
       "speakers": "Speakers",
-      "echoes": "Echoes",
-      "partners": "Partners",
-      "lang": "AR",
-      "getTickets": "Get Tickets"
-    }
+      "about": "About Us",
+      "contact": "Contact",
+      "signIn": "Sign In",
+      "cta": "Unlock The Door",
+      "profile": "Profile"
+    
 }

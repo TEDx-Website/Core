@@ -46,7 +46,7 @@ export function ProfileView() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full py-20">
       <section className="pb-10 border-b border-[#181820]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-6">

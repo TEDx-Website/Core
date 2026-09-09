@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { setAuthCookies } from "../api/auth.actions";
-import { useAuthStore } from "../store/auth.store";
+import { useUserStore } from "@/shared/store/use-user-store";
 import { getLoginSchema, LoginInput } from "../schema/auth.schema";
 import { PasswordInput } from "@/shared/ui/password-input";
 import { useLogin } from "../api/auth.hooks";
@@ -42,7 +42,7 @@ export function LoginForm() {
     },
   });
 
-  const setUser = useAuthStore((state) => state.setUser);
+  const setUser = useUserStore((state) => state.setUser);
 
   const onSubmit = (data: LoginInput) => {
     loginMutation(data, {
@@ -58,7 +58,6 @@ export function LoginForm() {
         await setAuthCookies(response.data);
 
         router.push("/");
-        router.refresh();
       },
       onError: (error) => {
         setError("root", {
@@ -72,7 +71,7 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm">
+    <Card className="w-full border-none bg-transparent sm:bg-card sm:border shadow-sm ">
       <CardHeader className="px-0 sm:px-6 mb-2">
         <CardTitle className="font-black text-2xl sm:text-3xl text-foreground tracking-tight">
           {t("title")}

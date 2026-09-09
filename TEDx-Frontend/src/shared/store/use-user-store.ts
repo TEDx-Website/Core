@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface UserData {
   id?: string;
@@ -15,13 +16,20 @@ interface UserStore {
   updateUser: (data: Partial<UserData>) => void;
 }
 
-export const useUserStore = create<UserStore>((set) => ({
-  user: null,
-  
-  setUser: (user) => set({ user }),
-  
-  updateUser: (data) =>
-    set((state) => ({
-      user: state.user ? { ...state.user, ...data } : null,
-    })),
-}));
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      
+      setUser: (user) => set({ user }),
+      
+      updateUser: (data) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...data } : null,
+        })),
+    }),
+    {
+      name: "user-storage", 
+    }
+  )
+);
