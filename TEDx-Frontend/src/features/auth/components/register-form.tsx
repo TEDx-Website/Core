@@ -84,7 +84,7 @@ export function RegisterForm() {
 
   if (isRegistered) {
     return (
-      <Card className="w-full border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm text-center">
+      <Card className="w-full border-none shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm text-center">
         <CardContent className="px-0 sm:px-6 pt-6">
           <div className="w-14 h-14 rounded-2xl bg-neutral-100 dark:bg-[#121217] border border-neutral-200 dark:border-[#2B2B38] text-brand-500 flex items-center justify-center mx-auto mb-5 shadow-xl">
             <Mail className="size-6" />
@@ -122,7 +122,7 @@ export function RegisterForm() {
   }
 
   return (
-    <Card className="w-full border-0 shadow-none bg-transparent sm:bg-card sm:border sm:shadow-sm">
+    <Card className="w-full border-none shadow-none bg-transparent sm:bg-card  sm:shadow-sm">
       <CardHeader className="px-0 sm:px-6 mb-2">
         <CardTitle className="font-black text-2xl sm:text-3xl text-foreground tracking-tight">
           {t("title")}
