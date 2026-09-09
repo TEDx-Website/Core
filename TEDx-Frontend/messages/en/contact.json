@@ -1,0 +1,51 @@
+{
+    "hero": {
+      "eyebrow": "Transmission Form",
+      "title": "Send a Transmission",
+      "subtitle": "No account required. All messages are encrypted and audited directly by the organizing committee.",
+      "thresholdProtocol": "Threshold Protocol",
+      "unlimitedDoors": "The Unlimited Doors",
+      "imageDesc": "Every idea is a key. Every threshold crossed opens a new frontier of human potential in AlKawmia."
+    },
+    "form": {
+      "fullName": "Full Name",
+      "fullNamePh": "e.g. Karim El-Sayed",
+      "email": "Email Address",
+      "emailPh": "e.g. karim@example.com",
+      "department": "Department / Topic",
+      "nameError": "Name must be at least 2 characters",
+      "emailError": "Invalid email address",
+      "subjectError": "Subject is too short",
+      "messageError": "Message must be at least 10 characters",
+      "deptOptions": {
+        "general": "General Inquiries & Tickets",
+        "curation": "Speaker Proposal / Idea",
+        "partnership": "Partnership & Sponsorship",
+        "media": "Press & Media Accreditation",
+        "volunteers": "Youth Committee & Training"
+      },
+      "phone": "Phone Number",
+      "optional": "(Optional)",
+      "phonePh": "+20 100 000 0000",
+      "subject": "Subject",
+      "subjectPh": "Brief headline of your inquiry",
+      "message": "Message",
+      "messagePh": "State your inquiry, idea, or proposal with clarity...",
+      "maxChars": "Max 2,000 characters",
+      "submit": "Transmit Message",
+      "submitting": "Transmitting...",
+      "success": "Transmission received. Our team will review your message within 48 hours."
+    },
+    "faq": {
+      "eyebrow": "Quick Answers",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Find immediate answers to common questions before sending a transmission.",
+      "q1": "How can I apply as a speaker for TEDxAlkawmia 2026?",
+      "a1": "Select 'Speaker Proposal / Idea' in the contact form or email curation@tedxalkawmia.org directly. Include a 2-minute video pitch, a short summary of your core premise, and why your idea matters to our community.",
+      "q2": "How are tickets allocated under the 100-seat license?",
+      "a2": "Due to official TED licensing constraints, each live edition is strictly limited to 100 seats. Seats are booked via our real-time ticket hold system on the Events page on a first-come, verified checkout basis.",
+      "q3": "How can my organization become a supporting partner?",
+      "a3": "We provide audited sponsorship tiers ranging from Title Threshold Partners to individual Student Seat Grants. Reach out to partners@tedxalkawmia.org to request our official 2026 Partnership Deck."
+    }
+  
+}

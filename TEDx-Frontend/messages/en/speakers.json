@@ -1,0 +1,105 @@
+{
+    "hero": {
+      "badge": "AI & Neuro-Cognitive Systems · Keynote",
+      "nameLine1": "Dr. Tarek",
+      "nameLine2": "El-Kattan",
+      "role": "Quantum Systems Architect & AI Ethics Chair",
+      "topicLabel": "Keynote Talk",
+      "talkTitle": "\"The Last Analog Thought: Preserving Human Consciousness in an Algorithmic Age\"",
+      "bio": "As neural synthesis advances, what remains irreversibly human? Dr. El-Kattan takes the stage to examine the boundary between synthetic intelligence, human curiosity, and biological intuition — dismantling comfortable assumptions from the red circle.",
+      "primaryBtn": "Claim Red Circle Pass",
+      "secondaryBtn": "Speaker Dossier",
+      "watermark": "NEXT"
+    },
+    "grid": {
+      "eyebrow": "Stage Catalog",
+      "title": "Curated Visionaries",
+      "showing": "Showing",
+      "of": "of",
+      "speakers": "Speakers",
+      "search": "Search speaker or talk...",
+      "filters": {
+        "all": "All Tracks",
+        "tech": "AI & Deep Tech",
+        "human": "Human Potential",
+        "design": "Urban & Architecture",
+        "youth": "Youth Catalyst"
+      },
+      "cta": "Explore Bio & Talk",
+      "list": [
+        {
+          "id": "laila",
+          "category": "tech",
+          "door": "Door 01 // The Spark",
+          "name": "Dr. Laila Mansour",
+          "track": "AI & Neuro-Cognitive Systems",
+          "talkTitle": "\"Neural Horizons: Rewiring Memory & Empathy Through Silicon\"",
+          "shortDesc": "Exploring how next-generation brain-computer interfaces can restore human emotional equilibrium and unlock dormant potential.",
+          "role": "Neuro-Cognitive Systems Researcher",
+          "bio": "Dr. Laila Mansour leads breakthrough investigations in brain-computer interfaces in Cairo. Her work bridges neural mapping with generative computational empathy, exploring how biological memory can be enhanced without sacrificing psychological authenticity."
+        },
+        {
+          "id": "karim",
+          "category": "design",
+          "door": "Door 02 // The Key",
+          "name": "Karim Hegazy",
+          "track": "Architecture & Urbanism",
+          "talkTitle": "\"Breathing Concrete: Reimagining Nile Urbanism for 2050\"",
+          "shortDesc": "How vernacular Egyptian building techniques and photosynthetic materials turn dense urban heat islands into regenerative ecosystems.",
+          "role": "Biophilic Architecture & Sustainable Cities",
+          "bio": "Karim Hegazy is an award-winning architect pioneering vernacular biophilic structures across Egypt. His practice merges historical Nubian and Coptic passive-cooling engineering with photosynthetic carbon-capturing concrete."
+        },
+        {
+          "id": "nouran",
+          "category": "youth",
+          "door": "Door 03 // The Door",
+          "name": "Nouran El-Gohary",
+          "track": "Youth & Culture",
+          "talkTitle": "\"The Geometry of Voice: Translating Arabic Poetry into 3D Space\"",
+          "shortDesc": "Blending centuries-old Kufic calligraphy rules with procedural algorithmic physics to create kinetic typographic sculptures.",
+          "role": "Creative Technologist & Calligraphy Futurist",
+          "bio": "Nouran El-Gohary explores the mathematical symmetry of classical Arabic typography. Her interactive spatial computing installations transform spoken word and tonal poetry into real-time physical sculptures."
+        },
+        {
+          "id": "amina",
+          "category": "human",
+          "door": "Door 01 // The Spark",
+          "name": "Amina Zaki",
+          "track": "Human Potential",
+          "talkTitle": "\"The Audacity to Build: Unlocking 1,000 Unseen Talents in the Delta\"",
+          "shortDesc": "Unpacking the real micro-mechanics of turning high-potential youth from grassroots communities into global technical founders.",
+          "role": "Social Incubator Founder & Education Reformer",
+          "bio": "Amina Zaki has spearheaded educational incubation hubs across secondary schools in the Nile Delta, training over 1,000 young problem solvers in venture creation, public rhetoric, and community leadership."
+        },
+        {
+          "id": "ziad",
+          "category": "tech",
+          "door": "Door 02 // The Key",
+          "name": "Ziad Abdel-Rahman",
+          "track": "AI & Deep Tech",
+          "talkTitle": "\"Decentralized Trust: Reclaiming Digital Sovereignty in the South\"",
+          "shortDesc": "A critical analysis of global data colonialism and the mathematical framework needed for sovereign Middle Eastern digital infrastructure.",
+          "role": "Cybersecurity Architect & Cryptographic Fellow",
+          "bio": "Ziad Abdel-Rahman is a leading cryptographer advocating for open, decentralized computing protocols in emerging markets, shielding critical civil infrastructure from global surveillance and monopoly."
+        },
+        {
+          "id": "salma",
+          "category": "youth",
+          "door": "Door 03 // The Door",
+          "name": "Salma Farouk",
+          "track": "Youth Catalyst",
+          "talkTitle": "\"Solar Harvesting at Molecular Scale: Breaking the 40% Barrier\"",
+          "shortDesc": "How perovskite crystal synthesis developed in local laboratories is democratizing zero-loss clean solar energy for developing nations.",
+          "role": "Renewable Nanomaterials Lead",
+          "bio": "Salma Farouk is a pioneering materials scientist who developed low-cost synthetic perovskite solar cells, enabling high-efficiency clean power generation in arid and remote desert territories."
+        }
+      ]
+    },
+    "cta": {
+      "eyebrow": "Curation Pipeline",
+      "title": "Have An Idea Worth Spreading?",
+      "desc": "We operate a year-round speaker curation academy. If you have an authentic insight, transformative research, or a local idea that demands a global stage, step forward.",
+      "primaryBtn": "Apply As A Speaker",
+      "secondaryBtn": "Read Curation Criteria"
+    }
+}
