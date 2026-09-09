@@ -6,7 +6,8 @@ import {
   ForgotPasswordInput,
   ResetPasswordInput,
 } from "../schema/auth.schema";
-import { BaseResponse, AuthTokens, RegisterData, ApiError } from "../types/auth.types";
+import {  AuthTokens, RegisterData } from "../types/auth.types";
+import { BaseResponse,ApiError } from "@/shared/types/api";
 
 export const useRegister = () => {
   return useMutation<BaseResponse<RegisterData>, ApiError, RegisterInput>({
