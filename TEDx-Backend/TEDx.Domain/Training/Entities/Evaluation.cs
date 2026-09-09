@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Training.Entities
 {
-    public class Evaluation : AuditableEntity, IConcurrent
+    public class Evaluation : AuditableEntity, IHasRowVersion
     {
         public Guid Id { get; private set; }
 

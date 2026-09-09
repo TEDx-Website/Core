@@ -1,9 +1,10 @@
+using TEDx.Domain.Communication.Enums;
+using TEDx.Domain.Communication.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TEDx.Domain.Communication;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {

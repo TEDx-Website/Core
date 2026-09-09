@@ -1,9 +1,9 @@
+using TEDx.Domain.Communication.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TEDx.Domain.Communication;
 using TEDx.Domain.Identity.Entities;
 using TEDx.Domain.Training.Entities;
 

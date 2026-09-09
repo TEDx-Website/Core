@@ -45,7 +45,7 @@ Each story follows the canonical form:
 ### US-AUTH-03
 *As an **Attendee**, I want my session to refresh silently, so that I stay logged in without re-entering my password.*
 - **Traces:** AUTH-06 · FR-AUTH-08, FR-AUTH-09 · Flow §1.2
-- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02). An expired refresh token (past `ExpiresAtUtc`) is rejected with `TOKEN_INVALID` (`ReasonRevoked = Expired`), distinct from `TOKEN_REUSED` (rotation violation) — the client must distinguish these for appropriate UX (D:Q47 `ReasonRevoked` enum: `Rotated | Reuse | Logout | Expired`).
+- **Notes:** Refresh tokens are **single-use, rotated** on each exchange, stored **hashed** (raw token only on the client), default lifetime **7 days** (D:Q24). Reuse of a consumed/revoked refresh token is rejected and **revokes the whole token family** (D:Q24, NFR-SEC-02). An expired refresh token (past `ExpiresAtUtc`) is rejected with `TOKEN_INVALID` (`ReasonRevoked = Expired`), distinct from `TOKEN_REUSED` (rotation violation) — the client must distinguish these for appropriate UX (D:Q47 `ReasonRevoked` enum: `Rotated | Reuse | Logout | Expired | PasswordReset | PasswordChange`).
 
 ### US-AUTH-04
 *As an **Attendee**, I want to log out, so that my refresh token can no longer be used.*
@@ -66,6 +66,11 @@ Each story follows the canonical form:
 *As the **system**, I want every protected endpoint to enforce the global role and per-track policies server-side, so that the client is never trusted for access decisions.*
 - **Traces:** AUTH-07 · FR-AUTH-06, NFR-SEC-03 · Flow (cross-cutting)
 - **Notes:** Authorization combines the **global role** (from the token) with **per-track assignments** (resolved per request). A Board's powers apply only to the single track they supervise; cross-track access returns **403** even when the caller is a Member of another track (Persona: Yousef).
+
+### US-AUTH-08
+*As a **Visitor**, I want to confirm my email address from a link sent on registration — and ask for a fresh link if I lost it — so that my account is provably mine before I use it.*
+- **Traces:** AUTH-08 · FR-AUTH-12, FR-AUTH-13, FR-AUTH-14, FR-AUTH-15, FR-AUTH-16 · Flow §1.1
+- **Notes:** Registration creates the account **unconfirmed** and emails a token valid **24 hours** (longer than the 1-hour reset token, because a confirmation mail is routinely opened the next day; D:Q57). Login is refused while unconfirmed with `EMAIL_NOT_CONFIRMED` (**403**), checked **after** the password is verified so an unconfirmed address is never disclosed to someone who does not know the password. Expired/tampered tokens return `CONFIRM_TOKEN_INVALID` (**400**); a repeat click on a still-valid link succeeds **idempotently** (Identity does not rotate the `SecurityStamp` on confirm, so confirmation tokens — unlike reset tokens — are not single-use, and a resend *adds* a link rather than revoking the old one). The resend endpoint answers **identically** whether the address is unknown, already confirmed, or genuinely pending (no enumeration), and is rate limited with the recovery endpoints (API §0.7). Accounts created before this feature shipped — including the seeded Admin — are migrated to confirmed; enforcement is **forward-only** (FR-AUTH-16).
 
 ---
 

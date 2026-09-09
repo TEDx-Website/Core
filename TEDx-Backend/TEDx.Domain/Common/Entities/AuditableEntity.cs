@@ -1,5 +1,5 @@
 using System;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 
 namespace TEDx.Domain.Common.Entities
 {

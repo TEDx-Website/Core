@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class Package : AuditableEntity, IConcurrent, ISoftDelete
+    public class Package : AuditableEntity, IHasRowVersion, ISoftDeletable
     {
         public Guid Id { get; set; }
         public Guid EventId { get; set; }

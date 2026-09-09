@@ -9,7 +9,7 @@ using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
-    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
@@ -68,6 +68,18 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .HasDefaultValue(OrderStatus.PendingPayment);
             builder.Property(x => x.RowVersion)
                 .IsRowVersion();
+
+            builder.HasIndex(o => new
+            {
+                o.EventId,
+                o.Status
+            })
+            .HasDatabaseName("IX_Order_Event_Status")
+            .IncludeProperties(o => new
+            {
+                o.Quantity,
+                o.HoldExpiresAtUtc
+            });
 
             builder.HasOne<User>().WithMany()
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Restrict);

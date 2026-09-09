@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using TEDx.Application.Common.Errors;
 using TEDx.Domain.Common;
 
 namespace TEDx.Application.Common.Behaviors;
@@ -14,27 +15,36 @@ public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidat
             return await next();
 
         var context = new ValidationContext<TRequest>(request);
-        var failures = validators
-            .SelectMany(v => v.Validate(context).Errors)
+
+        var validationResults = await Task.WhenAll(
+        validators.Select(v => v.ValidateAsync(context, ct)));
+
+        var failures = validationResults
+            .SelectMany(r => r.Errors)
             .Where(f => f is not null)
             .ToList();
 
         if (failures.Count == 0)
             return await next();
 
-        var errors = failures
-            .Select(f => Error.Validation(Errors.ValidationError.Code, f.ErrorMessage, f.PropertyName))
-            .ToList();
-
-        var responseType = typeof(TResponse);
-        if (!responseType.IsGenericType || responseType.GetGenericTypeDefinition() != typeof(Result<>))
+        if (!FailureResponseFactory.CanCreate<TResponse>())
             return await next();
 
-        var failure = typeof(Result<>)
-            .MakeGenericType(responseType.GetGenericArguments()[0])
-            .GetMethod("Failure")!
-            .Invoke(null, [errors]);
+        var errors = failures
+            .Select(f => Error.Validation(
+                IsCustomCode(f.ErrorCode)
+                    ? f.ErrorCode
+                    : CommonErrors.ValidationError.Code,
+                f.ErrorMessage,
+                f.PropertyName))
+            .ToList();
 
-        return (TResponse)failure!;
+        return FailureResponseFactory.Create<TResponse>(errors);
     }
+
+    // FluentValidation defaults ErrorCode to the validator's type name
+    // ("NotEmptyValidator"); anything else was set with WithErrorCode.
+    private static bool IsCustomCode(string? code)
+        => !string.IsNullOrWhiteSpace(code)
+           && !code.EndsWith("Validator", StringComparison.Ordinal);
 }

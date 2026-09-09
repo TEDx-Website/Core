@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 using TEDx.Domain.Common.Exceptions;
 using TEDx.Domain.Ticketing.Enums;
 
 namespace TEDx.Domain.Ticketing.Entities
 {
-    public class Order : AuditableEntity, IConcurrent
+    public class Order : AuditableEntity, IHasRowVersion
     {
         public Guid Id { get; set; }
         public string? OrderReference { get; set; }

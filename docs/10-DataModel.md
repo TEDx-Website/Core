@@ -75,8 +75,8 @@ Inherits the full `IdentityUser<Guid>` column set. The table below lists **every
 | `Id` | `uniqueidentifier` PK | | Identity | **The account id every other context references by value.** |
 | `UserName`, `NormalizedUserName` | `nvarchar(256)` | | Identity | **set equal to `Email`** — login is by email, but Identity requires a username; `NormalizedUserName` **unique** |
 | `Email`, `NormalizedEmail` | `nvarchar(256)` | | Identity | `NormalizedEmail` **unique** |
-| `EmailConfirmed` | `bit` | | Identity | |
-| `PasswordHash`, `SecurityStamp`, `ConcurrencyStamp` | `nvarchar(max)` | | Identity | crypto; `SecurityStamp` backs password-reset tokens (§1.2); `ConcurrencyStamp` is the optimistic token |
+| `EmailConfirmed` | `bit` | | Identity | **Active (D:Q57)** — `false` on registration; login is refused until `true` (FR-AUTH-13). Set by `/auth/confirm-email`. The rollout migration backfills **`true` for every row that already exists**, including the seeded Admin, so enforcement is forward-only and no current user is locked out (FR-AUTH-16). |
+| `PasswordHash`, `SecurityStamp`, `ConcurrencyStamp` | `nvarchar(max)` | | Identity | crypto; `SecurityStamp` backs password-reset **and email-confirmation** tokens (§1.2); `ConcurrencyStamp` is the optimistic token |
 | `PhoneNumber` | `nvarchar(32)` | ✔ | Identity | the API's `phone` (FR-USER-01/02) — reuses Identity's built-in column, not a custom one |
 | `PhoneNumberConfirmed`, `TwoFactorEnabled` | `bit` | | Identity | present on the base type; unused features, left at defaults |
 | `LockoutEnd` | `datetimeoffset` | ✔ | Identity | |
@@ -105,7 +105,7 @@ Inherits the full `IdentityUser<Guid>` column set. The table below lists **every
 | `CreatedByIp` | `nvarchar(45)` | ✔ | optional |
 | `RevokedAtUtc` | `datetime2` | ✔ | `null` = active |
 | `ReplacedByTokenHash` | `nvarchar(88)` | ✔ | rotation-chain link |
-| `ReasonRevoked` | `int` enum | ✔ | Rotated \| Reuse \| Logout \| Expired |
+| `ReasonRevoked` | `int` enum | ✔ | Rotated \| Reuse \| Logout \| Expired \| PasswordReset \| PasswordChange |
 
 - **Unique index** `UQ_RefreshToken_TokenHash`; **index** `IX_RefreshToken_AccountId` (revoke-all-on-logout / reuse).
 - **Reuse detection:** presenting a token whose row is already revoked ⇒ walk `ReplacedByTokenHash` and revoke the whole family ⇒ `TOKEN_REUSED` (D:Q24, Q47). See [[12-SequenceDiagrams#7. Refresh-token rotation + reuse detection (D:Q24, Q47)|12 — Sequence Diagrams §7]].
@@ -509,22 +509,24 @@ Solid edges = intra-context FK **with** a navigation property. Dashed edges = **
 
 Wire form is the PascalCase name; DB form is the `int`. Never renumber — append only.
 
-| Enum | 0 | 1 | 2 | 3 |
-|------|---|---|---|---|
-| `GlobalRole` | Attendee | Admin | | |
-| `ReasonRevoked` | Rotated | Reuse | Logout | Expired |
-| `EventStatus` | Draft | Published | Archived | Cancelled |
-| `OrderStatus` | PendingPayment | Paid | Cancelled | Expired |
-| `OrderUnitType` | Individual | Package | | |
-| `TicketStatus` | Issued | CheckedIn | Voided | |
-| `PaymentStatus` | Initiated | Succeeded | Failed | |
-| `DiscountType` | Percentage | FixedAmount | | |
-| `PromoRedemptionStatus` | Claimed | Confirmed | Released | |
-| `TrackRole` | Member | Board | | |
-| `SessionStatus` | Scheduled | Held | Cancelled | |
-| `AttendanceStatus` | Present | Late | Absent | |
-| `NotificationAudienceType` | PlatformWide | GlobalRole | Track | |
-| `ContactStatus` | New | Read | Archived | |
+| Enum | 0 | 1 | 2 | 3 | 4 | 5 |
+|------|---|---|---|---|---|---|
+| `GlobalRole` | Attendee | Admin | | | | |
+| `ReasonRevoked` | Rotated | Reuse | Logout | Expired | PasswordReset | PasswordChange |
+| `EventStatus` | Draft | Published | Archived | Cancelled | | |
+| `OrderStatus` | PendingPayment | Paid | Cancelled | Expired | | |
+| `OrderUnitType` | Individual | Package | | | | |
+| `TicketStatus` | Issued | CheckedIn | Voided | | | |
+| `PaymentStatus` | Initiated | Succeeded | Failed | | | |
+| `DiscountType` | Percentage | FixedAmount | | | | |
+| `PromoRedemptionStatus` | Claimed | Confirmed | Released | | | |
+| `TrackRole` | Member | Board | | | | |
+| `SessionStatus` | Scheduled | Held | Cancelled | | | |
+| `AttendanceStatus` | Present | Late | Absent | | | |
+| `NotificationAudienceType` | PlatformWide | GlobalRole | Track | | | |
+| `ContactStatus` | New | Read | Archived | | | |
+
+- **`ReasonRevoked` 4–5 were appended** after the original freeze (D:Q47 amendment): password reset and password change each revoke every active token for the account, and both previously reused `Logout`. Separate values keep the audit trail able to tell an owner's sign-out from a credential replacement. `int` column, no `CHECK` constraint, not exposed on the wire ⇒ **no migration, no client impact**.
 
 - **`Notification.AudienceRole`** is **not a distinct enum** — it reuses `GlobalRole` (`Attendee=0 | Admin=1`) and is populated only when `AudienceType = GlobalRole`. It is stored as `int` with the same `.HasConversion<int>()` mapping. No separate value set to freeze.
 

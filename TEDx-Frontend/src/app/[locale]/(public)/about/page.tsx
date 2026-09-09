@@ -1,9 +1,9 @@
-import { TeamHero } from "@/features/about/components/team-hero";
-import { LeaderSection } from "@/features/about/components/leader-section";
-import { CuratorsSection } from "@/features/about/components/curators-section";
-import { ProductionSection } from "@/features/about/components/production-section";
-import { TeamCta } from "@/features/about/components/team-cta";
 import { getTranslations } from "next-intl/server";
+import { AboutHero } from "@/features/about/components/about-hero";
+import { AboutTheme } from "@/features/about/components/about-theme";
+import { AboutPrinciples } from "@/features/about/components/about-principles";
+import { AboutTed } from "@/features/about/components/about-ted";
+import { AboutTimeline } from "@/features/about/components/about-timeline";
 
 export async function generateMetadata({
   params,
@@ -11,28 +11,21 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "about.metadata" });
+  const t = await getTranslations({ locale, namespace: "about" });
 
   return {
-    title: t("title"),
-    description: t("description"),
-    openGraph: {
-      title: t("title"),
-      description: t("description"),
-      type: "website",
-      images: ["/assets/og-team.jpg"],
-    },
+    title: `About Us | TEDxAlkawmia`,
   };
 }
 
-export default function TeamPage() {
+export default function AboutPage() {
   return (
     <main className="w-full overflow-hidden">
-      <TeamHero />
-      <LeaderSection />
-      <CuratorsSection />
-      <ProductionSection />
-      <TeamCta />
+      <AboutHero />
+      <AboutTheme />
+      <AboutPrinciples />
+      <AboutTed />
+      <AboutTimeline />
     </main>
   );
 }

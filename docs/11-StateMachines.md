@@ -188,14 +188,17 @@ stateDiagram-v2
     [*] --> Active : issued (login or rotation) — TokenHash stored, raw never persisted
     Active --> Revoked_Rotated : refresh — single-use; new token issued, chain linked
     Active --> Revoked_Logout : logout — explicit revoke
+    Active --> Revoked_PasswordSet : password reset / change — revoke-all for the account
     Active --> Revoked_Expired : ExpiresAtUtc passes
     Revoked_Rotated --> Revoked_Reuse : presented AGAIN → family revoke → TOKEN_REUSED
     Revoked_Rotated --> [*]
     Revoked_Logout --> [*]
+    Revoked_PasswordSet --> [*]
     Revoked_Expired --> [*]
     Revoke_Reuse --> [*]
     state "Revoked (Rotated)" as Revoked_Rotated
     state "Revoked (Logout)" as Revoked_Logout
+    state "Revoked (PasswordReset | PasswordChange)" as Revoked_PasswordSet
     state "Revoked (Expired)" as Revoked_Expired
     state "Revoked (Reuse)" as Revoked_Reuse
 ```
@@ -204,11 +207,12 @@ stateDiagram-v2
 |-----------|-----------|----------------|
 | issue | (new) → Active | On login or rotation; stores `TokenHash` = SHA-256(raw), `ExpiresAtUtc` = now + 7d (D:Q24). Raw token never persisted. |
 | rotate | Active → Revoked (`Rotated`) | On `/auth/refresh`: the presented token is **single-use** — revoked, a new pair issued, `ReplacedByTokenHash` links the chain (D:Q47). |
-| logout | Active → Revoked (`Logout`) | Explicit sign-out; a password change revokes all of a user's active refresh tokens. |
+| logout | Active → Revoked (`Logout`) | Explicit sign-out; revokes only the presented token. |
+| password replaced | Active → Revoked (`PasswordReset` \| `PasswordChange`) | A completed reset or change revokes **all** of the account's active tokens (NFR-SEC-02). The two reasons stay distinct so an audit review can tell "the owner rotated their own password" from "whoever held the mailbox reset it". |
 | expire | Active → Revoked (`Expired`) | `ExpiresAtUtc` elapsed. |
 | **reuse detect** | Revoked (`Rotated`) → Revoked (`Reuse`) | Presenting an **already-revoked** token walks `ReplacedByTokenHash` and **revokes the whole family** → `TOKEN_REUSED`, forcing re-login (D:Q24, Q47). |
 
-- Reason values are frozen: `Rotated | Reuse | Logout | Expired` ([[10-DataModel#10. Enum reference (frozen `int` values)|10 — Data Model §10]]). Rotation/reuse sequence: [[09-SystemDesign#6. Authentication & Authorization Design|09 — System Design §6.3]].
+- Reason values are frozen: `Rotated | Reuse | Logout | Expired | PasswordReset | PasswordChange` ([[10-DataModel#10. Enum reference (frozen `int` values)|10 — Data Model §10]]). Rotation/reuse sequence: [[09-SystemDesign#6. Authentication & Authorization Design|09 — System Design §6.3]].
 
 ## 9. OutboxMessage (D:Q45, Q53)
 

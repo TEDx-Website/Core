@@ -17,19 +17,20 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TokenHash)
                 .HasMaxLength(88)
                 .IsRequired();
+            builder.HasIndex(x => x.TokenHash).IsUnique();
 
             builder.Property(x => x.AccountId)
                 .IsRequired();
 
-            builder.Property(x => x.ExpiredAtUTC)
+            builder.Property(x => x.ExpiresAtUtc)
                 .IsRequired();
 
-            builder.Property(x => x.ReplaacedByTokenHash)
+            builder.Property(x => x.ReplacedByTokenHash)
                 .HasMaxLength(88);
-            builder.Property(x => x.CreatedBtIp)
+            builder.Property(x => x.CreatedByIp)
                 .HasMaxLength(45);
 
-            builder.HasOne(x => x.ApplicationUser).WithMany(u => u.refreshTokens)
+            builder.HasOne(x => x.ApplicationUser).WithMany(u => u.RefreshTokens)
                 .HasForeignKey(x => x.AccountId).OnDelete(DeleteBehavior.Cascade);
 
             // Matching filter: keeps RefreshTokens invisible when their User is soft-deleted.

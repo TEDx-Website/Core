@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Identity.Enums;
 namespace TEDx.Domain.Identity.Entities
 {
-    public class User : IdentityUser<Guid> , IAuditable , ISoftDelete
+    public class User : IdentityUser<Guid> , IAuditable , ISoftDeletable
     {
         public string? FirstName { get; set; } // 100
         public string? LastName { get; set; }// 100
-        public string? BIO { get; set; }// 1000
+        public string? Bio { get; set; }// 1000
         public string? ProfilePictureUrl { get; set; }// 500
         public GlobalRole Role { get; set; }// NN Default = attendee
         public bool IsActive { get; set; }// 1
@@ -20,6 +20,6 @@ namespace TEDx.Domain.Identity.Entities
         public string? UpdatedBy { get; set; }
         public bool IsDeleted { get; set; } // nn dft
         public DateTime? DeletedAtUtc { get; set; }
-        public List<RefreshToken> refreshTokens {  get; set; }
+        public List<RefreshToken> RefreshTokens {  get; set; } = [];
     }
 }

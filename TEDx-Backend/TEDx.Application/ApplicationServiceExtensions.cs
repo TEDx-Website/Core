@@ -2,6 +2,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using TEDx.Application.Common.Behaviors;
+using TEDx.Application.Identity.Services;
+using TEDx.Application.Ticketing.Services;
 
 namespace TEDx.Application;
 
@@ -13,9 +15,13 @@ public static class ApplicationServiceExtensions
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 
-        // Pipeline order: Logging → Validation → [Authorization in EP-1.2.1] → Handler
+        // Pipeline order: Logging → Validation → Authorization → Handler.
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));
+        services.AddScoped<IMyProfileService, MyProfileService>();
+
+        services.AddScoped<IEventSeatAvailabilityReader, EventSeatAvailabilityReader>();
 
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
 

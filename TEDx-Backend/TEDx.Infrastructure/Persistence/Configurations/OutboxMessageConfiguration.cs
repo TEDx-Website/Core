@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using TEDx.Domain.Cross_Cutting;
+using TEDx.Domain.Outbox;
 
 namespace TEDx.Infrastructure.Persistence.Configurations
 {
     public sealed class OutboxMessageConfiguration
-    : IEntityTypeConfiguration<OutOfBokMessages>
+    : IEntityTypeConfiguration<OutboxMessage>
     {
-        public void Configure(EntityTypeBuilder<OutOfBokMessages> builder)
+        public void Configure(EntityTypeBuilder<OutboxMessage> builder)
         {
             builder.ToTable("OutboxMessages");
 

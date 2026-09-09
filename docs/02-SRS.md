@@ -158,17 +158,22 @@ Requirements are grouped by capability area and keyed to the PRD feature IDs. Ea
 
 | Ref | Requirement |
 |-----|-------------|
-| **FR-AUTH-01** | A Visitor MUST be able to register with first name, last name, email, and password. On success the system creates an account with the **Attendee** global role and no track assignments. |
+| **FR-AUTH-01** | A Visitor MUST be able to register with first name, last name, email, and password. On success the system creates an account with the **Attendee** global role, no track assignments, and an **unconfirmed** email (FR-AUTH-12). |
 | **FR-AUTH-02** | The system MUST reject registration if the email already belongs to an account, returning a field-level validation error (without revealing whether the address is otherwise in use beyond this uniqueness check). |
 | **FR-AUTH-03** | Passwords MUST meet a minimum policy (≥ 8 chars, at least one upper, one lower, one digit) enforced server-side; violations return validation errors. |
 | **FR-AUTH-04** | A registered user MUST be able to log in with email + password, receiving a short-lived **JWT access token** and a **refresh token**. |
-| **FR-AUTH-05** | Login MUST fail with a generic "invalid credentials" message when the email is unknown or the password is wrong (no user enumeration), and MUST be rejected for deactivated accounts. |
+| **FR-AUTH-05** | Login MUST fail with a generic "invalid credentials" message when the email is unknown or the password is wrong (no user enumeration), and MUST be rejected for deactivated accounts and for accounts whose email is not yet confirmed (FR-AUTH-13). |
 | **FR-AUTH-06** | The access token MUST carry the account id, email, and **global role** claims. Per-track (Member/Board) authority MUST NOT be baked into the token; it is resolved per request against live `TrackAssignment` rows (D:Q35; see [09 — System Design §6](./09-SystemDesign.md)). |
 | **FR-AUTH-07** | A user MUST be able to log out, which revokes the presented refresh token so it can no longer be exchanged. |
 | **FR-AUTH-08** | A user MUST be able to exchange a valid, unexpired, unrevoked refresh token for a new access token. Refresh tokens are **single-use and rotated**: exchange revokes the old token and issues a new one, linked via `ReplacedByTokenHash`. Reuse of a revoked token MUST **revoke the entire rotation family** (walk the `ReplacedByTokenHash` chain) and return `TOKEN_REUSED` — forcing re-login (D:Q24, Q47). |
 | **FR-AUTH-09** | Refresh tokens MUST be stored **hashed**; the raw token exists only with the client. |
 | **FR-AUTH-10** | A user MUST be able to request a password reset by email; the response MUST be identical whether or not the email exists (no enumeration). |
 | **FR-AUTH-11** | A valid, unexpired, single-use reset token MUST allow the user to set a new password; used or expired tokens MUST be rejected. |
+| **FR-AUTH-12** | Registration MUST create the account with the email **unconfirmed** and MUST send a confirmation link to that address. The registration response itself MUST NOT depend on mail delivery succeeding. |
+| **FR-AUTH-13** | Login MUST be refused while the email is unconfirmed, with an error distinct from both invalid credentials and deactivation so the client can offer "resend confirmation". The check MUST happen **after** the password is verified, so an unconfirmed address is not disclosed to someone who does not know the password. |
+| **FR-AUTH-14** | A valid, unexpired confirmation token MUST mark the email confirmed. Invalid, expired, or tampered tokens MUST be rejected with a distinct error; re-submitting a token for an already-confirmed account MUST succeed idempotently rather than error. Token lifetime is **24 hours** (longer than the 1-hour reset token — a confirmation mail is routinely opened the next day). Unlike reset tokens, confirmation tokens are **not single-use**: Identity does not rotate the `SecurityStamp` on confirm, so every unexpired link for the account remains valid. This is accepted — the token only proves inbox control, which is exactly what a repeat click re-proves. |
+| **FR-AUTH-15** | A user MUST be able to request a new confirmation email. The response MUST be identical whether the address is unknown, already confirmed, or genuinely pending (no enumeration), and the endpoint MUST be rate limited (NFR-SEC-10). |
+| **FR-AUTH-16** | Accounts that exist before this feature ships — including the seeded Admin — MUST be migrated to **confirmed**. Confirmation is enforced only for accounts created from the rollout onward; retroactive enforcement would lock out every existing user (D:Q57). |
 
 ### 3.2 User & Profile Management (PRD §6.2)
 

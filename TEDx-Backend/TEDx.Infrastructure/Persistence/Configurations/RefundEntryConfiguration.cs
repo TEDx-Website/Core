@@ -17,6 +17,10 @@ namespace TEDx.Infrastructure.Persistence.Configurations
 
             builder.HasKey(x => x.Id);
 
+            builder.Property(x => x.Amount)
+                .HasPrecision(18, 2)
+                .IsRequired();
+
             builder.Property(x => x.Reason)
                 .HasMaxLength(500)
                 .IsRequired();

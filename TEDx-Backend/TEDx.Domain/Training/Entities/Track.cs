@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 using TEDx.Domain.Common.Entities;
 
 namespace TEDx.Domain.Training.Entities
 {
-    public class Track : AuditableEntity, ISoftDelete, IConcurrent
+    public class Track : AuditableEntity, ISoftDeletable, IHasRowVersion
     {
         public Guid Id { get; set; }
         public string? NameEn { get; set; }

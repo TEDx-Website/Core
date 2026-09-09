@@ -4,11 +4,11 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using TEDx.Application.Common.Interfaces;
-using TEDx.Domain.Common.DomainInterfaces;
+using TEDx.Domain.Common.Abstractions;
 
 namespace TEDx.Infrastructure.Persistence.Interceptors
 {
-    public class AuditInterceptor : SaveChangesInterceptor
+    public sealed class AuditInterceptor : SaveChangesInterceptor
     {
         private readonly ICurrentUser _currentUser;
         private readonly IClock _clock;
@@ -46,15 +46,31 @@ namespace TEDx.Infrastructure.Persistence.Interceptors
                 return;
 
             var now = _clock.UtcNow;
-            var userId = _currentUser.UserId;
+            var userId = _currentUser.UserId?.ToString(); // convert Guid? -> string?
 
-            foreach (var entry in context.ChangeTracker.Entries<ISoftDelete>())
+            foreach (var entry in context.ChangeTracker.Entries<ISoftDeletable>())
             {
                 if (entry.State == EntityState.Deleted)
                 {
                     entry.State = EntityState.Modified;
                     entry.Entity.IsDeleted = true;
                     entry.Entity.DeletedAtUtc = now;
+
+                    // Only IsDeleted/DeletedAtUtc (and whatever the audit loop below
+                    // sets) should be written. Without this, EF marks every column
+                    // on the row as modified, and the UPDATE statement overwrites
+                    // any other property with whatever was loaded in memory —
+                    // risking a lost update if another request changed the row
+                    // concurrently.
+                    //foreach (var property in entry.Properties)
+                    //{
+                    //    var name = property.Metadata.Name;
+                    //    if (name != nameof(ISoftDeletable.IsDeleted)
+                    //        && name != nameof(ISoftDeletable.DeletedAtUtc))
+                    //    {
+                    //        property.IsModified = false;
+                    //    }
+                    //}
                 }
             }
 

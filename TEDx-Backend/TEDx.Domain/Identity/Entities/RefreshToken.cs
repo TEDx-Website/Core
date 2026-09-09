@@ -8,15 +8,15 @@ namespace TEDx.Domain.Identity.Entities
     {
         public Guid Id { get; set; }
         public Guid AccountId { get; set; }
-        public string? TokenHash { get; set; }// NN UN varchar88
-        public DateTime ExpiredAtUTC { get; set; } //NN
-        public string? CreatedBtIp { get; set; } // 45
-        public DateTime RevokedAtUtc { get; set; }
-        public string? ReplaacedByTokenHash { get; set; }//88
-        public ReasonRevoked ReasonRevoked { get; set; }
+        public string TokenHash { get; set; } = null!;
+        public DateTime ExpiresAtUtc { get; set; }
+        public string? CreatedByIp { get; set; }
+        public DateTime? RevokedAtUtc { get; set; }
+        public string? ReplacedByTokenHash { get; set; }
+        public RevocationReason? ReasonRevoked { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public User ApplicationUser { get; set; } = null!;
+
+        public bool IsActive(DateTime nowUtc) => RevokedAtUtc is null && ExpiresAtUtc > nowUtc;
     }
 }
-
-// APPUSER 1 ---> M REFRESHTOKEN

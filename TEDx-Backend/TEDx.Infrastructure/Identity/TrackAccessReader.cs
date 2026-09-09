@@ -1,0 +1,43 @@
+using Microsoft.EntityFrameworkCore;
+using TEDx.Application.Common.Interfaces;
+using TEDx.Domain.Training.Enums;
+
+namespace TEDx.Infrastructure.Identity
+{
+    public sealed class TrackAccessReader : ITrackAccessReader
+    {
+        private readonly IApplicationDbContext _db;
+        private readonly IClock _clock;
+        public TrackAccessReader(IApplicationDbContext db, IClock clock)
+        {
+            _db = db;
+            _clock = clock;
+        }
+
+        public async Task<TrackRole?> GetRoleInTrackAsync(Guid accountId, Guid trackId, CancellationToken ct)
+        {
+            var now = _clock.UtcNow;
+
+            var isAccountUsable = await _db.Users
+                .AsNoTracking()
+                .AnyAsync(u => u.Id == accountId && u.IsActive, ct);
+
+            if (!isAccountUsable)
+                return null;
+
+            var roles = await _db.TrackAssignments
+                .AsNoTracking()
+                .Where(a => a.AccountId == accountId
+                         && a.TrackId == trackId
+                         && a.StartAtUtc <= now
+                         && (a.EndAtUtc == null || a.EndAtUtc > now))
+                .Select(a => a.TrackRole)
+                .ToListAsync(ct);
+
+            if (roles.Count == 0)
+                return null;
+
+            return roles.Contains(TrackRole.Board) ? TrackRole.Board : roles[0];
+        }
+    }
+}
