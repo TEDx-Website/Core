@@ -1,5 +1,4 @@
-import { BaseResponse } from "@/features/auth/types/auth.types";
-
+import { BaseResponse } from "@/shared/types/api";
 export interface ProfileAssignments {
   memberOfTrackId: string;
   boardOfTrackId: string;

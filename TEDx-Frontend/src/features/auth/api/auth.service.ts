@@ -6,7 +6,7 @@ import {
   ResetPasswordInput,
 } from "../schema/auth.schema";
 import { AuthTokens, RegisterData } from "../types/auth.types";
-import { BaseResponse } from "@/shared/types/api.types";
+import { BaseResponse } from "@/shared/types/api";
 
 export const authService = {
   register: async (data: RegisterInput): Promise<BaseResponse<RegisterData>> => {
