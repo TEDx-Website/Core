@@ -1,71 +1,107 @@
 {
-    "metadata": {
-    "title": "Meet The Team | TEDx Alkawmia",
-    "description": "The visionaries, curators, and builders behind the Resilient Futures experience of TEDx Alkawmia."
-  },
-  "Hero": {
-    "titleLine1": "MEET",
-    "titleLine2": "THE",
-    "titleHighlight": "TEAM",
-    "description": "The visionaries, curators, and builders behind the Resilient Futures experience. We are a collective of thinkers dedicated to ideas worth spreading."
-  },
-  "LeaderSection": {
-    "members": [
-      {
-        "id": "01",
-        "category": "LEADERSHIP",
-        "categoryDesc": "Guiding the strategic vision and overall execution of the TEDx Digital platform.",
-        "name": "Marcus Chen",
-        "role": "executive producer",
-        "bio": "Marcus brings over 15 years of experience in digital event production and strategic communications. His vision for the Resilient Futures experience integrates cutting-edge technology with the timeless power of human storytelling.",
-        "viewProfile": "View Profile"
+    "hero": {
+      "eyebrow": "Introduction",
+      "title": "About TEDxAlKawmia",
+      "p1": "For years, local thinkers and creators had to travel to capital metropolises to be heard. TEDxAlKawmia was founded to shatter that geographic centralization.",
+      "p2": "Operated under official license from TED, we build an architectural stage where local researchers, creators, and pioneers present ideas that challenge comfortable assumptions.",
+      "stats": {
+        "s1_value": "50+",
+        "s1_label": "Inspiring Speakers",
+        "s2_value": "2000+",
+        "s2_label": "Community Members",
+        "s3_value": "04",
+        "s3_label": "Training Tracks"
       }
-    ]
-  },
-  "CuratorsSection": {
-    "id": "02",
-    "category": "THE CURATORS",
-    "categoryDesc": "Discovering, refining, and elevating the ideas that define our program.",
-    "viewProfile": "View Profile",
-    "members": [
-      {
-        "name": "Sarah Jenkins",
-        "role": "Lead Curator",
-        "bio": "Sarah Jenkins expertly navigates the intricate logistics of global speaker coordination and digital venue management, transforming creative chaos into seamless experiences."
-      },
-      {
-        "name": "David Okafor",
-        "role": "Creative Director",
-        "bio": "David crafts innovative streaming solutions and immersive digital environments that effortlessly connect our speakers with a worldwide audience."
-      }
-    ]
-  },
-  "ProductionSection": {
-    "id": "03",
-    "category": "PRODUCTION",
-    "categoryDesc": "Architecting the digital infrastructure and ensuring flawless execution.",
-    "viewProfile": "View Profile",
-    "members": [
-      {
-        "name": "Elena James",
-        "role": "Operations Lead",
-        "bio": "Elena orchestrates the complex logistics of global speaker coordination and digital venue management, bringing order to creative chaos."
-      },
-      {
-        "name": "Samir Gupta",
-        "role": "Technical Director",
-        "bio": "Samir builds the bespoke streaming architecture and interactive digital environments that connect our speakers to a global audience seamlessly."
-      },
-      {
-        "name": "Mary Martinez",
-        "role": "Events Coordinator",
-        "bio": "Elena expertly navigates the intricate web of international speaker logistics and virtual venue setups, transforming chaos into seamless execution."
-      }
-    ]
-  },
-  "TeamCta": {
-    "title": "Become Part of The Story",
-    "description": "Our event is built by a collective of passionate volunteers. If you're interested in shaping the future of ideas, we'd love to hear from you.",
-    "cta": "Join the Team"
-  }
+    },
+    "theme": {
+      "eyebrow": "OUR THEME",
+      "title": "The Unlimited Doors",
+      "subtitle": "Every idea is an entrance. Every connection is an opening. Three threshold movements define our program.",
+      "steps": [
+        {
+          "num": "01",
+          "title": "THE SPARK",
+          "desc": "Curiosity ignited by an unasked question. The sudden moment of intellectual rupture in the darkness."
+        },
+        {
+          "num": "02",
+          "title": "THE KEY",
+          "desc": "Rigorous curation, relentless craft, and personal agency forged within our year-round training corridors."
+        },
+        {
+          "num": "03",
+          "title": "THE DOOR",
+          "desc": "Stepping onto the red dot. The threshold crossed to transform individual perspective into collective movement."
+        }
+      ]
+    },
+    "principles": {
+      "imageBadge": "The Red Dot Arena",
+      "imageTitle": "Where Ideas Collide",
+      "imageDesc": "A community bound by truth, curiosity, and relentless belief in youth leadership.",
+      "eyebrow": "Our Values",
+      "title": "Core Principles",
+      "subtitle": "The non-negotiable standards that govern how we curate ideas, train leaders, and build our community.",
+      "items": [
+        {
+          "num": "01",
+          "title": "Idea-Driven Focus",
+          "desc": "We exist to discover, nurture, and elevate ideas that challenge the status quo and spark meaningful global transformation."
+        },
+        {
+          "num": "02",
+          "title": "Youth Catalyst",
+          "desc": "Empowering young minds with the platform, tools, and mentorship required to turn bold vision into real-world action."
+        },
+        {
+          "num": "03",
+          "title": "Continuous Incubation",
+          "desc": "We are a year-round empowerment academy. The event is merely the summit; the true work happens in our youth training corridors."
+        },
+        {
+          "num": "04",
+          "title": "Radical Authenticity",
+          "desc": "No rehearsed corporate speak. We coach speakers to strip away fluff and present their truths with raw, unpolished clarity."
+        }
+      ]
+    },
+    "tedInfo": {
+      "eyebrow": "Global Licensing & Compliance",
+      "title": "What is TED & TEDx?",
+      "subtitle": "Understanding the covenant between global guidance and independent grassroots execution.",
+      "tedTitle": "About TED",
+      "tedDesc": "TED is a nonprofit organization devoted to Ideas Worth Spreading, often in the form of short talks given by leading thinkers and doers. Many of these talks are given at TED's annual conference in Vancouver and made available, free, at TED.com.",
+      "tedxTitle": "About TEDx",
+      "tedxDesc": "In the spirit of ideas worth spreading, TEDx is a program of local, self-organized events that bring people together to share a TED-like experience. At a TEDx event, TED Talks video and live speakers combine to spark deep discussion and connection.",
+      "licenseTitle": "Official License Notice",
+      "licenseDesc": "TEDxAlKawmia is operated under an official license from TED Conferences LLC. This independent TEDx event is operated under license from TED. All speakers perform independently, and opinions expressed on stage are strictly their own."
+    },
+    "timeline": {
+      "eyebrow": "Our Legacy",
+      "title": "The Story of TEDxAlKawmia",
+      "subtitle": "How an ambitious campus idea transformed into an influential regional intellectual movement.",
+      "items": [
+        {
+          "date": "OCTOBER 2021",
+          "title": "The Inception & First License",
+          "desc": "Secured the official TED license for AlKawmia. A founding committee of 18 motivated students assembled to build the foundational constitution, setting our sights on hosting the premier local youth symposium."
+        },
+        {
+          "date": "MAY 2022",
+          "title": "Edition I: \"Breaking the Mold\"",
+          "desc": "Held our inaugural conference at the Main Auditorium with 450 attendees and 8 speakers covering sustainable energy, social entrepreneurship, and Arabic computational linguistics."
+        },
+        {
+          "date": "MARCH 2023",
+          "title": "Edition II: \"Uncharted Horizons\"",
+          "desc": "Scaled to over 900 delegates, introducing interactive design workshops, creative art exhibits, and publishing our talk recordings which gained over 350,000 views globally."
+        },
+        {
+          "date": "PRESENT (2024-2025)",
+          "title": "Edition III: \"Spark Unlimited Doors\"",
+          "desc": "Launching our integrated Member Portal, mobile check-ins, year-round micro-salons, and prepping our biggest mainstage production with 1,500+ attendees anticipated."
+        }
+      ]
+    }
+  
 }
