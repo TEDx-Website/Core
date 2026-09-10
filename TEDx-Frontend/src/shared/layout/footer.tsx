@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-// import { Instagram, Twitter, Linkedin, Send } from "lucide-react";
+import { BrandIcons } from "../ui/brand-icons";
+import { Send } from "lucide-react";
 
 export function Footer() {
   const t = useTranslations("footer.footer");
@@ -24,19 +25,19 @@ export function Footer() {
                 href="#"
                 className="w-10 h-10 rounded-full bg-dark-glass border border-dark-border flex items-center justify-center text-neutral-400 hover:text-white hover:border-brand-500 transition-all"
               >
-                {/* <Instagram className="size-5" /> */}
+                <BrandIcons.Instagram className="size-5" />
               </Link>
               <Link
                 href="#"
                 className="w-10 h-10 rounded-full bg-dark-glass border border-dark-border flex items-center justify-center text-neutral-400 hover:text-white hover:border-brand-500 transition-all"
               >
-                {/* <Twitter className="size-5" /> */}
+                <BrandIcons.X className="size-5" />
               </Link>
               <Link
                 href="#"
                 className="w-10 h-10 rounded-full bg-dark-glass border border-dark-border flex items-center justify-center text-neutral-400 hover:text-white hover:border-brand-500 transition-all"
               >
-                {/* <Linkedin className="size-5" /> */}
+                <BrandIcons.LinkedIn className="size-5" />
               </Link>
             </div>
           </div>
@@ -138,7 +139,7 @@ export function Footer() {
                 type="button"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-brand-500 hover:text-brand-glow"
               >
-                {/* <Send className="size-5" /> */}
+                <Send className="size-5" />
               </button>
             </form>
           </div>
