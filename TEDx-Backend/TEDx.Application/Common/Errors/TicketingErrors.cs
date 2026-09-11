@@ -165,5 +165,8 @@ public static partial class TicketingErrors
         "SPEAKER_IS_NOT_TOP_SPEAKER",
         "The speaker is not a top speaker.");
 
-
+    public static readonly Error SpeakerNotInTopList =
+    Error.NotFound(
+        "SPEAKER_NOT_IN_TOP_LIST",
+        "One or more speakers are not in the top speakers list.");
 }

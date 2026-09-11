@@ -20,10 +20,16 @@ namespace TEDx.Application.Ticketing.Commands.CreateSpeaker
             var speaker = new Speaker
             {
                 Id = Guid.NewGuid(),
-                Name = request.Name,
-                PictureUrl = request.PictureUrl,
-                TagLine = request.TagLine,
-                Description = request.Description
+                SpeakerName = request.SpeakerName,
+                SpeakerPictureUrl = request.SpeakerPictureUrl,
+                SpeakerRole = request.SpeakerRole,
+                SpeakerBio = request.SpeakerBio,
+                TalkTitle = request.TalkTitle,
+                TalkTrack = request.TalkTrack,
+                TalkShortDescription = request.TalkShortDescription,
+                SpeakerLinkedInUrl = request.SpeakerLinkedInUrl,
+                SpeakerXUrl = request.SpeakerXUrl,
+                SpeakerWebsiteUrl = request.SpeakerWebsiteUrl
             };
 
             context.Speakers.Add(speaker);

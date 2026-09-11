@@ -14,23 +14,61 @@ namespace TEDx.Infrastructure.Persistence.Configurations
             builder.HasKey(x => x.Id);
 
             builder
-                .Property(x => x.Name)
+                .Property(x => x.SpeakerName)
                 .IsRequired()
                 .HasMaxLength(200);
 
             builder
-                .Property(x => x.PictureUrl)
+                .Property(x => x.SpeakerPictureUrl)
                 .IsRequired();
 
             builder
-                .Property(x => x.TagLine)
+                .Property(x => x.SpeakerBio)
+                .IsRequired()
+                .HasMaxLength(2000);
+
+            builder
+                .Property(x => x.TopSpeakerOrderIndex)
+                .IsRequired(false);
+
+            builder
+                .Property(x => x.IsNextSpeaker)
+                .HasDefaultValue(false);
+
+            builder
+                .Property(x => x.SpeakerRole)
                 .IsRequired()
                 .HasMaxLength(300);
 
             builder
-                .Property(x => x.Description)
+                .Property(x => x.TalkTrack)
                 .IsRequired()
-                .HasMaxLength(2000);
+                .HasMaxLength(200);
+
+            builder
+                .Property(x => x.TalkTitle)
+                .IsRequired()
+                .HasMaxLength(300);
+
+            builder
+                .Property(x => x.TalkShortDescription)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            builder
+                .Property(x => x.SpeakerLinkedInUrl)
+                .HasMaxLength(500)
+                .IsRequired(false);
+
+            builder
+                .Property(x => x.SpeakerXUrl)
+                .HasMaxLength(500)
+                .IsRequired(false);
+
+            builder
+                .Property(x => x.SpeakerWebsiteUrl)
+                .HasMaxLength(500)
+                .IsRequired(false);
         }
     }
 }

@@ -26,10 +26,16 @@ namespace TEDx.Application.Ticketing.Commands.UpdateSpeaker
             }
 
             // 2. Update speaker data
-            speaker.Name = request.Name;
-            speaker.PictureUrl = request.PictureUrl;
-            speaker.TagLine = request.TagLine;
-            speaker.Description = request.Description;
+            speaker.SpeakerName = request.SpeakerName;
+            speaker.SpeakerPictureUrl = request.SpeakerPictureUrl;
+            speaker.SpeakerRole = request.SpeakerRole;
+            speaker.SpeakerBio = request.SpeakerBio;
+            speaker.TalkTitle = request.TalkTitle;
+            speaker.TalkTrack = request.TalkTrack;
+            speaker.TalkShortDescription = request.TalkShortDescription;
+            speaker.SpeakerLinkedInUrl = request.SpeakerLinkedInUrl;
+            speaker.SpeakerXUrl = request.SpeakerXUrl;
+            speaker.SpeakerWebsiteUrl = request.SpeakerWebsiteUrl;
 
             // 3. Save changes
             await context.SaveChangesAsync(cancellationToken);
