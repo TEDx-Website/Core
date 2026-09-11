@@ -15,19 +15,27 @@ namespace TEDx.Application.Ticketing.Queries.GetTopSpeakers
             GetTopSpeakersQuery request,
             CancellationToken cancellationToken)
         {
-            var speakers = await context.Speakers
+            var query = context.Speakers
                 .AsNoTracking()
                 .Where(s => s.IsTopSpeaker)
-                .OrderBy(s => s.Name)
+                .OrderBy(s => s.TopSpeakerOrderIndex)
+                .AsQueryable();
+
+            if (request.Limit.HasValue && request.Limit.Value > 0)
+            {
+                query = query.Take(request.Limit.Value);
+            }
+
+            var speakers = await query
                 .Select(s => new TopSpeakerResponse(
                     s.Id,
-                    s.Name,
-                    s.PictureUrl,
-                    s.TagLine,
-                    s.Description,
-                    s.Events
-                        .Select(e => e.TitleEn)
-                        .ToList()
+                    s.SpeakerName,
+                    s.SpeakerPictureUrl,
+                    s.SpeakerRole,
+                    s.TalkTitle,
+                    s.TalkTrack,
+                    s.TalkShortDescription,
+                    s.TopSpeakerOrderIndex ?? 0
                 ))
                 .ToListAsync(cancellationToken);
 

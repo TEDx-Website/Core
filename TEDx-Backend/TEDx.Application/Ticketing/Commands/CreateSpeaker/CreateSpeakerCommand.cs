@@ -7,9 +7,15 @@ using TEDx.Domain.Common;
 namespace TEDx.Application.Ticketing.Commands.CreateSpeaker
 {
     public sealed record CreateSpeakerCommand(
-    string Name,
-    string PictureUrl,
-    string TagLine,
-    string Description)
+    string SpeakerName,
+    string SpeakerPictureUrl,
+    string SpeakerRole,
+    string SpeakerBio,
+    string TalkTitle,
+    string TalkTrack,
+    string TalkShortDescription,
+    string? SpeakerLinkedInUrl,
+    string? SpeakerXUrl,
+    string? SpeakerWebsiteUrl)
     : IRequest<Result<Unit>>;
 }

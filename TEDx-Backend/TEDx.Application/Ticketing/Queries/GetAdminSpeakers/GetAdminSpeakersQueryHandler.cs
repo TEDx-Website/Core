@@ -29,15 +29,15 @@ namespace TEDx.Application.Ticketing.Queries.GetAdminSpeakers
                 request.PageSize);
 
             var speakers = await query
-                .OrderBy(s => s.Name)
+                .OrderBy(s => s.SpeakerName)
                 .Skip(page.Skip)
                 .Take(page.Take)
                 .Select(s => new AdminSpeakerResponse(
                     s.Id,
-                    s.Name,
-                    s.PictureUrl,
-                    s.TagLine,
-                    s.Description,
+                    s.SpeakerName,
+                    s.SpeakerPictureUrl,
+                    s.SpeakerRole,
+                    s.SpeakerBio,
                     s.Events
                         .Select(e => e.TitleEn)
                         .ToList()

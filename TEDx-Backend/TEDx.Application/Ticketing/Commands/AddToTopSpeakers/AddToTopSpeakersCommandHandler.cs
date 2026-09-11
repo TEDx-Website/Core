@@ -29,17 +29,12 @@ namespace TEDx.Application.Ticketing.Commands.AddToTopSpeakers
                 return Result<Unit>.Failure(TicketingErrors.IsAlreadyTop);
             }
 
-            var topSpeakersCount = await context.Speakers
-                .CountAsync(
-                    s => s.IsTopSpeaker,
-                    cancellationToken);
-
-            if (topSpeakersCount >= 5)
-            {
-                return Result<Unit>.Failure(CommonErrors.ValidationError);
-            }
+            var maxOrder = await context.Speakers
+                .Where(s => s.IsTopSpeaker)
+                .MaxAsync(s => (int?)s.TopSpeakerOrderIndex, cancellationToken) ?? 0;
 
             speaker.IsTopSpeaker = true;
+            speaker.TopSpeakerOrderIndex = maxOrder + 1;
 
             await context.SaveChangesAsync(cancellationToken);
 

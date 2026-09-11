@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TEDx.Api.Common.Responses;
+using TEDx.Application.Ticketing.Commands.ClearNextSpeaker;
 using TEDx.Application.Ticketing.Commands.CreateSpeaker;
 using TEDx.Application.Ticketing.Commands.DeleteSpeaker;
+using TEDx.Application.Ticketing.Commands.SetNextSpeaker;
 using TEDx.Application.Ticketing.Commands.UpdateSpeaker;
 using TEDx.Application.Ticketing.Queries.GetAdminSpeakers;
 
@@ -86,7 +88,30 @@ namespace TEDx.Api.Controllers
             return HandleNoContent(result);
         }
 
+        // Set Next Speaker
+        [HttpPut("{speakerId:guid}/next")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> SetNextSpeaker(
+            Guid speakerId,
+            CancellationToken cancellationToken)
+        {
+            var command = new SetNextSpeakerCommand(speakerId);
+            var result = await sender.Send(command, cancellationToken);
+            return HandleNoContent(result);
+        }
 
-
+        // Clear Next Speaker
+        [HttpDelete("next")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult> ClearNextSpeaker(
+            CancellationToken cancellationToken)
+        {
+            var command = new ClearNextSpeakerCommand();
+            var result = await sender.Send(command, cancellationToken);
+            return HandleNoContent(result);
+        }
     }
 }

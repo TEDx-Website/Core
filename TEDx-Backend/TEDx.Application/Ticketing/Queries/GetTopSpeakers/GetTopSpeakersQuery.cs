@@ -6,6 +6,6 @@ using TEDx.Domain.Common;
 
 namespace TEDx.Application.Ticketing.Queries.GetTopSpeakers
 {
-    public sealed record GetTopSpeakersQuery
-    : IRequest<Result<List<TopSpeakerResponse>>>;
+    public sealed record GetTopSpeakersQuery(int? Limit = null)
+        : IRequest<Result<List<TopSpeakerResponse>>>;
 }
