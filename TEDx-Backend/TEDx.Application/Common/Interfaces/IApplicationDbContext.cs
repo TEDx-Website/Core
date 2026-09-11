@@ -38,6 +38,7 @@ public interface IApplicationDbContext
     DbSet<NotificationRecipient> NotificationRecipients { get; }
     DbSet<ContactMessage> ContactMessages { get; }
     DbSet<OutboxMessage> OutboxMessages { get; }
+    DbSet<Speaker> Speakers { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 

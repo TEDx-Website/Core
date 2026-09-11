@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TEDx.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using TEDx.Infrastructure.Persistence;
 namespace TEDx.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260910231529_AddSpeakers")]
+    partial class AddSpeakers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,9 +381,6 @@ namespace TEDx.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<Guid?>("SpeakerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("StartAtUtc")
                         .HasColumnType("datetime2");
 
@@ -414,9 +414,22 @@ namespace TEDx.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("Events", (string)null);
+                });
+
+            modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.EventSpeaker", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SpeakerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("EventId", "SpeakerId");
+
                     b.HasIndex("SpeakerId");
 
-                    b.ToTable("Events", (string)null);
+                    b.ToTable("EventSpeaker");
                 });
 
             modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Order", b =>
@@ -840,9 +853,6 @@ namespace TEDx.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<bool>("IsTopSpeaker")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -859,7 +869,7 @@ namespace TEDx.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Speakers");
+                    b.ToTable("Speaker");
                 });
 
             modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Ticket", b =>
@@ -1247,12 +1257,21 @@ namespace TEDx.Infrastructure.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
-            modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Event", b =>
+            modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.EventSpeaker", b =>
                 {
+                    b.HasOne("TEDx.Domain.Ticketing.Entities.Event", "Event")
+                        .WithMany("EventSpeakers")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("TEDx.Domain.Ticketing.Entities.Speaker", "Speaker")
-                        .WithMany("Events")
+                        .WithMany("EventSpeakers")
                         .HasForeignKey("SpeakerId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
 
                     b.Navigation("Speaker");
                 });
@@ -1454,6 +1473,8 @@ namespace TEDx.Infrastructure.Migrations
 
             modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Event", b =>
                 {
+                    b.Navigation("EventSpeakers");
+
                     b.Navigation("Orders");
 
                     b.Navigation("Packages");
@@ -1488,7 +1509,7 @@ namespace TEDx.Infrastructure.Migrations
 
             modelBuilder.Entity("TEDx.Domain.Ticketing.Entities.Speaker", b =>
                 {
-                    b.Navigation("Events");
+                    b.Navigation("EventSpeakers");
                 });
 
             modelBuilder.Entity("TEDx.Domain.Training.Entities.Session", b =>
