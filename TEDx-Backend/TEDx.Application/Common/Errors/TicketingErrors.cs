@@ -149,4 +149,21 @@ public static partial class TicketingErrors
             "PROMO_WRONG_EVENT",
             "The promo code is not valid for this event.");
 
+    public static readonly Error SpeakerHasEvents =
+        Error.Conflict(
+            "SPEAKER_HAS_EVENTS",
+            "The speaker has associated events and cannot be deleted.");
+
+    public static readonly Error IsAlreadyTop =
+        Error.Conflict(
+            "SPEAKER_IS_ALREADY_TOP_SPEAKER",
+            "The speaker is already a top speaker.");
+
+    // NotTopSpeaker
+    public static readonly Error NotTopSpeaker =
+    Error.Conflict(
+        "SPEAKER_IS_NOT_TOP_SPEAKER",
+        "The speaker is not a top speaker.");
+
+
 }

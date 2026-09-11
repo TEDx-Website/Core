@@ -44,6 +44,8 @@ public sealed class ApplicationDbContext
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
+    public DbSet<Speaker> Speakers => Set<Speaker>();
+
     public Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         => Database.BeginTransactionAsync(cancellationToken);
 

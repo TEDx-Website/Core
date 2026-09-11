@@ -32,6 +32,8 @@ namespace TEDx.Domain.Ticketing.Entities
         public List<Ticket>? Tickets { get; set; }
         public List<PromoCode>? PromoCodes { get; set; }
         public List<Package>? Packages { get; set; }
+        public Guid? SpeakerId { get; set; }
+        public Speaker? Speaker { get; set; }
 
         // --- State machine (D:Q55, D:Q56) ---
 

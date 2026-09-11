@@ -55,6 +55,11 @@ namespace TEDx.Infrastructure.Persistence.Configurations
                 .IsRowVersion();
 
             builder.HasQueryFilter(x => !x.IsDeleted);
+
+            builder.HasOne(e => e.Speaker)
+                .WithMany(s => s.Events)
+                .HasForeignKey(e => e.SpeakerId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
       
